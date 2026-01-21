@@ -1,0 +1,6 @@
+@RentIt.Modules.Verification.Api_HostAddress = http://localhost:5046
+
+GET {{RentIt.Modules.Verification.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

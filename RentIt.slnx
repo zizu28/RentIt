@@ -1,0 +1,67 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/ApiGateway/">
+    <Project Path="src/ApiGateway/RentIt.ApiGateway/RentIt.ApiGateway.csproj" />
+  </Folder>
+  <Folder Name="/src/BFF/">
+    <Project Path="src/BFF/RentIt.BFF/RentIt.BFF.csproj" />
+  </Folder>
+  <Folder Name="/src/Host/">
+    <Project Path="src/Host/RentIt.Host/RentIt.Host.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Analytics/">
+    <Project Path="src/Modules/Analytics/RentIt.Modules.Analytics.Api/RentIt.Modules.Analytics.Api.csproj" />
+    <Project Path="src/Modules/Analytics/RentIt.Modules.Analytics.Application/RentIt.Modules.Analytics.Application.csproj" />
+    <Project Path="src/Modules/Analytics/RentIt.Modules.Analytics.Domain/RentIt.Modules.Analytics.Domain.csproj" />
+    <Project Path="src/Modules/Analytics/RentIt.Modules.Analytics.Infrastructure/RentIt.Modules.Analytics.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Bookings/">
+    <Project Path="src/Modules/Bookings/RentIt.Modules.Bookings.Api/RentIt.Modules.Bookings.Api.csproj" />
+    <Project Path="src/Modules/Bookings/RentIt.Modules.Bookings.Application/RentIt.Modules.Bookings.Application.csproj" />
+    <Project Path="src/Modules/Bookings/RentIt.Modules.Bookings.Domain/RentIt.Modules.Bookings.Domain.csproj" />
+    <Project Path="src/Modules/Bookings/RentIt.Modules.Bookings.Infrastructure/RentIt.Modules.Bookings.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Identity/">
+    <Project Path="src/Modules/Identity/RentIt.Modules.Identity.Api/RentIt.Modules.Identity.Api.csproj" />
+    <Project Path="src/Modules/Identity/RentIt.Modules.Identity.Application/RentIt.Modules.Identity.Application.csproj" />
+    <Project Path="src/Modules/Identity/RentIt.Modules.Identity.Domain/RentIt.Modules.Identity.Domain.csproj" />
+    <Project Path="src/Modules/Identity/RentIt.Modules.Identity.Infrastructure/RentIt.Modules.Identity.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Messaging/">
+    <Project Path="src/Modules/Messaging/RentIt.Modules.Messaging.Api/RentIt.Modules.Messaging.Api.csproj" />
+    <Project Path="src/Modules/Messaging/RentIt.Modules.Messaging.Application/RentIt.Modules.Messaging.Application.csproj" />
+    <Project Path="src/Modules/Messaging/RentIt.Modules.Messaging.Domain/RentIt.Modules.Messaging.Domain.csproj" />
+    <Project Path="src/Modules/Messaging/RentIt.Modules.Messaging.Infrastructure/RentIt.Modules.Messaging.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Payments/">
+    <Project Path="src/Modules/Payments/RentIt.Modules.Payments.Api/RentIt.Modules.Payments.Api.csproj" />
+    <Project Path="src/Modules/Payments/RentIt.Modules.Payments.Application/RentIt.Modules.Payments.Application.csproj" />
+    <Project Path="src/Modules/Payments/RentIt.Modules.Payments.Domain/RentIt.Modules.Payments.Domain.csproj" />
+    <Project Path="src/Modules/Payments/RentIt.Modules.Payments.Infrastructure/RentIt.Modules.Payments.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Properties/">
+    <Project Path="src/Modules/Properties/RentIt.Modules.Properties.Api/RentIt.Modules.Properties.Api.csproj" />
+    <Project Path="src/Modules/Properties/RentIt.Modules.Properties.Application/RentIt.Modules.Properties.Application.csproj" />
+    <Project Path="src/Modules/Properties/RentIt.Modules.Properties.Domain/RentIt.Modules.Properties.Domain.csproj" />
+    <Project Path="src/Modules/Properties/RentIt.Modules.Properties.Infrastructure/RentIt.Modules.Properties.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Reviews/">
+    <Project Path="src/Modules/Reviews/RentIt.Modules.Reviews.Api/RentIt.Modules.Reviews.Api.csproj" />
+    <Project Path="src/Modules/Reviews/RentIt.Modules.Reviews.Application/RentIt.Modules.Reviews.Application.csproj" />
+    <Project Path="src/Modules/Reviews/RentIt.Modules.Reviews.Domain/RentIt.Modules.Reviews.Domain.csproj" />
+    <Project Path="src/Modules/Reviews/RentIt.Modules.Reviews.Infrastructure/RentIt.Modules.Reviews.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Verification/">
+    <Project Path="src/Modules/Verification/RentIt.Modules.Verification.Api/RentIt.Modules.Verification.Api.csproj" />
+    <Project Path="src/Modules/Verification/RentIt.Modules.Verification.Application/RentIt.Modules.Verification.Application.csproj" />
+    <Project Path="src/Modules/Verification/RentIt.Modules.Verification.Domain/RentIt.Modules.Verification.Domain.csproj" />
+    <Project Path="src/Modules/Verification/RentIt.Modules.Verification.Infrastructure/RentIt.Modules.Verification.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/RentIt.Shared.Abstractions/RentIt.Shared.Abstractions.csproj" />
+    <Project Path="src/Shared/RentIt.Shared.Contracts/RentIt.Shared.Contracts.csproj" />
+    <Project Path="src/Shared/RentIt.Shared.Infrastructure/RentIt.Shared.Infrastructure.csproj" />
+    <Project Path="src/Shared/RentIt.Shared.Kernel/RentIt.Shared.Kernel.csproj" />
+  </Folder>
+</Solution>
