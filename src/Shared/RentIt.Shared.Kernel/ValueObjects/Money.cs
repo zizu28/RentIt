@@ -6,10 +6,10 @@ namespace RentIt.Shared.Kernel.ValueObjects;
 /// <summary>
 /// Money value object representing an amount and currency
 /// </summary>
-public sealed class Money : ValueObject
+public sealed record Money : ValueObject
 {
-    public decimal Amount { get; }
-    public Currency Currency { get; }
+    public decimal Amount { get; init; }
+    public Currency Currency { get; init; }
 
     private Money(decimal amount, Currency currency)
     {
@@ -70,12 +70,6 @@ public sealed class Money : ValueObject
     public bool IsZero() => Amount == 0;
 
     public bool IsPositive() => Amount > 0;
-
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return Amount;
-        yield return Currency;
-    }
 
     public override string ToString() => $"{Amount:N2} {Currency}";
 

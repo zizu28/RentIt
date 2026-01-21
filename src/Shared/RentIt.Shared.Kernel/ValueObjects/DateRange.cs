@@ -5,10 +5,10 @@ namespace RentIt.Shared.Kernel.ValueObjects;
 /// <summary>
 /// Date range value object
 /// </summary>
-public sealed class DateRange : ValueObject
+public sealed record DateRange : ValueObject
 {
-    public DateOnly StartDate { get; }
-    public DateOnly EndDate { get; }
+    public DateOnly StartDate { get; init; }
+    public DateOnly EndDate { get; init; }
 
     private DateRange(DateOnly startDate, DateOnly endDate)
     {
@@ -31,12 +31,6 @@ public sealed class DateRange : ValueObject
     public bool Overlaps(DateRange other)
     {
         return StartDate <= other.EndDate && EndDate >= other.StartDate;
-    }
-
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return StartDate;
-        yield return EndDate;
     }
 
     public override string ToString() => $"{StartDate:yyyy-MM-dd} to {EndDate:yyyy-MM-dd}";

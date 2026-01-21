@@ -5,13 +5,13 @@ namespace RentIt.Shared.Kernel.ValueObjects;
 /// <summary>
 /// Address value object
 /// </summary>
-public sealed class Address : ValueObject
+public sealed record Address : ValueObject
 {
-    public string Street { get; }
-    public string City { get; }
-    public string Region { get; }
-    public string Country { get; }
-    public string? PostalCode { get; }
+    public string Street { get; init; }
+    public string City { get; init; }
+    public string Region { get; init; }
+    public string Country { get; init; }
+    public string? PostalCode { get; init; }
 
     private Address(string street, string city, string region, string country, string? postalCode = null)
     {
@@ -43,15 +43,6 @@ public sealed class Address : ValueObject
             country.Trim(),
             postalCode?.Trim()
         );
-    }
-
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return Street;
-        yield return City;
-        yield return Region;
-        yield return Country;
-        yield return PostalCode ?? string.Empty;
     }
 
     public override string ToString()
