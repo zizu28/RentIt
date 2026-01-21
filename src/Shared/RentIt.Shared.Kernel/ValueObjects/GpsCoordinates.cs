@@ -1,11 +1,9 @@
-using RentIt.Shared.Abstractions.Domain;
-
 namespace RentIt.Shared.Kernel.ValueObjects;
 
 /// <summary>
 /// GPS Coordinates value object
 /// </summary>
-public sealed record GpsCoordinates : ValueObject
+public sealed record GpsCoordinates
 {
     public double Latitude { get; init; }
     public double Longitude { get; init; }

@@ -1,11 +1,9 @@
-using RentIt.Shared.Abstractions.Domain;
-
 namespace RentIt.Shared.Kernel.ValueObjects;
 
 /// <summary>
 /// Address value object
 /// </summary>
-public sealed record Address : ValueObject
+public sealed record Address
 {
     public string Street { get; init; }
     public string City { get; init; }

@@ -1,4 +1,3 @@
-using RentIt.Shared.Abstractions.Domain;
 using RentIt.Shared.Kernel.Enums;
 
 namespace RentIt.Shared.Kernel.ValueObjects;
@@ -6,7 +5,7 @@ namespace RentIt.Shared.Kernel.ValueObjects;
 /// <summary>
 /// Money value object representing an amount and currency
 /// </summary>
-public sealed record Money : ValueObject
+public sealed record Money
 {
     public decimal Amount { get; init; }
     public Currency Currency { get; init; }

@@ -1,11 +1,9 @@
-using RentIt.Shared.Abstractions.Domain;
-
 namespace RentIt.Shared.Kernel.ValueObjects;
 
 /// <summary>
 /// Date range value object
 /// </summary>
-public sealed record DateRange : ValueObject
+public sealed record DateRange
 {
     public DateOnly StartDate { get; init; }
     public DateOnly EndDate { get; init; }
