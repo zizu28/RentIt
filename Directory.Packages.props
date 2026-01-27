@@ -12,6 +12,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.2" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.2" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
   </ItemGroup>

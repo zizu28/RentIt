@@ -10,7 +10,7 @@ namespace RentIt.Modules.Identity.Domain.Entities;
 /// </summary>
 public sealed class User : AggregateRoot<Guid>
 {
-    private readonly List<RefreshToken> _refreshTokens = new();
+    private readonly List<RefreshToken> _refreshTokens = [];
 
     public Email Email { get; private set; } = null!;
     public PhoneNumber PhoneNumber { get; private set; } = null!;

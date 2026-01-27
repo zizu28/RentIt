@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -17,6 +17,18 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Analytics\RentIt.Modules.Analytics.Domain\RentIt.Modules.Analytics.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Bookings\RentIt.Modules.Bookings.Domain\RentIt.Modules.Bookings.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Identity\RentIt.Modules.Identity.Domain\RentIt.Modules.Identity.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Messaging\RentIt.Modules.Messaging.Domain\RentIt.Modules.Messaging.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Payments\RentIt.Modules.Payments.Domain\RentIt.Modules.Payments.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Properties\RentIt.Modules.Properties.Domain\RentIt.Modules.Properties.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Reviews\RentIt.Modules.Reviews.Domain\RentIt.Modules.Reviews.Domain.csproj" />
+    <ProjectReference Include="..\..\Modules\Verification\RentIt.Modules.Verification.Domain\RentIt.Modules.Verification.Domain.csproj" />
   </ItemGroup>
 
 </Project>
