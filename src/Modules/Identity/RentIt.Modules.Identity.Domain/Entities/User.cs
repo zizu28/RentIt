@@ -11,10 +11,11 @@ namespace RentIt.Modules.Identity.Domain.Entities;
 /// </summary>
 public sealed class User : AggregateRoot<Guid>
 {
+#pragma warning disable
     private readonly List<RefreshToken> _refreshTokens = [];
     public Email Email { get; private set; } = null!;
     public PhoneNumber PhoneNumber { get; private set; } = null!;
-    public string PasswordHash { get; private set; } = string.Empty;
+    public PasswordHash PasswordHash { get; private set; } = null!;
     public string? FirstName { get; private set; }
     public string? LastName { get; private set; }
     [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -27,13 +28,17 @@ public sealed class User : AggregateRoot<Guid>
     public DateTime? LastLoginAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
 
+    public string? VerificationToken { get; private set; }
+    public string? PasswordResetToken { get; private set; }
+    public DateTime? PasswordResetTokenExpiresAt { get; private set; }
+
     public IReadOnlyCollection<RefreshToken> RefreshTokens => _refreshTokens.AsReadOnly();
 
     public string FullName => $"{FirstName} {LastName}".Trim();
 
     private User() { } // EF Core
 
-    public User(Guid id, Email email, PhoneNumber phoneNumber, string passwordHash, UserRole role)
+    public User(Guid id, Email email, PhoneNumber phoneNumber, PasswordHash passwordHash, UserRole role)
     {
         Id = id;
         Email = email;
@@ -46,11 +51,11 @@ public sealed class User : AggregateRoot<Guid>
         CreatedAt = DateTime.UtcNow;
     }
 
-    public static User Create(Email email, PhoneNumber phoneNumber, string passwordHash, UserRole role)
+    public static User Create(Email email, PhoneNumber phoneNumber, PasswordHash passwordHash, UserRole role)
     {
-        if (string.IsNullOrWhiteSpace(passwordHash))
+        if (passwordHash is null)
         {
-            throw new ArgumentException("Password hash cannot be empty", nameof(passwordHash));
+            throw new ArgumentNullException(nameof(passwordHash), "Password hash cannot be null.");
         }          
         var user = new User(Guid.NewGuid(), email, phoneNumber, passwordHash, role);
         user.AddDomainEvent(
@@ -66,17 +71,39 @@ public sealed class User : AggregateRoot<Guid>
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void VerifyEmail()
+    public void SetVerificationToken(string token)
     {
-        if (IsEmailVerified)
-        {
-            throw new InvalidOperationException("Email is already verified");
-        }
-            
-        IsEmailVerified = true;
+        VerificationToken = token;
         UpdatedAt = DateTime.UtcNow;
+    }
 
+    public void VerifyEmail(string token)
+    {
+        if (IsEmailVerified) throw new InvalidOperationException("Email is already verified");
+        if (VerificationToken != token) throw new InvalidOperationException("Invalid verification token");
+        
+        IsEmailVerified = true;
+        VerificationToken = null;
+        UpdatedAt = DateTime.UtcNow;
         AddDomainEvent(new EmailVerifiedEvent(Id, Email.Value));
+    }
+
+    public void SetPasswordResetToken(string token, TimeSpan expiresIn)
+    {
+        PasswordResetToken = token;
+        PasswordResetTokenExpiresAt = DateTime.UtcNow.Add(expiresIn);
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void ResetPassword(string token, PasswordHash newPasswordHash)
+    {
+        if (PasswordResetToken != token) throw new InvalidOperationException("Invalid reset token");
+        if (PasswordResetTokenExpiresAt < DateTime.UtcNow) throw new InvalidOperationException("Reset token expired");
+
+        PasswordHash = newPasswordHash ?? throw new ArgumentNullException(nameof(newPasswordHash));
+        PasswordResetToken = null;
+        PasswordResetTokenExpiresAt = null;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     public void VerifyPhoneNumber()
@@ -91,11 +118,11 @@ public sealed class User : AggregateRoot<Guid>
         AddDomainEvent(new PhoneNumberVerifiedEvent(Id, PhoneNumber.Value));
     }
 
-    public void UpdatePassword(string newPasswordHash)
+    public void UpdatePassword(PasswordHash newPasswordHash)
     {
-        if (string.IsNullOrWhiteSpace(newPasswordHash))
+        if (newPasswordHash is null)
         {
-            throw new ArgumentException("Password hash cannot be empty", nameof(newPasswordHash));
+            throw new ArgumentNullException(nameof(newPasswordHash), "Password hash cannot be null.");
         }
             
         PasswordHash = newPasswordHash;

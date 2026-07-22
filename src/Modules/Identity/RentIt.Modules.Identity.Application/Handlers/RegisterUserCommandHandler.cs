@@ -8,16 +8,21 @@ using RentIt.Shared.Abstractions.Persistence;
 using RentIt.Shared.Abstractions.Results;
 using RentIt.Shared.Contracts.Identity;
 
+using RentIt.Shared.Abstractions.BackgroundJobs;
+using RentIt.Shared.Abstractions.Email;
+
 namespace RentIt.Modules.Identity.Application.Handlers;
 
 public sealed class RegisterUserCommandHandler(
     IUserRepository userRepository,
     IPasswordHasher passwordHasher,
-    IUnitOfWork unitOfWork) : IRequestHandler<Commands.RegisterUserCommand, Result<UserDto>>
+    IUnitOfWork unitOfWork,
+    IBackgroundJob backgroundJob) : IRequestHandler<Commands.RegisterUserCommand, Result<UserDto>>
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IPasswordHasher _passwordHasher = passwordHasher;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IBackgroundJob _backgroundJob = backgroundJob;
 
     public async Task<Result<UserDto>> Handle(Commands.RegisterUserCommand request, CancellationToken cancellationToken)
     {
@@ -49,7 +54,8 @@ public sealed class RegisterUserCommandHandler(
         }
 
         // Hash password
-        var passwordHash = _passwordHasher.HashPassword(request.Password);
+        var passwordHashString = _passwordHasher.HashPassword(request.Password);
+        var passwordHash = PasswordHash.Create(passwordHashString);
 
         // Create user
         var user = User.Create(email, phoneNumber, passwordHash, userRole);
@@ -60,9 +66,33 @@ public sealed class RegisterUserCommandHandler(
             user.UpdateProfile(request.FirstName, request.LastName);
         }
 
+        // Generate a random token for verification (stub)
+        var verificationToken = Guid.NewGuid().ToString("N");
+        user.SetVerificationToken(verificationToken);
+
         // Save user
         await _userRepository.AddAsync(user, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Send Welcome Email and Verification Email in the background
+        _backgroundJob.Enqueue<IEmailService>(
+            "default", 
+            emailService => emailService.SendEmailAsync(
+                user.Email.Value, 
+                "Welcome to RentIt!", 
+                $"Hi {user.FirstName ?? "there"},\n\nWelcome to RentIt! We're glad to have you.", 
+                CancellationToken.None));
+
+        var verificationLink = $"https://localhost:7272/verify-email?token={verificationToken}&email={user.Email.Value}";
+
+        _backgroundJob.Enqueue<IEmailService>(
+            "default", 
+            emailService => emailService.SendEmailAsync(
+                user.Email.Value, 
+                "Verify your RentIt Account", 
+                $"Please verify your email by clicking the following link: {verificationLink}", 
+                CancellationToken.None));
+
 
 
 

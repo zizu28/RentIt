@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentEmail.Core" />
+    <PackageReference Include="FluentEmail.Smtp" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
@@ -31,6 +33,7 @@
     <ProjectReference Include="..\..\Modules\Properties\RentIt.Modules.Properties.Domain\RentIt.Modules.Properties.Domain.csproj" />
     <ProjectReference Include="..\..\Modules\Reviews\RentIt.Modules.Reviews.Domain\RentIt.Modules.Reviews.Domain.csproj" />
     <ProjectReference Include="..\..\Modules\Verification\RentIt.Modules.Verification.Domain\RentIt.Modules.Verification.Domain.csproj" />
+    <ProjectReference Include="..\RentIt.Shared.Abstractions\RentIt.Shared.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

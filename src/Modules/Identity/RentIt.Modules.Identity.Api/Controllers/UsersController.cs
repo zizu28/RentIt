@@ -22,9 +22,9 @@ public sealed class UsersController(ISender sender) : ControllerBase
             return Unauthorized("Token does not contain a User ID claim.");
         }
 
-        if (!Guid.TryParse(userIdClaim.Value, out var Id))
+        if (!Guid.TryParse(userIdClaim.Value, out Guid Id))
         {
-            return Unauthorized("Token User ID is not a valid GUID.");
+            return Unauthorized($"Token User ID {Id} is not a valid GUID.");
         }
 
         var query = new GetUserQuery(userId);

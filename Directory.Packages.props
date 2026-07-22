@@ -21,6 +21,10 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.20.0" />
+    <PackageVersion Include="Ocelot" Version="24.1.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.20.0" />
+    <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
+    <PackageVersion Include="FluentEmail.Core" Version="3.0.2" />
+    <PackageVersion Include="FluentEmail.Smtp" Version="3.0.2" />
   </ItemGroup>
 </Project>

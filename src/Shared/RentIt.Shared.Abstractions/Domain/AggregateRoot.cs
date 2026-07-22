@@ -10,6 +10,8 @@ public abstract class AggregateRoot<TId> : Entity<TId>, IAggregateRoot<TId>
     private readonly List<IDomainEvent> _domainEvents = [];
 
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+    
+    public byte[] RowVersion { get; set; } = null!;
 
     protected AggregateRoot()
     {

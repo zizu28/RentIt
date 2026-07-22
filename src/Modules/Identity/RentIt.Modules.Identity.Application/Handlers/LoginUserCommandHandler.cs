@@ -32,7 +32,7 @@ public sealed class LoginUserCommandHandler(
         }
 
         // Verify password
-        if (!_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
+        if (!_passwordHasher.VerifyPassword(request.Password, user.PasswordHash.Value))
         {
             return Result.Failure<LoginResponse>(Error.Validation(
                 "User.InvalidCredentials",

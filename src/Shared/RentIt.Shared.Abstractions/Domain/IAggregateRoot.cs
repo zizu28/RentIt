@@ -7,5 +7,6 @@ namespace RentIt.Shared.Abstractions.Domain;
 public interface IAggregateRoot<TId> : IEntity<TId>
 {
     IReadOnlyCollection<IDomainEvent> DomainEvents { get; }
+    byte[] RowVersion { get; set; }
     void ClearDomainEvents();
 }

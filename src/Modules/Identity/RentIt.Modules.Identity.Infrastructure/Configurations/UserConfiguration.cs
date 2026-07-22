@@ -28,6 +28,9 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired();
 
         builder.Property(u => u.PasswordHash)
+            .HasConversion(
+                hash => hash.Value,
+                value => PasswordHash.Create(value))
             .HasMaxLength(500)
             .IsRequired();
 
@@ -54,6 +57,13 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasIndex(u => u.Email).IsUnique();
         builder.HasIndex(u => u.PhoneNumber).IsUnique();
+
+        builder.Property(u => u.VerificationToken).HasMaxLength(100);
+        builder.Property(u => u.PasswordResetToken).HasMaxLength(100);
+        builder.Property(u => u.PasswordResetTokenExpiresAt);
+
+        builder.Property(u => u.RowVersion)
+            .IsRowVersion();
 
         builder.Ignore(u => u.DomainEvents);
         builder.Ignore(u => u.FullName);
