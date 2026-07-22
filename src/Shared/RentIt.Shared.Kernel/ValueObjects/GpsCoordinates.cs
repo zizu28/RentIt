@@ -5,6 +5,7 @@ namespace RentIt.Shared.Kernel.ValueObjects;
 /// </summary>
 public sealed record GpsCoordinates
 {
+#pragma warning disable
     public double Latitude { get; init; }
     public double Longitude { get; init; }
 

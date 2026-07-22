@@ -8,9 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" />
+    <PackageReference Include="MediatR" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
   </ItemGroup>
@@ -18,6 +21,8 @@
   <ItemGroup>
     <ProjectReference Include="..\RentIt.Modules.Identity.Domain\RentIt.Modules.Identity.Domain.csproj" />
     <ProjectReference Include="..\RentIt.Modules.Identity.Application\RentIt.Modules.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Abstractions\RentIt.Shared.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Contracts\RentIt.Shared.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using RentIt.Modules.Identity.Application.Commands;
@@ -7,18 +8,13 @@ namespace RentIt.Modules.Identity.Api.Controllers;
 
 [ApiController]
 [Route("api/identity/auth")]
-public sealed class AuthController : ControllerBase
+public sealed class AuthController(ISender sender) : ControllerBase
 {
-    private readonly ISender _sender;
-
-    public AuthController(ISender sender)
-    {
-        _sender = sender;
-    }
+    private readonly ISender _sender = sender;
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterUserRequest request, CancellationToken cancellationToken)
-    {
+    {              
         var command = new RegisterUserCommand(
             request.Email,
             request.PhoneNumber,

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using RentIt.Modules.Identity.Domain.Enums;
 using RentIt.Modules.Identity.Domain.Events;
 using RentIt.Modules.Identity.Domain.ValueObjects;
@@ -11,13 +12,14 @@ namespace RentIt.Modules.Identity.Domain.Entities;
 public sealed class User : AggregateRoot<Guid>
 {
     private readonly List<RefreshToken> _refreshTokens = [];
-
     public Email Email { get; private set; } = null!;
     public PhoneNumber PhoneNumber { get; private set; } = null!;
     public string PasswordHash { get; private set; } = string.Empty;
     public string? FirstName { get; private set; }
     public string? LastName { get; private set; }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public UserRole Role { get; private set; }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public UserStatus Status { get; private set; }
     public bool IsEmailVerified { get; private set; }
     public bool IsPhoneVerified { get; private set; }
@@ -31,12 +33,7 @@ public sealed class User : AggregateRoot<Guid>
 
     private User() { } // EF Core
 
-    private User(
-        Guid id,
-        Email email,
-        PhoneNumber phoneNumber,
-        string passwordHash,
-        UserRole role)
+    public User(Guid id, Email email, PhoneNumber phoneNumber, string passwordHash, UserRole role)
     {
         Id = id;
         Email = email;
@@ -49,30 +46,16 @@ public sealed class User : AggregateRoot<Guid>
         CreatedAt = DateTime.UtcNow;
     }
 
-    public static User Create(
-        Email email,
-        PhoneNumber phoneNumber,
-        string passwordHash,
-        UserRole role)
+    public static User Create(Email email, PhoneNumber phoneNumber, string passwordHash, UserRole role)
     {
         if (string.IsNullOrWhiteSpace(passwordHash))
+        {
             throw new ArgumentException("Password hash cannot be empty", nameof(passwordHash));
-
-        var user = new User(
-            Guid.NewGuid(),
-            email,
-            phoneNumber,
-            passwordHash,
-            role
-        );
-
-        user.AddDomainEvent(new UserRegisteredEvent(
-            user.Id,
-            user.Email.Value,
-            user.PhoneNumber.Value,
-            user.Role.ToString()
+        }          
+        var user = new User(Guid.NewGuid(), email, phoneNumber, passwordHash, role);
+        user.AddDomainEvent(
+            new UserRegisteredEvent(user.Id, user.Email.Value, user.PhoneNumber.Value, user.Role.ToString()
         ));
-
         return user;
     }
 
@@ -86,8 +69,10 @@ public sealed class User : AggregateRoot<Guid>
     public void VerifyEmail()
     {
         if (IsEmailVerified)
+        {
             throw new InvalidOperationException("Email is already verified");
-
+        }
+            
         IsEmailVerified = true;
         UpdatedAt = DateTime.UtcNow;
 
@@ -97,19 +82,22 @@ public sealed class User : AggregateRoot<Guid>
     public void VerifyPhoneNumber()
     {
         if (IsPhoneVerified)
+        {
             throw new InvalidOperationException("Phone number is already verified");
-
+        }
+            
         IsPhoneVerified = true;
         UpdatedAt = DateTime.UtcNow;
-
         AddDomainEvent(new PhoneNumberVerifiedEvent(Id, PhoneNumber.Value));
     }
 
     public void UpdatePassword(string newPasswordHash)
     {
         if (string.IsNullOrWhiteSpace(newPasswordHash))
+        {
             throw new ArgumentException("Password hash cannot be empty", nameof(newPasswordHash));
-
+        }
+            
         PasswordHash = newPasswordHash;
         UpdatedAt = DateTime.UtcNow;
     }

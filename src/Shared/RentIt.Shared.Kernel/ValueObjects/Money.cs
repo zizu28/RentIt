@@ -7,6 +7,7 @@ namespace RentIt.Shared.Kernel.ValueObjects;
 /// </summary>
 public sealed record Money
 {
+#pragma warning disable 
     public decimal Amount { get; init; }
     public Currency Currency { get; init; }
 

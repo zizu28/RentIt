@@ -5,6 +5,7 @@ namespace RentIt.Shared.Kernel.ValueObjects;
 /// </summary>
 public sealed record DateRange
 {
+#pragma warning disable
     public DateOnly StartDate { get; init; }
     public DateOnly EndDate { get; init; }
 

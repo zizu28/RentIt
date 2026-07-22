@@ -5,6 +5,7 @@ namespace RentIt.Shared.Abstractions.Results;
 /// </summary>
 public class Result
 {
+#pragma warning disable
     public bool IsSuccess { get; }
     public bool IsFailure => !IsSuccess;
     public Error Error { get; }

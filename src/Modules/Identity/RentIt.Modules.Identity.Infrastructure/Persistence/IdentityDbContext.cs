@@ -3,12 +3,8 @@ using RentIt.Modules.Identity.Domain.Entities;
 
 namespace RentIt.Modules.Identity.Infrastructure.Persistence;
 
-public sealed class IdentityDbContext : DbContext
+public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : DbContext(options)
 {
-    public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options)
-    {
-    }
-
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 

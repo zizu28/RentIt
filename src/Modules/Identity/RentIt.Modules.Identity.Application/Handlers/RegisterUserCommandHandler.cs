@@ -10,21 +10,14 @@ using RentIt.Shared.Contracts.Identity;
 
 namespace RentIt.Modules.Identity.Application.Handlers;
 
-public sealed class RegisterUserCommandHandler : IRequestHandler<Commands.RegisterUserCommand, Result<UserDto>>
+public sealed class RegisterUserCommandHandler(
+    IUserRepository userRepository,
+    IPasswordHasher passwordHasher,
+    IUnitOfWork unitOfWork) : IRequestHandler<Commands.RegisterUserCommand, Result<UserDto>>
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IPasswordHasher _passwordHasher;
-    private readonly IUnitOfWork _unitOfWork;
-
-    public RegisterUserCommandHandler(
-        IUserRepository userRepository,
-        IPasswordHasher passwordHasher,
-        IUnitOfWork unitOfWork)
-    {
-        _userRepository = userRepository;
-        _passwordHasher = passwordHasher;
-        _unitOfWork = unitOfWork;
-    }
+    private readonly IUserRepository _userRepository = userRepository;
+    private readonly IPasswordHasher _passwordHasher = passwordHasher;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Result<UserDto>> Handle(Commands.RegisterUserCommand request, CancellationToken cancellationToken)
     {
@@ -70,6 +63,8 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<Commands.Regist
         // Save user
         await _userRepository.AddAsync(user, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+
 
         // Map to DTO
         var userDto = new UserDto

@@ -2,17 +2,18 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using RentIt.Modules.Identity.Application.Abstractions;
 
 namespace RentIt.Modules.Identity.Infrastructure.Services;
 
-public sealed class JwtTokenGenerator : IJwtTokenGenerator
+public sealed class JwtTokenGenerator(IConfiguration config) : IJwtTokenGenerator
 {
-    private const string SecretKey = "your-super-secret-key-here-minimum-32-characters-long-for-security";
-    private const string Issuer = "RentIt";
-    private const string Audience = "RentIt";
-    private const int AccessTokenExpirationMinutes = 60;
+    private readonly string SecretKey = config["JWT:Key"]!;
+    private readonly string Issuer = config["JWT:RentIt"]!;
+    private readonly string Audience = config["JWT:RentIt"]!;
+    private const int AccessTokenExpirationMinutes = 15;
 
     public string GenerateAccessToken(Guid userId, string email, string role)
     {

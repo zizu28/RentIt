@@ -1,17 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using RentIt.Modules.Identity.Domain.Entities;
 using RentIt.Modules.Identity.Domain.Repositories;
+using RentIt.Modules.Identity.Infrastructure.Persistence;
 
 namespace RentIt.Modules.Identity.Infrastructure.Repositories;
 
-internal sealed class UserRepository : IUserRepository
+internal sealed class UserRepository(IdentityDbContext dbContext) : IUserRepository
 {
-    private readonly Persistence.IdentityDbContext _dbContext;
-
-    public UserRepository(Persistence.IdentityDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    private readonly IdentityDbContext _dbContext = dbContext;
 
     public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -22,7 +18,7 @@ internal sealed class UserRepository : IUserRepository
     public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Users
-            .FirstOrDefaultAsync(u => u.Email.Value == email.ToLowerInvariant(), cancellationToken);
+            .FirstOrDefaultAsync(u => u.Email.Value.Equals(email, StringComparison.OrdinalIgnoreCase), cancellationToken);
     }
 
     public async Task<User?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
@@ -34,7 +30,7 @@ internal sealed class UserRepository : IUserRepository
     public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Users
-            .AnyAsync(u => u.Email.Value == email.ToLowerInvariant(), cancellationToken);
+            .AnyAsync(u => u.Email.Value.Equals(email, StringComparison.OrdinalIgnoreCase), cancellationToken);
     }
 
     public async Task<bool> ExistsByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
@@ -48,12 +44,12 @@ internal sealed class UserRepository : IUserRepository
         await _dbContext.Users.AddAsync(entity, cancellationToken);
     }
 
-    public void Update(User entity)
+    public void Update(User entity, CancellationToken cancellationToken = default)
     {
         _dbContext.Users.Update(entity);
     }
 
-    public void Delete(User entity)
+    public void Delete(User entity, CancellationToken cancellationToken = default)
     {
         _dbContext.Users.Remove(entity);
     }

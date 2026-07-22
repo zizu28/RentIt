@@ -5,6 +5,7 @@ namespace RentIt.Shared.Kernel.ValueObjects;
 /// </summary>
 public sealed record Address
 {
+#pragma warning disable
     public string Street { get; init; }
     public string City { get; init; }
     public string Region { get; init; }

@@ -3,19 +3,25 @@ using RentIt.Shared.Abstractions.Persistence;
 
 namespace RentIt.Modules.Identity.Infrastructure.Persistence;
 
-internal sealed class UnitOfWork : IUnitOfWork
+/// <summary>
+/// Unit of work that dispatches domain events after a successful save.
+/// Domain events are collected from all tracked aggregate roots and
+/// published through MediatR, enabling the choreography-based saga pattern.
+/// </summary>
+internal sealed class UnitOfWork(IdentityDbContext dbContext, DomainEventDispatcher domainEventDispatcher) : IUnitOfWork
 {
-    private readonly IdentityDbContext _dbContext;
+    private readonly IdentityDbContext _dbContext = dbContext;
+    private readonly DomainEventDispatcher _domainEventDispatcher = domainEventDispatcher;
     private IDbContextTransaction? _transaction;
-
-    public UnitOfWork(IdentityDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return await _dbContext.SaveChangesAsync(cancellationToken);
+        var result = await _dbContext.SaveChangesAsync(cancellationToken);
+
+        // Dispatch domain events AFTER successful save
+        await _domainEventDispatcher.DispatchDomainEventsAsync(cancellationToken);
+
+        return result;
     }
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
@@ -43,3 +49,4 @@ internal sealed class UnitOfWork : IUnitOfWork
         }
     }
 }
+

@@ -1,20 +1,16 @@
 using MediatR;
+using RentIt.Modules.Identity.Application.Queries;
 using RentIt.Modules.Identity.Domain.Repositories;
 using RentIt.Shared.Abstractions.Results;
 using RentIt.Shared.Contracts.Identity;
 
 namespace RentIt.Modules.Identity.Application.Handlers;
 
-public sealed class GetUserQueryHandler : IRequestHandler<Queries.GetUserQuery, Result<UserDto>>
+public sealed class GetUserQueryHandler(IUserRepository userRepository) : IRequestHandler<GetUserQuery, Result<UserDto>>
 {
-    private readonly IUserRepository _userRepository;
+    private readonly IUserRepository _userRepository = userRepository;
 
-    public GetUserQueryHandler(IUserRepository userRepository)
-    {
-        _userRepository = userRepository;
-    }
-
-    public async Task<Result<UserDto>> Handle(Queries.GetUserQuery request, CancellationToken cancellationToken)
+    public async Task<Result<UserDto>> Handle(GetUserQuery request, CancellationToken cancellationToken)
     {
         var user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
         if (user == null)
