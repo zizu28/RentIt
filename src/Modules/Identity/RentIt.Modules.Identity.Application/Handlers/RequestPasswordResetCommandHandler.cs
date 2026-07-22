@@ -18,29 +18,40 @@ public sealed class RequestPasswordResetCommandHandler(
 
     public async Task<Result> Handle(Commands.RequestPasswordResetCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
-
-        if (user is null)
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        try
         {
-            // Always return success to prevent user enumeration
+            var user = await _userRepository.GetByEmailForUpdateAsync(request.Email, cancellationToken);
+
+            if (user is null)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                // Always return success to prevent user enumeration
+                return Result.Success();
+            }
+
+            var resetToken = Guid.NewGuid().ToString("N");
+            user.SetPasswordResetToken(resetToken, TimeSpan.FromMinutes(5));
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            var resetLink = $"https://localhost:7272/reset-password?token={resetToken}&email={user.Email.Value}";
+
+            _backgroundJob.Enqueue<IEmailService>(
+                "default",
+                emailService => emailService.SendEmailAsync(
+                    user.Email.Value,
+                    "Reset your RentIt Password",
+                    $"Hi {user.FirstName ?? "there"},\n\nPlease reset your password using the following link: {resetLink}\n\nThis link expires in 5 minutes.",
+                    CancellationToken.None));
+
             return Result.Success();
         }
-
-        var resetToken = Guid.NewGuid().ToString("N");
-        user.SetPasswordResetToken(resetToken, TimeSpan.FromMinutes(5));
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        var resetLink = $"https://localhost:7272/reset-password?token={resetToken}&email={user.Email.Value}";
-
-        _backgroundJob.Enqueue<IEmailService>(
-            "default",
-            emailService => emailService.SendEmailAsync(
-                user.Email.Value,
-                "Reset your RentIt Password",
-                $"Hi {user.FirstName ?? "there"},\n\nPlease reset your password using the following link: {resetLink}\n\nThis link expires in 5 minutes.",
-                CancellationToken.None));
-
-        return Result.Success();
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 }

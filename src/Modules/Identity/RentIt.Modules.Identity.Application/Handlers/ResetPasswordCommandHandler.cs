@@ -22,21 +22,24 @@ public sealed class ResetPasswordCommandHandler(
 
     public async Task<Result> Handle(Commands.ResetPasswordCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
-
-        if (user is null)
-        {
-            return Result.Failure(Error.NotFound("User.NotFound", "User not found"));
-        }
-
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
         try
         {
+            var user = await _userRepository.GetByEmailForUpdateAsync(request.Email, cancellationToken);
+
+            if (user is null)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                return Result.Failure(Error.NotFound("User.NotFound", "User not found"));
+            }
+
             var passwordHashString = _passwordHasher.HashPassword(request.NewPassword);
             var passwordHash = PasswordHash.Create(passwordHashString);
 
             user.ResetPassword(request.Token, passwordHash);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _backgroundJob.Enqueue<IEmailService>(
                 "default",
@@ -50,7 +53,13 @@ public sealed class ResetPasswordCommandHandler(
         }
         catch (InvalidOperationException ex)
         {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             return Result.Failure(Error.Validation("User.ResetPasswordFailed", ex.Message));
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
         }
     }
 }

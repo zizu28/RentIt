@@ -22,68 +22,81 @@ public sealed class LoginUserCommandHandler(
 
     public async Task<Result<LoginResponse>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
-        // Get user by email
-        var user = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
-        if (user == null)
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        try
         {
-            return Result.Failure<LoginResponse>(Error.NotFound(
-                "User.NotFound",
-                "Invalid email or password"));
+            // Get user by email
+            var user = await _userRepository.GetByEmailForUpdateAsync(request.Email, cancellationToken);
+            if (user == null)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                return Result.Failure<LoginResponse>(Error.NotFound(
+                    "User.NotFound",
+                    "Invalid email or password"));
+            }
+
+            // Verify password
+            if (!_passwordHasher.VerifyPassword(request.Password, user.PasswordHash.Value))
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                return Result.Failure<LoginResponse>(Error.Validation(
+                    "User.InvalidCredentials",
+                    "Invalid email or password"));
+            }
+
+            // Check if user is active
+            if (user.Status != UserStatus.Active)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                return Result.Failure<LoginResponse>(Error.Validation(
+                    "User.NotActive",
+                    $"User account is {user.Status.ToString().ToLower()}"));
+            }
+
+            // Generate tokens
+            var accessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email.Value, user.Role.ToString());
+            var refreshTokenString = _jwtTokenGenerator.GenerateRefreshToken();
+
+            // Add refresh token to user
+            var refreshToken = user.AddRefreshToken(refreshTokenString, TimeSpan.FromDays(7));
+
+            // Record login
+            user.RecordLogin();
+
+            // Save changes
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            // Map user DTO
+            var userDto = new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email.Value,
+                PhoneNumber = user.PhoneNumber.Value,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Role = user.Role.ToString(),
+                Status = user.Status.ToString(),
+                IsEmailVerified = user.IsEmailVerified,
+                IsPhoneVerified = user.IsPhoneVerified,
+                CreatedAt = user.CreatedAt,
+                LastLoginAt = user.LastLoginAt
+            };
+
+            var response = new LoginResponse
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshTokenString,
+                ExpiresAt = refreshToken.ExpiresAt,
+                User = userDto
+            };
+
+            return Result.Success(response);
         }
-
-        // Verify password
-        if (!_passwordHasher.VerifyPassword(request.Password, user.PasswordHash.Value))
+        catch
         {
-            return Result.Failure<LoginResponse>(Error.Validation(
-                "User.InvalidCredentials",
-                "Invalid email or password"));
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
         }
-
-        // Check if user is active
-        if (user.Status != UserStatus.Active)
-        {
-            return Result.Failure<LoginResponse>(Error.Validation(
-                "User.NotActive",
-                $"User account is {user.Status.ToString().ToLower()}"));
-        }
-
-        // Generate tokens
-        var accessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email.Value, user.Role.ToString());
-        var refreshTokenString = _jwtTokenGenerator.GenerateRefreshToken();
-
-        // Add refresh token to user
-        var refreshToken = user.AddRefreshToken(refreshTokenString, TimeSpan.FromDays(7));
-
-        // Record login
-        user.RecordLogin();
-
-        // Save changes
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Map user DTO
-        var userDto = new UserDto
-        {
-            Id = user.Id,
-            Email = user.Email.Value,
-            PhoneNumber = user.PhoneNumber.Value,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Role = user.Role.ToString(),
-            Status = user.Status.ToString(),
-            IsEmailVerified = user.IsEmailVerified,
-            IsPhoneVerified = user.IsPhoneVerified,
-            CreatedAt = user.CreatedAt,
-            LastLoginAt = user.LastLoginAt
-        };
-
-        var response = new LoginResponse
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshTokenString,
-            ExpiresAt = refreshToken.ExpiresAt,
-            User = userDto
-        };
-
-        return Result.Success(response);
     }
 }

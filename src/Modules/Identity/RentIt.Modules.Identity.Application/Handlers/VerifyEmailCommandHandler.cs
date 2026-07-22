@@ -18,17 +18,20 @@ public sealed class VerifyEmailCommandHandler(
 
     public async Task<Result> Handle(Commands.VerifyEmailCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
-
-        if (user is null)
-        {
-            return Result.Failure(Error.NotFound("User.NotFound", "User not found"));
-        }
-
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
         try
         {
+            var user = await _userRepository.GetByEmailForUpdateAsync(request.Email, cancellationToken);
+
+            if (user is null)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                return Result.Failure(Error.NotFound("User.NotFound", "User not found"));
+            }
+
             user.VerifyEmail(request.Token);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             _backgroundJob.Enqueue<IEmailService>(
                 "default",
@@ -42,7 +45,13 @@ public sealed class VerifyEmailCommandHandler(
         }
         catch (InvalidOperationException ex)
         {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             return Result.Failure(Error.Validation("User.VerifyEmailFailed", ex.Message));
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
         }
     }
 }

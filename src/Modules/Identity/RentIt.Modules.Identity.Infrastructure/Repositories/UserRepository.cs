@@ -15,10 +15,24 @@ internal sealed class UserRepository(IdentityDbContext dbContext) : IUserReposit
             .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
     }
 
+    public async Task<User?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Users
+            .FromSqlRaw("SELECT * FROM identity.Users WITH (UPDLOCK, ROWLOCK) WHERE Id = {0}", id)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Users
             .FirstOrDefaultAsync(u => u.Email.Value.Equals(email, StringComparison.OrdinalIgnoreCase), cancellationToken);
+    }
+
+    public async Task<User?> GetByEmailForUpdateAsync(string email, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Users
+            .FromSqlRaw("SELECT * FROM identity.Users WITH (UPDLOCK, ROWLOCK) WHERE Email = {0}", email)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task<User?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)

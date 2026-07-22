@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace RentIt.Shared.Abstractions.Domain;
 
 /// <summary>
@@ -7,6 +9,7 @@ namespace RentIt.Shared.Abstractions.Domain;
 public interface IAggregateRoot<TId> : IEntity<TId>
 {
     IReadOnlyCollection<IDomainEvent> DomainEvents { get; }
+    [Timestamp]
     byte[] RowVersion { get; set; }
     void ClearDomainEvents();
 }

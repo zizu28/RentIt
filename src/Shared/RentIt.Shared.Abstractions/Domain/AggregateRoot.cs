@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace RentIt.Shared.Abstractions.Domain;
 
 /// <summary>
@@ -11,6 +13,7 @@ public abstract class AggregateRoot<TId> : Entity<TId>, IAggregateRoot<TId>
 
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
     
+    [Timestamp]
     public byte[] RowVersion { get; set; } = null!;
 
     protected AggregateRoot()
