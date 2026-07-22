@@ -71,6 +71,79 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory) : Contr
         return Ok(new { message = "Logged out successfully" });
     }
 
+    [HttpGet("challenge/{provider}")]
+    public IActionResult Challenge(string provider)
+    {
+        var redirectUrl = Url.Action(nameof(Callback));
+        var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+        return Challenge(properties, provider);
+    }
+
+    [HttpGet("callback")]
+    public async Task<IActionResult> Callback(CancellationToken cancellationToken)
+    {
+        var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        if (!result.Succeeded || result.Principal == null)
+            return Redirect("https://localhost:7180/login?error=auth_failed");
+
+        var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
+        var name = result.Principal.FindFirst(ClaimTypes.Name)?.Value;
+        
+        if (string.IsNullOrEmpty(email))
+            return Redirect("https://localhost:7180/login?error=email_missing");
+
+        var firstName = name?.Split(' ').FirstOrDefault() ?? "";
+        var lastName = name?.Split(' ').LastOrDefault() ?? "";
+        
+        var provider = result.Principal.Identity?.AuthenticationType ?? "Unknown";
+        var providerKey = result.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+
+        var socialLoginRequest = new
+        {
+            Email = email,
+            Provider = provider,
+            ProviderKey = providerKey,
+            FirstName = firstName,
+            LastName = lastName
+        };
+
+        var client = _httpClientFactory.CreateClient("Gateway");
+        var response = await client.PostAsJsonAsync("/identity/auth/social-login", socialLoginRequest, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            return Redirect("https://localhost:7180/login?error=server_error");
+
+        var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>(cancellationToken: cancellationToken);
+        
+        if (loginResponse == null)
+            return Redirect("https://localhost:7180/login?error=invalid_response");
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, loginResponse.User.Id.ToString()),
+            new Claim(ClaimTypes.Email, loginResponse.User.Email),
+            new Claim(ClaimTypes.Role, loginResponse.User.Role)
+        };
+
+        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var authProperties = new AuthenticationProperties
+        {
+            IsPersistent = true,
+            ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1)
+        };
+        
+        authProperties.StoreTokens([
+            new AuthenticationToken { Name = "access-token", Value = loginResponse.AccessToken }
+        ]);
+
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(claimsIdentity),
+            authProperties);
+
+        return Redirect("https://localhost:7180/");
+    }
+
     [HttpGet("user")]
     public IActionResult GetCurrentUser()
     {

@@ -9,7 +9,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddHttpClient("Gateway", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7150"); 
+    client.BaseAddress = new Uri("https://localhost:7262"); 
     client.DefaultRequestHeaders.Add("X-Client-Id", "BFF");
 });
 
@@ -36,6 +36,21 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
+})
+.AddGoogle(options =>
+{
+    options.ClientId = "placeholder-google-client-id";
+    options.ClientSecret = "placeholder-google-client-secret";
+})
+.AddFacebook(options =>
+{
+    options.AppId = "placeholder-facebook-app-id";
+    options.AppSecret = "placeholder-facebook-app-secret";
+})
+.AddMicrosoftAccount(options =>
+{
+    options.ClientId = "placeholder-microsoft-client-id";
+    options.ClientSecret = "placeholder-microsoft-client-secret";
 });
 
 builder.Services.AddReverseProxy()
@@ -89,7 +104,7 @@ static ClusterConfig[] GetClusters()
             ClusterId = "GatewayCluster",
             Destinations = new Dictionary<string, DestinationConfig>
             {
-                { "Gateway", new DestinationConfig { Address = "https://localhost:7150" } }
+                { "Gateway", new DestinationConfig { Address = "https://localhost:7262" } }
             }
         }
     };

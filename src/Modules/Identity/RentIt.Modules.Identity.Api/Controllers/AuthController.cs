@@ -41,4 +41,14 @@ public sealed class AuthController(ISender sender) : ControllerBase
             ? Ok(result.Value)
             : BadRequest(new { error = result.Error.Message });
     }
+
+    [HttpPost("social-login")]
+    public async Task<IActionResult> SocialLogin([FromBody] SocialLoginCommand command, CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(command, cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : BadRequest(new { error = result.Error.Message });
+    }
 }

@@ -6,6 +6,7 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <LangVersion>latest</LangVersion>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);IDX00001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

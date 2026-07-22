@@ -1,14 +1,22 @@
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Components;
 using RentIt.Shared.DTOs.Identity;
 
 namespace RentIt.Client.Web.Auth;
 
 public class AuthService(
     HttpClient httpClient, 
-    BffAuthenticationStateProvider authenticationStateProvider) : IAuthService
+    BffAuthenticationStateProvider authenticationStateProvider,
+    NavigationManager navigationManager) : IAuthService
 {
     private readonly HttpClient _httpClient = httpClient;
     private readonly BffAuthenticationStateProvider _authenticationStateProvider = authenticationStateProvider;
+    private readonly NavigationManager _navigationManager = navigationManager;
+
+    public void InitiateSocialLogin(string provider)
+    {
+        _navigationManager.NavigateTo($"https://localhost:7150/bff/auth/challenge/{provider}", forceLoad: true);
+    }
 
     public async Task<bool> LoginAsync(LoginRequest request)
     {
