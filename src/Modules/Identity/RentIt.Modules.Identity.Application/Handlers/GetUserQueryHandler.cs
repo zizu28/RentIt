@@ -2,7 +2,7 @@ using MediatR;
 using RentIt.Modules.Identity.Application.Queries;
 using RentIt.Modules.Identity.Domain.Repositories;
 using RentIt.Shared.Abstractions.Results;
-using RentIt.Shared.Contracts.Identity;
+using RentIt.Shared.DTOs.Identity;
 
 namespace RentIt.Modules.Identity.Application.Handlers;
 

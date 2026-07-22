@@ -2,7 +2,7 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using RentIt.Modules.Identity.Application.Commands;
-using RentIt.Shared.Contracts.Identity;
+using RentIt.Shared.DTOs.Identity;
 
 namespace RentIt.Modules.Identity.Api.Controllers;
 

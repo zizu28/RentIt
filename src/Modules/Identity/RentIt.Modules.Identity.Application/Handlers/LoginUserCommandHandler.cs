@@ -5,7 +5,7 @@ using RentIt.Modules.Identity.Domain.Enums;
 using RentIt.Modules.Identity.Domain.Repositories;
 using RentIt.Shared.Abstractions.Persistence;
 using RentIt.Shared.Abstractions.Results;
-using RentIt.Shared.Contracts.Identity;
+using RentIt.Shared.DTOs.Identity;
 
 namespace RentIt.Modules.Identity.Application.Handlers;
 

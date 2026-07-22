@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\RentIt.Shared.Contracts\RentIt.Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\Shared\RentIt.Shared.DTOs\RentIt.Shared.DTOs.csproj" />
   </ItemGroup>
 
 </Project>

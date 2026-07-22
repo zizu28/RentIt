@@ -1,6 +1,6 @@
 using MediatR;
 using RentIt.Shared.Abstractions.Results;
-using RentIt.Shared.Contracts.Identity;
+using RentIt.Shared.DTOs.Identity;
 
 namespace RentIt.Modules.Identity.Application.Queries;
 

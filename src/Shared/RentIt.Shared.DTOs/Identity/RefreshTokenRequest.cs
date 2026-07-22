@@ -1,4 +1,4 @@
-namespace RentIt.Shared.Contracts.Identity;
+namespace RentIt.Shared.DTOs.Identity;
 
 /// <summary>
 /// Refresh token request

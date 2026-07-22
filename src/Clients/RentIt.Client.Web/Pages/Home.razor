@@ -1,0 +1,86 @@
+@page "/"
+@using RentIt.Shared.DTOs.Properties
+@using RentIt.Client.Web.Services
+@inject IPropertyService PropertyService
+@inject NavigationManager Navigation
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mb-16">
+    @* Hero Section *@
+    <MudPaper Class="pa-16 ma-2 d-flex flex-column align-center justify-center mud-theme-primary rounded-xl overflow-hidden position-relative" Elevation="3">
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&q=80&w=2000') center/cover;"></div>
+        <div style="z-index: 1; text-align: center;" class="white-text">
+            <MudText Typo="Typo.h2" Style="font-weight: 700; color: white;" Class="mb-4">Find Your Perfect Stay</MudText>
+            <MudText Typo="Typo.h5" Style="color: white;" Class="mb-8">Discover luxury villas, cozy cabins, and city lofts.</MudText>
+            
+            <MudPaper Class="d-flex align-center pa-2 rounded-lg" Style="max-width: 600px; margin: 0 auto; width: 100%;" Elevation="4">
+                <MudTextField T="string" Placeholder="Where are you going?" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.LocationOn" Class="mr-2 flex-grow-1" Margin="Margin.Dense" />
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Large" Class="px-8 rounded-lg">Search</MudButton>
+            </MudPaper>
+        </div>
+    </MudPaper>
+
+    @* Properties Grid *@
+    <MudText Typo="Typo.h4" Style="font-weight: 700;" Class="mt-12 mb-6">Featured Properties</MudText>
+
+    @if (_properties == null)
+    {
+        <MudGrid>
+            @for (int i = 0; i < 3; i++)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="2" Class="rounded-lg">
+                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="250px" />
+                        <MudCardContent>
+                            <MudSkeleton Width="80%" Height="24px" Class="mb-2" />
+                            <MudSkeleton Width="40%" Height="20px" Class="mb-2" />
+                            <MudSkeleton Width="100%" Height="60px" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var property in _properties)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="2" Class="rounded-lg property-card h-100 d-flex flex-column" @onclick="() => NavigateToProperty(property.Id)">
+                        <MudCardMedia Image="@GetImageUrl(property)" Height="250" />
+                        <MudCardContent Class="flex-grow-1">
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <MudText Typo="Typo.h6" Style="font-weight: 600;">@property.Title</MudText>
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" Class="mr-1" />
+                                    <MudText Typo="Typo.body2">@property.Rating</MudText>
+                                </div>
+                            </div>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                                <MudIcon Icon="@Icons.Material.Outlined.LocationOn" Size="Size.Small" Class="mr-1" Style="vertical-align: text-bottom;" />
+                                @property.Location
+                            </MudText>
+                            <MudText Typo="Typo.body1" Style="font-weight: 700;">$@property.PricePerNight <span style="font-weight: 400; color: gray; font-size: 0.9em;">/ night</span></MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private IEnumerable<PropertyDto>? _properties;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _properties = await PropertyService.GetAllPropertiesAsync();
+    }
+
+    private string GetImageUrl(PropertyDto property) => property.ImageUrls.FirstOrDefault() ?? string.Empty;
+
+    private void NavigateToProperty(Guid id)
+    {
+        Navigation.NavigateTo($"/properties/{id}");
+    }
+}

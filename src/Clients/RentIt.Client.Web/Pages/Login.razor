@@ -1,0 +1,107 @@
+@page "/login"
+@using RentIt.Client.Web.Auth
+@using RentIt.Shared.DTOs.Identity
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudPaper Class="pa-8">
+        <MudText Typo="Typo.h5" Class="mb-4">Login</MudText>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4">@_errorMessage</MudAlert>
+        }
+
+        <EditForm Model="@_loginRequest" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            
+            <MudTextField @bind-Value="_loginRequest.Email" 
+                          Label="Email" 
+                          Variant="Variant.Outlined" 
+                          For="@(() => _loginRequest.Email)" 
+                          Class="mb-4" />
+                          
+            <MudTextField @bind-Value="_loginRequest.Password" 
+                          Label="Password" 
+                          Variant="Variant.Outlined" 
+                          InputType="InputType.Password" 
+                          For="@(() => _loginRequest.Password)" 
+                          Class="mb-6" />
+                          
+            <MudButton ButtonType="ButtonType.Submit" 
+                       Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       FullWidth="true" 
+                       Disabled="@_isSubmitting">
+                @if (_isSubmitting)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Logging in...</MudText>
+                }
+                else
+                {
+                    <MudText>Login</MudText>
+                }
+            </MudButton>
+        </EditForm>
+
+        <div class="d-flex align-center justify-center my-6">
+            <MudDivider Class="flex-grow-1" />
+            <MudText Typo="Typo.body2" Class="mx-4 text-center" Color="Color.Secondary">OR</MudText>
+            <MudDivider Class="flex-grow-1" />
+        </div>
+
+        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-3 d-flex justify-start px-4 py-2" Style="border-color: #db4437; color: #db4437; border-width: 2px;">
+            <MudIcon Icon="@Icons.Custom.Brands.Google" Class="mr-3" />
+            Continue with Google
+        </MudButton>
+        
+        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-3 d-flex justify-start px-4 py-2" Style="border-color: #4267B2; color: #4267B2; border-width: 2px;">
+            <MudIcon Icon="@Icons.Custom.Brands.Facebook" Class="mr-3" />
+            Continue with Facebook
+        </MudButton>
+        
+        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-4 d-flex justify-start px-4 py-2" Style="border-color: #00a4ef; color: #00a4ef; border-width: 2px;">
+            <MudIcon Icon="@Icons.Custom.Brands.Microsoft" Class="mr-3" />
+            Continue with Microsoft
+        </MudButton>
+        
+        <div class="text-center mt-4">
+            <MudText Typo="Typo.body2">Don't have an account? <MudLink Href="/register" Color="Color.Primary" Style="font-weight: 600;">Sign up</MudLink></MudText>
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private LoginRequest _loginRequest = new();
+    private string _errorMessage = string.Empty;
+    private bool _isSubmitting;
+
+    private async Task HandleLogin()
+    {
+        _isSubmitting = true;
+        _errorMessage = string.Empty;
+
+        try
+        {
+            var success = await AuthService.LoginAsync(_loginRequest);
+            if (success)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                _errorMessage = "Invalid email or password.";
+            }
+        }
+        catch (Exception)
+        {
+            _errorMessage = "An error occurred during login. Please try again.";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

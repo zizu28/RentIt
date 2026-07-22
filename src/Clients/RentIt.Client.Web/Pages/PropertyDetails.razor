@@ -1,0 +1,146 @@
+@page "/properties/{Id:guid}"
+@using RentIt.Shared.DTOs.Properties
+@using RentIt.Client.Web.Services
+@inject IPropertyService PropertyService
+@inject IBookingService BookingService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-8">
+    @if (_property == null)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="d-flex mx-auto mt-16" />
+    }
+    else
+    {
+        <MudText Typo="Typo.h3" Style="font-weight: 700;" Class="mb-2">@_property.Title</MudText>
+        <div class="d-flex align-center mb-6">
+            <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" Class="mr-1" />
+            <MudText Typo="Typo.subtitle1" Class="mr-4" Style="font-weight: 600;">@_property.Rating</MudText>
+            <MudText Typo="Typo.subtitle1" Color="Color.Secondary" Class="mr-4">·</MudText>
+            <MudIcon Icon="@Icons.Material.Outlined.LocationOn" Size="Size.Small" Class="mr-1" />
+            <MudText Typo="Typo.subtitle1" Style="text-decoration: underline;">@_property.Location</MudText>
+        </div>
+
+        @* Image Gallery (Simplified as single large image for now) *@
+        <div class="rounded-xl overflow-hidden mb-8" style="height: 500px; width: 100%;">
+            <MudImage Src="@GetImageUrl()" Style="object-fit: cover; width: 100%; height: 100%;" />
+        </div>
+
+        <MudGrid>
+            <MudItem xs="12" md="8">
+                <MudText Typo="Typo.h5" Style="font-weight: 700;" Class="mb-2">Entire home hosted by RentIt</MudText>
+                <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">@_property.MaxGuests guests · Entire place</MudText>
+                
+                <MudDivider Class="mb-6" />
+                
+                <MudText Typo="Typo.body1" Class="mb-6" Style="line-height: 1.8;">@_property.Description</MudText>
+
+                <MudDivider Class="mb-6" />
+
+                <MudText Typo="Typo.h5" Style="font-weight: 700;" Class="mb-4">What this place offers</MudText>
+                <MudGrid>
+                    @foreach (var amenity in _property.Amenities)
+                    {
+                        <MudItem xs="6" Class="d-flex align-center">
+                            <MudIcon Icon="@Icons.Material.Outlined.CheckCircleOutline" Class="mr-3" Color="Color.Primary" />
+                            <MudText Typo="Typo.body1">@amenity</MudText>
+                        </MudItem>
+                    }
+                </MudGrid>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudPaper Class="pa-6 rounded-xl booking-widget" Elevation="4">
+                    <div class="d-flex align-end mb-6">
+                        <MudText Typo="Typo.h4" Style="font-weight: 700;" Class="mr-2">$@_property.PricePerNight</MudText>
+                        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="pb-1">night</MudText>
+                    </div>
+
+                    <MudDateRangePicker @bind-DateRange="_dateRange" Label="Check-in - Check-out" Variant="Variant.Outlined" Class="mb-4" Margin="Margin.Dense" />
+                    
+                    <MudSelect T="int" Label="Guests" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="mb-6" Margin="Margin.Dense">
+                        @for (int i = 1; i <= _property.MaxGuests; i++)
+                        {
+                            <MudSelectItem Value="@i">@i guest@(i > 1 ? "s" : "")</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Large" FullWidth="true" Class="rounded-lg py-3 mb-4" OnClick="ReserveAsync" Disabled="@_isBooking">
+                        @if (_isBooking)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            <MudText Class="ms-2">Processing</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Reserve</MudText>
+                        }
+                    </MudButton>
+
+                    @if (_dateRange?.Start != null && _dateRange?.End != null)
+                    {
+                        var nights = (_dateRange.End.Value - _dateRange.Start.Value).Days;
+                        if (nights > 0)
+                        {
+                            <div class="d-flex justify-space-between mb-2">
+                                <MudText Typo="Typo.body1" Color="Color.Secondary">$@_property.PricePerNight x @nights nights</MudText>
+                                <MudText Typo="Typo.body1">$@(_property.PricePerNight * nights)</MudText>
+                            </div>
+                            <MudDivider Class="my-4" />
+                            <div class="d-flex justify-space-between">
+                                <MudText Typo="Typo.h6" Style="font-weight: 700;">Total</MudText>
+                                <MudText Typo="Typo.h6" Style="font-weight: 700;">$@(_property.PricePerNight * nights)</MudText>
+                            </div>
+                        }
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private PropertyDto? _property;
+    private MudBlazor.DateRange? _dateRange;
+    private bool _isBooking;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _property = await PropertyService.GetPropertyByIdAsync(Id);
+    }
+
+    private string GetImageUrl() => _property?.ImageUrls.FirstOrDefault() ?? string.Empty;
+
+    private async Task ReserveAsync()
+    {
+        if (_dateRange?.Start == null || _dateRange?.End == null)
+        {
+            Snackbar.Add("Please select check-in and check-out dates.", Severity.Warning);
+            return;
+        }
+
+        if ((_dateRange.End.Value - _dateRange.Start.Value).Days <= 0)
+        {
+             Snackbar.Add("Check-out date must be after check-in date.", Severity.Warning);
+             return;
+        }
+
+        try
+        {
+            _isBooking = true;
+            await BookingService.CreateBookingAsync(Id, DateOnly.FromDateTime(_dateRange.Start.Value), DateOnly.FromDateTime(_dateRange.End.Value));
+            Snackbar.Add("Booking confirmed successfully!", Severity.Success);
+            Navigation.NavigateTo("/bookings");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Failed to create booking: " + ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _isBooking = false;
+        }
+    }
+}

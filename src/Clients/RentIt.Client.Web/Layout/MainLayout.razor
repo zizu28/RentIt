@@ -1,0 +1,73 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
+@using RentIt.Client.Web.Auth
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="_currentTheme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Color="Color.Surface">
+        <MudIcon Icon="@Icons.Material.Filled.HomeWork" Color="Color.Primary" Size="Size.Large" Class="mr-2" />
+        <MudText Typo="Typo.h5" Color="Color.Primary" Style="font-weight: 700;">RentIt</MudText>
+        <MudSpacer />
+        
+        <MudButton Href="/" Class="mr-4" Variant="Variant.Text">Home</MudButton>
+        <AuthorizeView>
+            <Authorized>
+                <MudButton Href="/bookings" Class="mr-4" Variant="Variant.Text">My Bookings</MudButton>
+                <MudMenu Label="@context.User.Identity?.Name" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                    <MudMenuItem OnClick="Logout">Logout</MudMenuItem>
+                </MudMenu>
+            </Authorized>
+            <NotAuthorized>
+                <MudButton Color="Color.Primary" Variant="Variant.Outlined" Href="/login" Class="mr-2">Login</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" Href="/register">Register</MudButton>
+            </NotAuthorized>
+        </AuthorizeView>
+    </MudAppBar>
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-8">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    [Inject] private IAuthService AuthService { get; set; } = default!;
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    private MudTheme _currentTheme = new MudTheme()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#5E35B1",
+            Secondary = "#FF4081",
+            AppbarBackground = "#ffffff",
+            Background = "#f9fafb",
+            Surface = "#ffffff",
+            DrawerBackground = "#ffffff",
+            TextPrimary = "#111827",
+            TextSecondary = "#4b5563"
+        },
+        Typography = new Typography()
+        {
+            Default = new Default() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" } },
+            H1 = new H1() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 700 },
+            H2 = new H2() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 700 },
+            H3 = new H3() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 600 },
+            H4 = new H4() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 600 },
+            H5 = new H5() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 500 },
+            H6 = new H6() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 500 },
+            Button = new Button() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 600 }
+        }
+    };
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+}

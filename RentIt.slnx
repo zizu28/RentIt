@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Clients/">
+    <Project Path="src/Clients/RentIt.Client.Web/RentIt.Client.Web.csproj" />
+  </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/ApiGateway/">
     <Project Path="src/ApiGateway/RentIt.ApiGateway/RentIt.ApiGateway.csproj" />
@@ -61,6 +64,7 @@
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/RentIt.Shared.Abstractions/RentIt.Shared.Abstractions.csproj" />
     <Project Path="src/Shared/RentIt.Shared.Contracts/RentIt.Shared.Contracts.csproj" />
+    <Project Path="src/Shared/RentIt.Shared.DTOs/RentIt.Shared.DTOs.csproj" />
     <Project Path="src/Shared/RentIt.Shared.Infrastructure/RentIt.Shared.Infrastructure.csproj" />
     <Project Path="src/Shared/RentIt.Shared.Kernel/RentIt.Shared.Kernel.csproj" />
   </Folder>

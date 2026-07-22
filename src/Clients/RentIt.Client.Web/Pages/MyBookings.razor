@@ -1,0 +1,73 @@
+@page "/bookings"
+@using RentIt.Shared.DTOs.Bookings
+@using RentIt.Client.Web.Services
+@inject IBookingService BookingService
+@inject NavigationManager Navigation
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-8">
+    <MudText Typo="Typo.h3" Style="font-weight: 700;" Class="mb-8">My Bookings</MudText>
+
+    @if (_bookings == null)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="d-flex mx-auto mt-16" />
+    }
+    else if (!_bookings.Any())
+    {
+        <MudPaper Class="pa-16 text-center rounded-xl" Elevation="2">
+            <MudIcon Icon="@Icons.Material.Filled.FlightTakeoff" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 4rem;" />
+            <MudText Typo="Typo.h5" Style="font-weight: 600;" Class="mb-2">No trips booked... yet!</MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">Time to dust off your bags and start planning your next adventure.</MudText>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" Class="rounded-lg px-8" Href="/">Start searching</MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var booking in _bookings.OrderBy(b => b.StartDate))
+            {
+                <MudItem xs="12" md="6" lg="4">
+                    <MudCard Elevation="3" Class="rounded-xl h-100 d-flex flex-column" Style="overflow: hidden;">
+                        <MudCardMedia Image="@booking.PropertyImageUrl" Height="200" />
+                        <MudCardContent Class="flex-grow-1">
+                            <div class="d-flex justify-space-between align-start mb-2">
+                                <MudText Typo="Typo.h6" Style="font-weight: 600; line-height: 1.2;">@booking.PropertyTitle</MudText>
+                                <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Outlined">@booking.Status</MudChip>
+                            </div>
+                            <MudDivider Class="my-4" />
+                            
+                            <div class="d-flex align-center mb-2">
+                                <MudIcon Icon="@Icons.Material.Outlined.DateRange" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">
+                                    @booking.StartDate.ToString("MMM dd, yyyy") - @booking.EndDate.ToString("MMM dd, yyyy")
+                                </MudText>
+                            </div>
+                            
+                            <div class="d-flex align-center">
+                                <MudIcon Icon="@Icons.Material.Outlined.Payments" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
+                                <MudText Typo="Typo.body2" Style="font-weight: 500;">$@booking.TotalPrice total</MudText>
+                            </div>
+                        </MudCardContent>
+                        <MudCardActions Class="pa-4 pt-0">
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" OnClick="() => NavigateToProperty(booking.PropertyId)">View Property</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private IEnumerable<BookingDto>? _bookings;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _bookings = await BookingService.GetMyBookingsAsync();
+    }
+
+    private void NavigateToProperty(Guid id)
+    {
+        Navigation.NavigateTo($"/properties/{id}");
+    }
+}

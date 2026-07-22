@@ -56,7 +56,20 @@ builder.Services.AddReverseProxy()
         });
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("wasm", policy =>
+    {
+        policy.WithOrigins("https://localhost:7180", "http://localhost:5203")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
+
+app.UseCors("wasm");
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

@@ -6,7 +6,7 @@ using RentIt.Modules.Identity.Domain.ValueObjects;
 using RentIt.Modules.Identity.Application.Abstractions;
 using RentIt.Shared.Abstractions.Persistence;
 using RentIt.Shared.Abstractions.Results;
-using RentIt.Shared.Contracts.Identity;
+using RentIt.Shared.DTOs.Identity;
 
 using RentIt.Shared.Abstractions.BackgroundJobs;
 using RentIt.Shared.Abstractions.Email;

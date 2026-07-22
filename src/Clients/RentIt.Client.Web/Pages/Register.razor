@@ -1,0 +1,124 @@
+@page "/register"
+@using RentIt.Client.Web.Auth
+@using RentIt.Shared.DTOs.Identity
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8 mb-16">
+    <MudPaper Class="pa-8">
+        <MudText Typo="Typo.h5" Class="mb-4">Create an Account</MudText>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4">@_errorMessage</MudAlert>
+        }
+
+        <EditForm Model="@_registerRequest" OnValidSubmit="HandleRegister">
+            <DataAnnotationsValidator />
+            
+            <MudGrid>
+                <MudItem xs="12" sm="6" Class="pb-0">
+                    <MudTextField @bind-Value="_registerRequest.FirstName" 
+                                  Label="First Name" 
+                                  Variant="Variant.Outlined" 
+                                  For="@(() => _registerRequest.FirstName)" 
+                                  Class="mb-4" />
+                </MudItem>
+                <MudItem xs="12" sm="6" Class="pb-0">
+                    <MudTextField @bind-Value="_registerRequest.LastName" 
+                                  Label="Last Name" 
+                                  Variant="Variant.Outlined" 
+                                  For="@(() => _registerRequest.LastName)" 
+                                  Class="mb-4" />
+                </MudItem>
+            </MudGrid>
+            
+            <MudTextField @bind-Value="_registerRequest.Email" 
+                          Label="Email" 
+                          Variant="Variant.Outlined" 
+                          For="@(() => _registerRequest.Email)" 
+                          Class="mb-4" />
+
+            <MudTextField @bind-Value="_registerRequest.PhoneNumber" 
+                          Label="Phone Number (Optional)" 
+                          Variant="Variant.Outlined" 
+                          For="@(() => _registerRequest.PhoneNumber)" 
+                          Class="mb-4" />
+                          
+            <MudTextField @bind-Value="_registerRequest.Password" 
+                          Label="Password" 
+                          Variant="Variant.Outlined" 
+                          InputType="InputType.Password" 
+                          For="@(() => _registerRequest.Password)" 
+                          Class="mb-6" />
+                          
+            <MudButton ButtonType="ButtonType.Submit" 
+                       Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       FullWidth="true" 
+                       Disabled="@_isSubmitting">
+                @if (_isSubmitting)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Registering...</MudText>
+                }
+                else
+                {
+                    <MudText>Sign Up</MudText>
+                }
+            </MudButton>
+        </EditForm>
+
+        <div class="d-flex align-center justify-center my-6">
+            <MudDivider Class="flex-grow-1" />
+            <MudText Typo="Typo.body2" Class="mx-4 text-center" Color="Color.Secondary">OR</MudText>
+            <MudDivider Class="flex-grow-1" />
+        </div>
+
+        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-3 d-flex justify-start px-4 py-2" Style="border-color: #db4437; color: #db4437; border-width: 2px;">
+            <MudIcon Icon="@Icons.Custom.Brands.Google" Class="mr-3" />
+            Sign up with Google
+        </MudButton>
+        
+        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-3 d-flex justify-start px-4 py-2" Style="border-color: #4267B2; color: #4267B2; border-width: 2px;">
+            <MudIcon Icon="@Icons.Custom.Brands.Facebook" Class="mr-3" />
+            Sign up with Facebook
+        </MudButton>
+        
+        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-4 d-flex justify-start px-4 py-2" Style="border-color: #00a4ef; color: #00a4ef; border-width: 2px;">
+            <MudIcon Icon="@Icons.Custom.Brands.Microsoft" Class="mr-3" />
+            Sign up with Microsoft
+        </MudButton>
+        
+        <div class="text-center mt-4">
+            <MudText Typo="Typo.body2">Already have an account? <MudLink Href="/login" Color="Color.Primary" Style="font-weight: 600;">Login</MudLink></MudText>
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private RegisterUserRequest _registerRequest = new() { Role = "User" };
+    private string _errorMessage = string.Empty;
+    private bool _isSubmitting;
+
+    private async Task HandleRegister()
+    {
+        _isSubmitting = true;
+        _errorMessage = string.Empty;
+
+        try
+        {
+            // Placeholder: Call AuthService.RegisterAsync(_registerRequest) once implemented
+            await Task.Delay(500); // Simulate network request
+            Navigation.NavigateTo("/login");
+        }
+        catch (Exception)
+        {
+            _errorMessage = "An error occurred during registration. Please try again.";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

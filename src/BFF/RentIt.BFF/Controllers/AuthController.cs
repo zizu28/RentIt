@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using RentIt.Shared.Contracts.Identity;
+using RentIt.Shared.DTOs.Identity;
 
 namespace RentIt.BFF.Controllers;
 
@@ -10,6 +10,7 @@ namespace RentIt.BFF.Controllers;
 [Route("bff/auth")]
 public sealed class AuthController(IHttpClientFactory httpClientFactory) : ControllerBase
 {
+#pragma warning disable
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
     [HttpPost("login")]
