@@ -9,6 +9,7 @@ using RentIt.Modules.Identity.Application.Abstractions;
 using RentIt.Modules.Identity.Infrastructure.Services;
 using RentIt.Modules.Identity.Domain.Repositories;
 using RentIt.Modules.Identity.Infrastructure.Repositories;
+using RentIt.Modules.Identity.Infrastructure.Services.SocialAuth;
 
 namespace RentIt.Modules.Identity.Infrastructure;
 
@@ -39,6 +40,10 @@ public static class IdentityInfrastructureServiceRegistration
 
         // Event bus — dispatches integration events to handlers (in-memory for modular monolith)
         services.AddScoped<IEventBus, InMemoryEventBus>();
+
+        // Social Authentication Services
+        services.AddHttpClient<FacebookAuthService>();
+        services.AddScoped<ISocialAuthServiceFactory, SocialAuthServiceFactory>();
 
         return services;
     }

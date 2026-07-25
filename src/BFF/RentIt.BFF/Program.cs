@@ -5,6 +5,8 @@ using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var configuration = builder.Configuration;
+
 builder.Services.AddControllers();
 
 builder.Services.AddHttpClient("Gateway", client =>
@@ -37,15 +39,18 @@ builder.Services.AddAuthentication(options =>
         }
     };
 })
-.AddGoogle(options =>
+.AddGoogleOpenIdConnect(options =>
 {
-    options.ClientId = "placeholder-google-client-id";
-    options.ClientSecret = "placeholder-google-client-secret";
+    options.ClientId = configuration["Authentication:Google:ClientId"]!;
+    options.ClientSecret = configuration["Authentication:Google:ClientSecret"]!;
 })
 .AddFacebook(options =>
 {
-    options.AppId = "placeholder-facebook-app-id";
-    options.AppSecret = "placeholder-facebook-app-secret";
+    options.AppId = configuration["Authentication:Facebook:AppId"]!;
+    options.AppSecret = configuration["Authentication:Facebook:AppSecret"]!;
+    options.AccessDeniedPath = "/AccessDeniedPathInfo";
+    options.CallbackPath = "/signin-facebook";
+    options.SaveTokens = true;
 })
 .AddMicrosoftAccount(options =>
 {

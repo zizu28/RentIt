@@ -7,6 +7,7 @@
     <PackageVersion Include="BCrypt.Net-Next" Version="4.2.0" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageVersion Include="Google.Apis.Auth.AspNetCore3" Version="1.75.0" />
     <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.24" />
     <PackageVersion Include="Hangfire.SqlServer" Version="1.8.24" />
     <PackageVersion Include="MediatR" Version="14.2.0" />
@@ -24,7 +25,7 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.20.0" />
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="Ocelot" Version="24.1.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.20.0" />
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />

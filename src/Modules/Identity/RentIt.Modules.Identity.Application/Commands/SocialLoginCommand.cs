@@ -8,9 +8,6 @@ namespace RentIt.Modules.Identity.Application.Commands;
 /// Command to login a user via external social provider
 /// </summary>
 public sealed record SocialLoginCommand(
-    string Email,
     string Provider,
-    string ProviderKey,
-    string? FirstName,
-    string? LastName
+    string AccessToken
 ) : IRequest<Result<LoginResponse>>;

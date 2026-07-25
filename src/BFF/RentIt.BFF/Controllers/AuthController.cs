@@ -86,25 +86,17 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory) : Contr
         if (!result.Succeeded || result.Principal == null)
             return Redirect("https://localhost:7180/login?error=auth_failed");
 
-        var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
-        var name = result.Principal.FindFirst(ClaimTypes.Name)?.Value;
-        
-        if (string.IsNullOrEmpty(email))
-            return Redirect("https://localhost:7180/login?error=email_missing");
 
-        var firstName = name?.Split(' ').FirstOrDefault() ?? "";
-        var lastName = name?.Split(' ').LastOrDefault() ?? "";
-        
         var provider = result.Principal.Identity?.AuthenticationType ?? "Unknown";
-        var providerKey = result.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+        var accessToken = result.Properties?.GetTokenValue("access_token");
+
+        if (string.IsNullOrEmpty(accessToken))
+            return Redirect("https://localhost:7180/login?error=token_missing");
 
         var socialLoginRequest = new
         {
-            Email = email,
             Provider = provider,
-            ProviderKey = providerKey,
-            FirstName = firstName,
-            LastName = lastName
+            AccessToken = accessToken
         };
 
         var client = _httpClientFactory.CreateClient("Gateway");
@@ -150,11 +142,12 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory) : Contr
         if (!User.Identity?.IsAuthenticated ?? true)
             return Unauthorized();
 
-        return Ok(new
+        var returnedUser = new
         {
             Id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
             Email = User.FindFirst(ClaimTypes.Email)?.Value,
             Role = User.FindFirst(ClaimTypes.Role)?.Value
-        });
+        };
+        return Ok(new { user = returnedUser });
     }
 }

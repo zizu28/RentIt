@@ -3,6 +3,8 @@
 @using RentIt.Shared.DTOs.Identity
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@inject IHttpClientFactory httpClientFactory
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
     <MudPaper Class="pa-8">
@@ -68,7 +70,9 @@
         </MudButton>
         
         <div class="text-center mt-4">
-            <MudText Typo="Typo.body2">Don't have an account? <MudLink Href="/register" Color="Color.Primary" Style="font-weight: 600;">Sign up</MudLink></MudText>
+            <MudText Typo="Typo.body2">Don't have an account?
+                <MudLink Href="/register" Color="Color.Primary" Style="font-weight: 600;">Sign up</MudLink>
+            </MudText>
         </div>
     </MudPaper>
 </MudContainer>
@@ -77,6 +81,7 @@
     private LoginRequest _loginRequest = new();
     private string _errorMessage = string.Empty;
     private bool _isSubmitting;
+
 
     private async Task HandleLogin()
     {

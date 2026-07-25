@@ -15,7 +15,7 @@ public class AuthService(
 
     public void InitiateSocialLogin(string provider)
     {
-        _navigationManager.NavigateTo($"https://localhost:7150/bff/auth/challenge/{provider}", forceLoad: true);
+        _navigationManager.NavigateTo($"{_httpClient.BaseAddress}bff/auth/challenge/{provider}", forceLoad: true);
     }
 
     public async Task<bool> LoginAsync(LoginRequest request)
