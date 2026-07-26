@@ -7,6 +7,7 @@
 @inject ISnackbar Snackbar
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="my-8">
+    <MudBreadcrumbs Items="_breadcrumbItems" Class="px-0 pb-4"></MudBreadcrumbs>
     @if (_property == null)
     {
         <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="d-flex mx-auto mt-16" />
@@ -105,10 +106,18 @@
     private PropertyDto? _property;
     private MudBlazor.DateRange? _dateRange;
     private bool _isBooking;
+    private List<BreadcrumbItem> _breadcrumbItems = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Home", href: "/")
+    };
 
     protected override async Task OnInitializedAsync()
     {
         _property = await PropertyService.GetPropertyByIdAsync(Id);
+        if (_property != null)
+        {
+            _breadcrumbItems.Add(new BreadcrumbItem(_property.Title, href: null, disabled: true));
+        }
     }
 
     private string GetImageUrl() => _property?.ImageUrls.FirstOrDefault() ?? string.Empty;

@@ -8,8 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Modules\Identity\RentIt.Modules.Identity.Application\RentIt.Modules.Identity.Application.csproj" />
-    <ProjectReference Include="..\..\Modules\Identity\RentIt.Modules.Identity.Infrastructure\RentIt.Modules.Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Identity\RentIt.Modules.Identity.Api\RentIt.Modules.Identity.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Analytics\RentIt.Modules.Analytics.Api\RentIt.Modules.Analytics.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Bookings\RentIt.Modules.Bookings.Api\RentIt.Modules.Bookings.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Messaging\RentIt.Modules.Messaging.Api\RentIt.Modules.Messaging.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Payments\RentIt.Modules.Payments.Api\RentIt.Modules.Payments.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Properties\RentIt.Modules.Properties.Api\RentIt.Modules.Properties.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Reviews\RentIt.Modules.Reviews.Api\RentIt.Modules.Reviews.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Verification\RentIt.Modules.Verification.Api\RentIt.Modules.Verification.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

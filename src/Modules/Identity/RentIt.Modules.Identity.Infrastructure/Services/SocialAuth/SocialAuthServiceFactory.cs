@@ -12,7 +12,8 @@ public class SocialAuthServiceFactory(IServiceProvider serviceProvider) : ISocia
         return provider.ToLowerInvariant() switch
         {
             "facebook" => _serviceProvider.GetRequiredService<FacebookAuthService>(),
-            // "google" => _serviceProvider.GetRequiredService<GoogleAuthService>(), // Add when implementing Google
+            "google" => _serviceProvider.GetRequiredService<GoogleAuthService>(),
+            "microsoft" => _serviceProvider.GetRequiredService<MicrosoftAuthService>(),
             _ => throw new NotSupportedException($"Social authentication provider '{provider}' is not supported.")
         };
     }

@@ -43,6 +43,8 @@ public static class IdentityInfrastructureServiceRegistration
 
         // Social Authentication Services
         services.AddHttpClient<FacebookAuthService>();
+        services.AddHttpClient<GoogleAuthService>();
+        services.AddHttpClient<MicrosoftAuthService>();
         services.AddScoped<ISocialAuthServiceFactory, SocialAuthServiceFactory>();
 
         return services;

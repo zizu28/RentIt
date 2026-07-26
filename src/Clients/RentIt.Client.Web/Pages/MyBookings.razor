@@ -6,6 +6,7 @@
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="my-8">
+    <MudBreadcrumbs Items="_breadcrumbItems" Class="px-0 pb-4"></MudBreadcrumbs>
     <MudText Typo="Typo.h3" Style="font-weight: 700;" Class="mb-8">My Bookings</MudText>
 
     @if (_bookings == null)
@@ -60,6 +61,11 @@
 
 @code {
     private IEnumerable<BookingDto>? _bookings;
+    private List<BreadcrumbItem> _breadcrumbItems = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Home", href: "/"),
+        new BreadcrumbItem("My Bookings", href: null, disabled: true)
+    };
 
     protected override async Task OnInitializedAsync()
     {

@@ -8,10 +8,11 @@ namespace RentIt.BFF.Controllers;
 
 [ApiController]
 [Route("bff/auth")]
-public sealed class AuthController(IHttpClientFactory httpClientFactory) : ControllerBase
+public sealed class AuthController(IHttpClientFactory httpClientFactory, ILogger<AuthController> logger) : ControllerBase
 {
 #pragma warning disable
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private readonly ILogger<AuthController> _logger = logger;
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
@@ -76,18 +77,21 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory) : Contr
     {
         var redirectUrl = Url.Action(nameof(Callback));
         var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+        properties.Items["provider"] = provider;
         return Challenge(properties, provider);
     }
 
     [HttpGet("callback")]
     public async Task<IActionResult> Callback(CancellationToken cancellationToken)
     {
-        var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        var result = await HttpContext.AuthenticateAsync("ExternalCookie");
         if (!result.Succeeded || result.Principal == null)
             return Redirect("https://localhost:7180/login?error=auth_failed");
 
+        // We must sign out of the external cookie so it doesn't linger
+        await HttpContext.SignOutAsync("ExternalCookie");
 
-        var provider = result.Principal.Identity?.AuthenticationType ?? "Unknown";
+        var provider = result.Properties?.Items.ContainsKey("provider") == true ? result.Properties.Items["provider"] : (result.Principal.Identity?.AuthenticationType ?? "Unknown");
         var accessToken = result.Properties?.GetTokenValue("access_token");
 
         if (string.IsNullOrEmpty(accessToken))
@@ -100,15 +104,22 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory) : Contr
         };
 
         var client = _httpClientFactory.CreateClient("Gateway");
-        var response = await client.PostAsJsonAsync("/identity/auth/social-login", socialLoginRequest, cancellationToken);
+        var response = await client.PostAsJsonAsync("/api/identity/auth/social-login", socialLoginRequest, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("Social login API call failed. Status: {StatusCode}, Body: {Body}", response.StatusCode, errorBody);
             return Redirect("https://localhost:7180/login?error=server_error");
+        }
 
         var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>(cancellationToken: cancellationToken);
         
         if (loginResponse == null)
+        {
+            _logger.LogError("Social login API call succeeded but response body was null or invalid.");
             return Redirect("https://localhost:7180/login?error=invalid_response");
+        }
 
         var claims = new List<Claim>
         {

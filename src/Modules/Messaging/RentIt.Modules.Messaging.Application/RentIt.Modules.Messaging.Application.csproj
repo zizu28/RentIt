@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\RentIt.Modules.Messaging.Domain\RentIt.Modules.Messaging.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -19,10 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RentIt.Modules.Identity.Domain\RentIt.Modules.Identity.Domain.csproj" />
     <ProjectReference Include="..\RentIt.Modules.Identity.Application\RentIt.Modules.Identity.Application.csproj" />
-    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Abstractions\RentIt.Shared.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Contracts\RentIt.Shared.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

@@ -54,17 +54,17 @@
             <MudDivider Class="flex-grow-1" />
         </div>
 
-        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-3 d-flex justify-start px-4 py-2" Style="border-color: #db4437; color: #db4437; border-width: 2px;" @onclick="@(() => AuthService.InitiateSocialLogin("Google"))">
+        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-3 d-flex justify-start px-4 py-2" Style="border-color: #db4437; color: #db4437; border-width: 2px;" @onclick="@(async () => await AuthService.InitiateSocialLogin("Google"))">
             <MudIcon Icon="@Icons.Custom.Brands.Google" Class="mr-3" />
             Continue with Google
         </MudButton>
         
-        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-3 d-flex justify-start px-4 py-2" Style="border-color: #4267B2; color: #4267B2; border-width: 2px;" @onclick="@(() => AuthService.InitiateSocialLogin("Facebook"))">
+        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-3 d-flex justify-start px-4 py-2" Style="border-color: #4267B2; color: #4267B2; border-width: 2px;" @onclick="@(async () => await AuthService.InitiateSocialLogin("Facebook"))">
             <MudIcon Icon="@Icons.Custom.Brands.Facebook" Class="mr-3" />
             Continue with Facebook
         </MudButton>
         
-        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-4 d-flex justify-start px-4 py-2" Style="border-color: #00a4ef; color: #00a4ef; border-width: 2px;" @onclick="@(() => AuthService.InitiateSocialLogin("Microsoft"))">
+        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-4 d-flex justify-start px-4 py-2" Style="border-color: #00a4ef; color: #00a4ef; border-width: 2px;" @onclick="@(async () => await AuthService.InitiateSocialLogin("Microsoft"))">
             <MudIcon Icon="@Icons.Custom.Brands.Microsoft" Class="mr-3" />
             Continue with Microsoft
         </MudButton>

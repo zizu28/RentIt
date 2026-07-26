@@ -15,6 +15,22 @@ builder.Services.AddHttpClient("Gateway", client =>
     client.DefaultRequestHeaders.Add("X-Client-Id", "BFF");
 });
 
+var customOAuthEvents = new Microsoft.AspNetCore.Authentication.OAuth.OAuthEvents
+{
+    OnRedirectToAuthorizationEndpoint = context =>
+    {
+        if (context.Request.Path.StartsWithSegments("/bff/auth/challenge"))
+        {
+            context.Response.StatusCode = StatusCodes.Status200OK;
+            context.Response.ContentType = "application/json";
+            return context.Response.WriteAsJsonAsync(new { url = context.RedirectUri });
+        }
+        
+        context.Response.Redirect(context.RedirectUri);
+        return Task.CompletedTask;
+    }
+};
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -39,23 +55,32 @@ builder.Services.AddAuthentication(options =>
         }
     };
 })
-.AddGoogleOpenIdConnect(options =>
+.AddCookie("ExternalCookie")
+.AddGoogle(options =>
 {
+    options.SignInScheme = "ExternalCookie";
     options.ClientId = configuration["Authentication:Google:ClientId"]!;
     options.ClientSecret = configuration["Authentication:Google:ClientSecret"]!;
+    options.CallbackPath = "/signin-google";
+    options.SaveTokens = true;
+    options.Events = customOAuthEvents;
 })
 .AddFacebook(options =>
 {
+    options.SignInScheme = "ExternalCookie";
     options.AppId = configuration["Authentication:Facebook:AppId"]!;
     options.AppSecret = configuration["Authentication:Facebook:AppSecret"]!;
     options.AccessDeniedPath = "/AccessDeniedPathInfo";
     options.CallbackPath = "/signin-facebook";
     options.SaveTokens = true;
+    options.Events = customOAuthEvents;
 })
 .AddMicrosoftAccount(options =>
 {
+    options.SignInScheme = "ExternalCookie";
     options.ClientId = "placeholder-microsoft-client-id";
     options.ClientSecret = "placeholder-microsoft-client-secret";
+    options.Events = customOAuthEvents;
 });
 
 builder.Services.AddReverseProxy()

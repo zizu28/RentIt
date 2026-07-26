@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\RentIt.Modules.Bookings.Application\RentIt.Modules.Bookings.Application.csproj" />
+  </ItemGroup>
+
 </Project>

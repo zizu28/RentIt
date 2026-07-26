@@ -6,4 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\RentIt.Modules.Payments.Infrastructure\RentIt.Modules.Payments.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

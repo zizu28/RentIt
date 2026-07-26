@@ -17,9 +17,11 @@ internal sealed class UserRepository(IdentityDbContext dbContext) : IUserReposit
 
     public async Task<User?> GetByIdForUpdateAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users
-            .FromSqlRaw("SELECT * FROM identity.Users WITH (UPDLOCK, ROWLOCK) WHERE Id = {0}", id)
-            .FirstOrDefaultAsync(cancellationToken);
+        var users = await _dbContext.Users
+            .FromSqlRaw("SELECT TOP(1) * FROM [identity].[Users] WITH (UPDLOCK, ROWLOCK) WHERE Id = {0}", id)
+            .ToListAsync(cancellationToken);
+            
+        return users.FirstOrDefault();
     }
 
     public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
@@ -30,9 +32,11 @@ internal sealed class UserRepository(IdentityDbContext dbContext) : IUserReposit
 
     public async Task<User?> GetByEmailForUpdateAsync(string email, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users
-            .FromSqlRaw("SELECT * FROM identity.Users WITH (UPDLOCK, ROWLOCK) WHERE Email = {0}", email)
-            .FirstOrDefaultAsync(cancellationToken);
+        var users = await _dbContext.Users
+            .FromSqlRaw("SELECT TOP(1) * FROM [identity].[Users] WITH (UPDLOCK, ROWLOCK) WHERE Email = {0}", email)
+            .ToListAsync(cancellationToken);
+            
+        return users.FirstOrDefault();
     }
 
     public async Task<User?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)

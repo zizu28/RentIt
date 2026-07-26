@@ -13,9 +13,23 @@ public class AuthService(
     private readonly BffAuthenticationStateProvider _authenticationStateProvider = authenticationStateProvider;
     private readonly NavigationManager _navigationManager = navigationManager;
 
-    public void InitiateSocialLogin(string provider)
+    public async Task InitiateSocialLogin(string provider)
     {
-        _navigationManager.NavigateTo($"{_httpClient.BaseAddress}bff/auth/challenge/{provider}", forceLoad: true);
+        var response = await _httpClient.GetAsync($"/bff/auth/challenge/{provider}");
+        
+        if (response.IsSuccessStatusCode)
+        {
+            var data = await response.Content.ReadFromJsonAsync<SocialAuthUrlResponse>();
+            if (data?.Url != null)
+            {
+                _navigationManager.NavigateTo(data.Url, forceLoad: true);
+            }
+        }
+    }
+
+    private class SocialAuthUrlResponse
+    {
+        public string Url { get; set; } = string.Empty;
     }
 
     public async Task<bool> LoginAsync(LoginRequest request)

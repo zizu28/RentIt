@@ -5,5 +5,5 @@ public interface IAuthService
 {
     Task<bool> LoginAsync(LoginRequest request);
     Task LogoutAsync();
-    void InitiateSocialLogin(string provider);
+    Task InitiateSocialLogin(string provider);
 }

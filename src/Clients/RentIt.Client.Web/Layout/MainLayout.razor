@@ -6,6 +6,7 @@
 <MudThemeProvider Theme="_currentTheme" />
 <MudDialogProvider />
 <MudSnackbarProvider />
+<MudPopoverProvider />
 
 <MudLayout>
     <MudAppBar Elevation="1" Color="Color.Surface">
@@ -17,9 +18,8 @@
         <AuthorizeView>
             <Authorized>
                 <MudButton Href="/bookings" Class="mr-4" Variant="Variant.Text">My Bookings</MudButton>
-                <MudMenu Label="@context.User.Identity?.Name" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
-                    <MudMenuItem OnClick="Logout">Logout</MudMenuItem>
-                </MudMenu>
+                <MudText Class="mr-4" Typo="Typo.body1">@context.User.Identity?.Name</MudText>
+                <MudButton OnClick="Logout" Color="Color.Primary" Variant="Variant.Outlined">Logout</MudButton>
             </Authorized>
             <NotAuthorized>
                 <MudButton Color="Color.Primary" Variant="Variant.Outlined" Href="/login" Class="mr-2">Login</MudButton>

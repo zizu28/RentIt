@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RentIt.Modules.Identity.Domain\RentIt.Modules.Identity.Domain.csproj" />
-    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Abstractions\RentIt.Shared.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Contracts\RentIt.Shared.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Shared\RentIt.Shared.DTOs\RentIt.Shared.DTOs.csproj" />
   </ItemGroup>

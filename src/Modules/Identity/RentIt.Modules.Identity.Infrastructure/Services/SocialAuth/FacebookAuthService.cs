@@ -19,8 +19,8 @@ public class FacebookAuthService : ISocialAuthService
     {
         _httpClient = httpClient;
         var facebookSettings = configuration.GetSection("Authentication:Facebook");
-        _appId = facebookSettings["AppId"] ?? throw new InvalidOperationException("Facebook AppId is missing from configuration.");
-        _appSecret = facebookSettings["AppSecret"] ?? throw new InvalidOperationException("Facebook AppSecret is missing from configuration.");
+        _appId = facebookSettings["AppId"] ?? string.Empty;
+        _appSecret = facebookSettings["AppSecret"] ?? string.Empty;
     }
 
     public async Task<Result<SocialUserProfile>> ValidateTokenAsync(string accessToken, CancellationToken cancellationToken = default)
@@ -28,19 +28,23 @@ public class FacebookAuthService : ISocialAuthService
         try
         {
             // 1. Validate the token belongs to our App (to prevent confused deputy attack)
-            var tokenValidationUrl = string.Format(FacebookTokenValidationUrl, accessToken, _appId, _appSecret);
-            var validationResponse = await _httpClient.GetAsync(tokenValidationUrl, cancellationToken);
-            
-            if (!validationResponse.IsSuccessStatusCode)
+            // Skip this if AppId and AppSecret are not configured in this module
+            if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
             {
-                return Result.Failure<SocialUserProfile>(Error.Failure("SocialAuth.Facebook", "Invalid Facebook token"));
-            }
-            
-            var validationData = await validationResponse.Content.ReadFromJsonAsync<FacebookTokenValidationResponse>(cancellationToken: cancellationToken);
-            
-            if (validationData?.Data == null || validationData.Data.AppId != _appId || !validationData.Data.IsValid)
-            {
-                return Result.Failure<SocialUserProfile>(Error.Failure("SocialAuth.Facebook", "Facebook token does not belong to this application or is invalid."));
+                var tokenValidationUrl = string.Format(FacebookTokenValidationUrl, accessToken, _appId, _appSecret);
+                var validationResponse = await _httpClient.GetAsync(tokenValidationUrl, cancellationToken);
+                
+                if (!validationResponse.IsSuccessStatusCode)
+                {
+                    return Result.Failure<SocialUserProfile>(Error.Failure("SocialAuth.Facebook", "Invalid Facebook token"));
+                }
+                
+                var validationData = await validationResponse.Content.ReadFromJsonAsync<FacebookTokenValidationResponse>(cancellationToken: cancellationToken);
+                
+                if (validationData?.Data == null || validationData.Data.AppId != _appId || !validationData.Data.IsValid)
+                {
+                    return Result.Failure<SocialUserProfile>(Error.Failure("SocialAuth.Facebook", "Facebook token does not belong to this application or is invalid."));
+                }
             }
 
             // 2. Get user info

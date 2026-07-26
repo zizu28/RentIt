@@ -4,7 +4,17 @@ using RentIt.Shared.Abstractions.BackgroundJobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+var mvcBuilder = builder.Services.AddControllers();
+
+var assembliesPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+if (assembliesPath != null)
+{
+    foreach (var file in System.IO.Directory.GetFiles(assembliesPath, "RentIt.Modules.*.Api.dll"))
+    {
+        var assembly = System.Reflection.Assembly.LoadFrom(file);
+        mvcBuilder.AddApplicationPart(assembly);
+    }
+}
 builder.Services.AddBackgroundJobs(builder.Configuration);
 builder.Services.AddIdentityApplication();
 builder.Services.AddIdentityInfrastructure(builder.Configuration);

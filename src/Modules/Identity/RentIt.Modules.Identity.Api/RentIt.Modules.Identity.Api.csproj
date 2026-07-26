@@ -1,10 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <ProjectReference Include="..\RentIt.Modules.Identity.Application\RentIt.Modules.Identity.Application.csproj" />
     <ProjectReference Include="..\RentIt.Modules.Identity.Infrastructure\RentIt.Modules.Identity.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Contracts\RentIt.Shared.Contracts.csproj" />
-    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.DTOs\RentIt.Shared.DTOs.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
