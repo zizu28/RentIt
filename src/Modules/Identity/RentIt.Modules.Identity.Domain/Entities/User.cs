@@ -18,6 +18,8 @@ public sealed class User : AggregateRoot<Guid>
     public PasswordHash PasswordHash { get; private set; } = null!;
     public string? FirstName { get; private set; }
     public string? LastName { get; private set; }
+    public string? Address { get; private set; }
+    public string? ProfileImageUrl { get; private set; }
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public UserRole Role { get; private set; }
     [JsonConverter(typeof(JsonStringEnumConverter))]
@@ -64,10 +66,17 @@ public sealed class User : AggregateRoot<Guid>
         return user;
     }
 
-    public void UpdateProfile(string? firstName, string? lastName)
+    public void UpdateProfile(string? firstName, string? lastName, string? address)
     {
         FirstName = firstName?.Trim();
         LastName = lastName?.Trim();
+        Address = address?.Trim();
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateProfileImage(string imageUrl)
+    {
+        ProfileImageUrl = imageUrl;
         UpdatedAt = DateTime.UtcNow;
     }
 

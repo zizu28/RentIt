@@ -1,0 +1,76 @@
+@page "/verify-email"
+@using RentIt.Client.Web.Auth
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Verify Email - RentIt</PageTitle>
+
+<div class="verify-container">
+    <div class="verify-card">
+        @if (_isVerifying)
+        {
+            <div class="spinner"></div>
+            <h2>Verifying your email...</h2>
+            <p>Please wait while we confirm your email address.</p>
+        }
+        else if (_verificationSuccessful)
+        {
+            <div class="icon-success">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h2>Email Verified!</h2>
+            <p>Thank you for verifying your email address. You can now securely use your account.</p>
+            <button class="btn-primary" @onclick="GoToLogin">Go to Login</button>
+        }
+        else
+        {
+            <div class="icon-error">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h2>Verification Failed</h2>
+            <p>The verification link is invalid or has expired.</p>
+            <button class="btn-secondary" @onclick="GoToHome">Return Home</button>
+        }
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Token { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Email { get; set; }
+
+    private bool _isVerifying = true;
+    private bool _verificationSuccessful = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Token) || string.IsNullOrWhiteSpace(Email))
+        {
+            _isVerifying = false;
+            _verificationSuccessful = false;
+            return;
+        }
+
+        // Add a small delay for UX so it doesn't just flash instantly
+        await Task.Delay(1500);
+
+        _verificationSuccessful = await AuthService.VerifyEmailAsync(Email, Token);
+        _isVerifying = false;
+    }
+
+    private void GoToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+
+    private void GoToHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

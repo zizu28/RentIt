@@ -63,4 +63,43 @@ public class AuthService(
             return false;
         }
     }
+
+    public async Task<bool> VerifyEmailAsync(string email, string token)
+    {
+        try
+        {
+            var request = new VerifyEmailRequest { Email = email, Token = token };
+            var response = await _httpClient.PostAsJsonAsync("/api/identity/auth/verify-email", request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
+    public async Task<UserDto?> GetCurrentUserAsync()
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<UserDto>("/api/identity/users/me");
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    public async Task<bool> UpdateUserProfileAsync(UpdateProfileRequest request)
+    {
+        try
+        {
+            var response = await _httpClient.PutAsJsonAsync("/api/identity/users/me/profile", request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
 }

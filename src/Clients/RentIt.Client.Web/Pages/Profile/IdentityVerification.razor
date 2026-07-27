@@ -1,0 +1,44 @@
+@page "/profile/identity"
+@namespace RentIt.Client.Web.Pages.ProfileSettings
+@attribute [Authorize]
+
+<PageTitle>Identity Verification - RentIt</PageTitle>
+
+<div class="page-container">
+    <div class="breadcrumbs">
+        <a href="/">Home</a> <span>/</span> 
+        <a href="/profile">Profile</a> <span>/</span> 
+        <span class="active">Identity Verification</span>
+    </div>
+
+    <h1 class="page-title mb-6">Identity Verification</h1>
+    
+    <div class="identity-card">
+        <div class="status-header">
+            <div class="icon-wrapper bg-success-subtle">
+                <i class="bi bi-shield-check text-success"></i>
+            </div>
+            <div class="status-info">
+                <h2>Verified</h2>
+                <p>Your identity has been verified with a Ghana Card.</p>
+            </div>
+        </div>
+
+        <hr class="divider my-4" />
+
+        <div class="info-row">
+            <span class="info-label">Verification Date</span>
+            <span class="info-value">12 Jan 2026</span>
+        </div>
+        <div class="info-row mt-2">
+            <span class="info-label">Document Type</span>
+            <span class="info-value">Ghana Card (National ID)</span>
+        </div>
+
+        <div class="mt-6">
+            <p class="text-secondary" style="font-size: 0.95rem;">
+                RentIt requires all hosts and guests to be verified. This builds trust in the community and keeps everyone safe.
+            </p>
+        </div>
+    </div>
+</div>

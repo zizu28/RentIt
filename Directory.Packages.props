@@ -29,6 +29,10 @@
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.20.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="Ocelot" Version="24.1.0" />
+    <PackageVersion Include="QuestPDF" Version="2026.7.1" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="System.Data.SqlClient" Version="4.9.1" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.20.0" />
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />

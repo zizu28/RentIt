@@ -54,7 +54,7 @@ public sealed class SocialLoginCommandHandler(
                 var phoneNumber = PhoneNumber.Create("0000000000"); // Placeholder
                 
                 user = User.Create(email, phoneNumber, passwordHash, UserRole.Renter);
-                user.UpdateProfile(profile.FirstName, profile.LastName);
+                user.UpdateProfile(profile.FirstName, profile.LastName, null);
                 // Mark email as verified since it came from a trusted provider
                 user.SetVerificationToken("SOCIAL_LOGIN");
                 user.VerifyEmail("SOCIAL_LOGIN");

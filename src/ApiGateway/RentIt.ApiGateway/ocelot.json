@@ -43,7 +43,7 @@
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "https://localhost:7272",
+    "BaseUrl": "https://localhost:7254",
     "RateLimitOptions": {
       "DisableRateLimitHeaders": false,
       "QuotaExceededMessage": "Too many requests. Please slow down.",

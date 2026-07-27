@@ -4,17 +4,20 @@ using RentIt.Shared.Abstractions.BackgroundJobs;
 using RentIt.Shared.Abstractions.Email;
 using RentIt.Shared.Abstractions.Persistence;
 using RentIt.Shared.Abstractions.Results;
+using Microsoft.Extensions.Configuration;
 
 namespace RentIt.Modules.Identity.Application.Handlers;
 
 public sealed class RequestPasswordResetCommandHandler(
     IUserRepository userRepository,
     IUnitOfWork unitOfWork,
-    IBackgroundJob backgroundJob) : IRequestHandler<Commands.RequestPasswordResetCommand, Result>
+    IBackgroundJob backgroundJob,
+    IConfiguration configuration) : IRequestHandler<Commands.RequestPasswordResetCommand, Result>
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IBackgroundJob _backgroundJob = backgroundJob;
+    private readonly IConfiguration _configuration = configuration;
 
     public async Task<Result> Handle(Commands.RequestPasswordResetCommand request, CancellationToken cancellationToken)
     {
@@ -36,7 +39,8 @@ public sealed class RequestPasswordResetCommandHandler(
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-            var resetLink = $"https://localhost:7272/reset-password?token={resetToken}&email={user.Email.Value}";
+            var frontendBaseUrl = _configuration["FrontendBaseUrl"] ?? "https://localhost:7180";
+            var resetLink = $"{frontendBaseUrl}/reset-password?token={resetToken}&email={user.Email.Value}";
 
             _backgroundJob.Enqueue<IEmailService>(
                 "default",

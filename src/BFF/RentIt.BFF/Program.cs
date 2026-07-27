@@ -2,8 +2,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Transforms;
+using RentIt.Shared.Infrastructure.Logging;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddSharedLogging();
 
 var configuration = builder.Configuration;
 
@@ -114,6 +117,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseSerilogRequestLogging();
 app.UseCors("wasm");
 
 app.UseHttpsRedirection();

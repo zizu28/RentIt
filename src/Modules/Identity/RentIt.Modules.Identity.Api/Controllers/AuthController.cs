@@ -51,4 +51,15 @@ public sealed class AuthController(ISender sender) : ControllerBase
             ? Ok(result.Value)
             : BadRequest(new { error = result.Error.Message });
     }
+
+    [HttpPost("verify-email")]
+    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request, CancellationToken cancellationToken)
+    {
+        var command = new VerifyEmailCommand(request.Email, request.Token);
+        var result = await _sender.Send(command, cancellationToken);
+
+        return result.IsSuccess
+            ? Ok()
+            : BadRequest(new { error = result.Error.Message });
+    }
 }

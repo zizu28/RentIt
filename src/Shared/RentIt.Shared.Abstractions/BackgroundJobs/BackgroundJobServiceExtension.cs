@@ -31,6 +31,7 @@ public static class BackgroundJobServiceExtension
         {
             options.WorkerCount = Environment.ProcessorCount * 2;
             options.Queues = ["alpha", "beta", "default"];
+            options.SchedulePollingInterval = TimeSpan.FromSeconds(10);
         });
 
         //services.AddHangfireOutboxService();
@@ -43,12 +44,11 @@ public static class BackgroundJobServiceExtension
 
     public static IApplicationBuilder AddHangfireDashBoard(this IApplicationBuilder app)
     {
-        //app.UseHangfireDashboard("/hangfire", new DashboardOptions
-        //{
-        //	Authorization = [new HangfireAuthFilter()]
-        //});
-        app.UseHangfireDashboard();
-
+        app.UseHangfireDashboard("/hangfire", new DashboardOptions
+        {
+            Authorization = [new HangfireAuthFilter()],
+            DarkModeEnabled = true
+        });
         return app;
     }
 }

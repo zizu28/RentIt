@@ -1,0 +1,37 @@
+@page "/host/dashboard"
+@attribute [Authorize]
+
+<PageTitle>Host Dashboard - RentIt</PageTitle>
+
+<div class="page-container">
+    <div class="breadcrumbs">
+        <a href="/">Home</a> <span>/</span> 
+        <a href="/profile">Profile</a> <span>/</span> 
+        <span class="active">Host</span>
+    </div>
+
+    <div class="hero-section text-center py-5">
+        <h1 class="page-title mb-4">Earn money doing what you love</h1>
+        <p class="hero-subtitle mb-6">Turn your extra space into extra income on RentIt.</p>
+        
+        <button class="btn btn-primary btn-large">Get Started</button>
+    </div>
+
+    <div class="features-grid mt-8">
+        <div class="feature-card">
+            <div class="feature-icon"><i class="bi bi-wallet2 text-accent"></i></div>
+            <h3>Earn more</h3>
+            <p>Hosts on RentIt earn an average of $500 per month just by sharing their spare space.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="bi bi-shield-lock text-accent"></i></div>
+            <h3>Host with confidence</h3>
+            <p>Every booking includes comprehensive Host Protection and verified guests.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="bi bi-people text-accent"></i></div>
+            <h3>Join the community</h3>
+            <p>Connect with a global community of hosts and travelers.</p>
+        </div>
+    </div>
+</div>

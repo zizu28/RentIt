@@ -1,0 +1,184 @@
+@page "/profile"
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@using RentIt.Client.Web.Auth
+@using System.Security.Claims
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IAuthService AuthService
+
+<PageTitle>Your Profile - RentIt</PageTitle>
+
+<div class="page-container">
+    <div class="breadcrumbs">
+        <a href="/">Home</a> <span>/</span> 
+        <span class="active">Profile</span>
+    </div>
+
+    <div class="profile-layout">
+        <!-- Sidebar / User Overview -->
+        <aside class="profile-sidebar">
+            <div class="profile-card">
+                <div class="avatar-container">
+                    @if (!string.IsNullOrEmpty(_profileImageUrl))
+                    {
+                        <img src="@_profileImageUrl" alt="Profile avatar" class="avatar-img" />
+                    }
+                    else
+                    {
+                        <div class="avatar">@_initials</div>
+                    }
+                    <div class="verification-badge" title="Identity Verified">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                </div>
+                <h2 class="profile-name">@_userName</h2>
+                <p class="profile-email">@_userEmail</p>
+                <div class="profile-joined">Joined in 2026</div>
+
+                <hr class="divider my-4" />
+                
+                <ul class="profile-stats">
+                    <li>
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">Trips</div>
+                    </li>
+                    <li>
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Reviews</div>
+                    </li>
+                </ul>
+
+                <button class="btn btn-outline full-width mt-4" @onclick='() => GoTo("/profile/edit")'>Edit Profile</button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="profile-content">
+            <h1 class="page-title mb-6">Account Settings</h1>
+
+            <div class="settings-grid">
+                <!-- Personal Info Card -->
+                <div class="settings-card" @onclick='() => GoTo("/profile/personal-info")'>
+                    <div class="settings-icon">
+                        <i class="bi bi-person-vcard"></i>
+                    </div>
+                    <div class="settings-info">
+                        <h3>Personal info</h3>
+                        <p>Provide personal details and how we can reach you</p>
+                    </div>
+                    <i class="bi bi-chevron-right settings-arrow"></i>
+                </div>
+
+                <!-- KYC / Identity Card -->
+                <div class="settings-card" @onclick='() => GoTo("/profile/identity")'>
+                    <div class="settings-icon text-success">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div class="settings-info">
+                        <h3>Identity Verification</h3>
+                        <p>Verified with Ghana Card. Your account is secure.</p>
+                    </div>
+                    <i class="bi bi-chevron-right settings-arrow"></i>
+                </div>
+
+                <!-- Payments & Payouts Card -->
+                <div class="settings-card" @onclick='() => GoTo("/profile/payments")'>
+                    <div class="settings-icon">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div class="settings-info">
+                        <h3>Payments & payouts</h3>
+                        <p>Review payments, payouts, coupons, and gift cards</p>
+                    </div>
+                    <i class="bi bi-chevron-right settings-arrow"></i>
+                </div>
+
+                <!-- Notifications Card -->
+                <div class="settings-card" @onclick='() => GoTo("/profile/notifications")'>
+                    <div class="settings-icon">
+                        <i class="bi bi-bell"></i>
+                    </div>
+                    <div class="settings-info">
+                        <h3>Notifications</h3>
+                        <p>Choose notification preferences and how you want to be contacted</p>
+                    </div>
+                    <i class="bi bi-chevron-right settings-arrow"></i>
+                </div>
+
+                <!-- Host Dashboard Card (Upsell/Link) -->
+                <div class="settings-card highlight-card" @onclick='() => GoTo("/host/dashboard")'>
+                    <div class="settings-icon text-accent">
+                        <i class="bi bi-house-add"></i>
+                    </div>
+                    <div class="settings-info">
+                        <h3>Become a Host</h3>
+                        <p>Have an extra room or property? Start earning with RentIt.</p>
+                    </div>
+                    <i class="bi bi-chevron-right settings-arrow"></i>
+                </div>
+            </div>
+            
+            <div class="logout-section mt-8">
+                <button class="btn btn-text text-danger" @onclick="HandleLogout">
+                    <i class="bi bi-box-arrow-right mr-2"></i> Log out
+                </button>
+            </div>
+        </main>
+    </div>
+</div>
+
+@code {
+    private string _userName = "User";
+    private string _userEmail = "";
+    private string _initials = "U";
+    private string? _profileImageUrl;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userProfile = await AuthService.GetCurrentUserAsync();
+
+        if (userProfile != null)
+        {
+            var firstName = userProfile.FirstName ?? "";
+            var lastName = userProfile.LastName ?? "";
+            _userEmail = userProfile.Email;
+            _profileImageUrl = userProfile.ProfileImageUrl;
+
+            if (!string.IsNullOrWhiteSpace(firstName) || !string.IsNullOrWhiteSpace(lastName))
+            {
+                _userName = $"{firstName} {lastName}".Trim();
+            }
+            else
+            {
+                _userName = "User";
+            }
+
+            // Calculate initials
+            if (!string.IsNullOrWhiteSpace(_userName) && _userName != "User")
+            {
+                var parts = _userName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length > 1)
+                {
+                    _initials = $"{parts[0][0]}{parts[1][0]}".ToUpper();
+                }
+                else
+                {
+                    _initials = $"{parts[0][0]}".ToUpper();
+                }
+            }
+        }
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/login");
+    }
+
+    private void GoTo(string path)
+    {
+        Navigation.NavigateTo(path);
+    }
+}
+

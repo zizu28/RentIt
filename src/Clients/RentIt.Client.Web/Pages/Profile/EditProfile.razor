@@ -1,0 +1,126 @@
+@page "/profile/edit"
+@namespace RentIt.Client.Web.Pages.ProfileSettings
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using RentIt.Client.Web.Auth
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+
+<PageTitle>Edit Profile - RentIt</PageTitle>
+
+<div class="page-container">
+    <div class="breadcrumbs">
+        <a href="/">Home</a> <span>/</span> 
+        <a href="/profile">Profile</a> <span>/</span> 
+        <span class="active">Edit Profile</span>
+    </div>
+
+    <div class="edit-profile-card">
+        <h1 class="page-title mb-6">Edit Profile</h1>
+
+        @if (_isSaving)
+        {
+            <div class="saving-overlay">
+                <div class="spinner"></div>
+                <p>Saving changes...</p>
+            </div>
+        }
+
+        @if (_showSuccessMessage)
+        {
+            <div class="alert alert-success mb-4">
+                <i class="bi bi-check-circle-fill mr-2"></i> Profile updated successfully!
+            </div>
+        }
+
+        <form class="edit-form" @onsubmit="HandleSave">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firstName">First name</label>
+                    <input type="text" id="firstName" class="form-control" @bind="_firstName" required />
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last name</label>
+                    <input type="text" id="lastName" class="form-control" @bind="_lastName" required />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email address (cannot be changed)</label>
+                <input type="email" id="email" class="form-control disabled" @bind="_email" disabled />
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone number (cannot be changed here)</label>
+                <input type="tel" id="phone" class="form-control disabled" @bind="_phone" disabled />
+            </div>
+
+            <div class="form-group">
+                <label for="address">Address</label>
+                <textarea id="address" class="form-control" @bind="_address" rows="3" placeholder="Enter your full address"></textarea>
+            </div>
+            
+            <hr class="divider my-4" />
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-outline" @onclick='() => Navigation.NavigateTo("/profile/personal-info")'>Cancel</button>
+                <button type="submit" class="btn btn-primary" disabled="@_isSaving">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@code {
+    private string _firstName = "";
+    private string _lastName = "";
+    private string _email = "";
+    private string _phone = "";
+    private string _address = "";
+
+    private bool _isSaving = false;
+    private bool _showSuccessMessage = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userProfile = await AuthService.GetCurrentUserAsync();
+
+        if (userProfile != null)
+        {
+            _firstName = userProfile.FirstName ?? "";
+            _lastName = userProfile.LastName ?? "";
+            _email = userProfile.Email ?? "";
+            _phone = userProfile.PhoneNumber ?? "";
+            _address = userProfile.Address ?? "";
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        _isSaving = true;
+        
+        var request = new RentIt.Shared.DTOs.Identity.UpdateProfileRequest 
+        { 
+            FirstName = _firstName, 
+            LastName = _lastName, 
+            Address = _address 
+        };
+        
+        var success = await AuthService.UpdateUserProfileAsync(request);
+        
+        _isSaving = false;
+        
+        if (success)
+        {
+            _showSuccessMessage = true;
+
+            // Wait a moment so user sees the success message, then navigate back
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(1500);
+                await InvokeAsync(() => Navigation.NavigateTo("/profile/personal-info"));
+            });
+        }
+    }
+}

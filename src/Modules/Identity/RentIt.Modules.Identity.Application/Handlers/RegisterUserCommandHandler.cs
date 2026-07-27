@@ -10,6 +10,7 @@ using RentIt.Shared.DTOs.Identity;
 
 using RentIt.Shared.Abstractions.BackgroundJobs;
 using RentIt.Shared.Abstractions.Email;
+using Microsoft.Extensions.Configuration;
 
 namespace RentIt.Modules.Identity.Application.Handlers;
 
@@ -17,12 +18,14 @@ public sealed class RegisterUserCommandHandler(
     IUserRepository userRepository,
     IPasswordHasher passwordHasher,
     IUnitOfWork unitOfWork,
-    IBackgroundJob backgroundJob) : IRequestHandler<Commands.RegisterUserCommand, Result<UserDto>>
+    IBackgroundJob backgroundJob,
+    IConfiguration configuration) : IRequestHandler<Commands.RegisterUserCommand, Result<UserDto>>
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IPasswordHasher _passwordHasher = passwordHasher;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IBackgroundJob _backgroundJob = backgroundJob;
+    private readonly IConfiguration _configuration = configuration;
 
     public async Task<Result<UserDto>> Handle(Commands.RegisterUserCommand request, CancellationToken cancellationToken)
     {
@@ -69,7 +72,7 @@ public sealed class RegisterUserCommandHandler(
             // Update profile if name provided
             if (!string.IsNullOrWhiteSpace(request.FirstName) || !string.IsNullOrWhiteSpace(request.LastName))
             {
-                user.UpdateProfile(request.FirstName, request.LastName);
+                user.UpdateProfile(request.FirstName, request.LastName, null);
             }
 
             // Generate a random token for verification (stub)
@@ -90,7 +93,8 @@ public sealed class RegisterUserCommandHandler(
                     $"Hi {user.FirstName ?? "there"},\n\nWelcome to RentIt! We're glad to have you.", 
                     CancellationToken.None));
 
-            var verificationLink = $"https://localhost:7272/verify-email?token={verificationToken}&email={user.Email.Value}";
+            var frontendBaseUrl = _configuration["FrontendBaseUrl"] ?? "https://localhost:7180";
+            var verificationLink = $"{frontendBaseUrl}/verify-email?token={verificationToken}&email={user.Email.Value}";
 
             _backgroundJob.Enqueue<IEmailService>(
                 "default", 

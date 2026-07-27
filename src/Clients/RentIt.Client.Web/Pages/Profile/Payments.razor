@@ -1,0 +1,64 @@
+@page "/profile/payments"
+@namespace RentIt.Client.Web.Pages.ProfileSettings
+@attribute [Authorize]
+
+<PageTitle>Payments & Payouts - RentIt</PageTitle>
+
+<div class="page-container">
+    <div class="breadcrumbs">
+        <a href="/">Home</a> <span>/</span> 
+        <a href="/profile">Profile</a> <span>/</span> 
+        <span class="active">Payments & Payouts</span>
+    </div>
+
+    <h1 class="page-title mb-6">Payments & payouts</h1>
+
+    <div class="tab-navigation mb-6">
+        <button class="tab-btn active">Payments</button>
+        <button class="tab-btn">Payouts</button>
+    </div>
+
+    <section class="mb-8">
+        <div class="section-header">
+            <h2>Your payment methods</h2>
+            <button class="btn btn-outline-small">Add payment method</button>
+        </div>
+        
+        <div class="payment-method-card">
+            <div class="payment-icon">
+                <i class="bi bi-credit-card-fill"></i>
+            </div>
+            <div class="payment-details">
+                <div class="payment-title">Visa •••• 4242</div>
+                <div class="payment-expiry">Expires 12/28</div>
+            </div>
+            <div class="payment-actions">
+                <span class="badge badge-default">Default</span>
+                <button class="btn btn-icon text-muted" title="More options"><i class="bi bi-three-dots"></i></button>
+            </div>
+        </div>
+
+        <div class="payment-method-card">
+            <div class="payment-icon">
+                <i class="bi bi-phone-fill"></i>
+            </div>
+            <div class="payment-details">
+                <div class="payment-title">MTN Mobile Money</div>
+                <div class="payment-expiry">+233 24 123 4567</div>
+            </div>
+            <div class="payment-actions">
+                <button class="btn btn-icon text-muted" title="More options"><i class="bi bi-three-dots"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <hr class="divider mb-8" />
+
+    <section>
+        <h2 class="mb-4">Coupons and credits</h2>
+        <div class="empty-state">
+            <div class="empty-icon"><i class="bi bi-ticket-perforated"></i></div>
+            <p>You have no coupons or credits right now.</p>
+        </div>
+    </section>
+</div>

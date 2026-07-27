@@ -1,0 +1,63 @@
+@page "/profile/notifications"
+@namespace RentIt.Client.Web.Pages.ProfileSettings
+@attribute [Authorize]
+
+<PageTitle>Notifications - RentIt</PageTitle>
+
+<div class="page-container">
+    <div class="breadcrumbs">
+        <a href="/">Home</a> <span>/</span> 
+        <a href="/profile">Profile</a> <span>/</span> 
+        <span class="active">Notifications</span>
+    </div>
+
+    <h1 class="page-title mb-6">Notifications</h1>
+
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-content">
+                <div class="info-label">Messages</div>
+                <div class="info-value">Emails and SMS about messages from hosts and guests</div>
+            </div>
+            <div class="toggle-switch active">
+                <div class="toggle-thumb"></div>
+            </div>
+        </div>
+        <hr class="divider" />
+        
+        <div class="info-row">
+            <div class="info-content">
+                <div class="info-label">Promotions and tips</div>
+                <div class="info-value">Coupons, promotions, surveys, and personalized suggestions</div>
+            </div>
+            <div class="toggle-switch">
+                <div class="toggle-thumb"></div>
+            </div>
+        </div>
+        <hr class="divider" />
+        
+        <div class="info-row">
+            <div class="info-content">
+                <div class="info-label">Policy and community</div>
+                <div class="info-value">Updates on policies, community standards, and regulations</div>
+            </div>
+            <div class="toggle-switch active">
+                <div class="toggle-thumb"></div>
+            </div>
+        </div>
+        <hr class="divider" />
+        
+        <div class="info-row">
+            <div class="info-content">
+                <div class="info-label">Account support</div>
+                <div class="info-value">Important messages about your account, trips, and security</div>
+            </div>
+            <div class="toggle-switch active disabled">
+                <div class="toggle-thumb"></div>
+            </div>
+        </div>
+        <div class="mt-2 text-secondary" style="font-size: 0.9rem;">
+            Account support notifications cannot be turned off.
+        </div>
+    </div>
+</div>

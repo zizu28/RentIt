@@ -1,0 +1,235 @@
+@page "/checkout/{Id:guid}"
+@using RentIt.Shared.DTOs.Properties
+@using RentIt.Client.Web.Services
+@inject IPropertyService PropertyService
+@inject IBookingService BookingService
+@inject NavigationManager Navigation
+@attribute [Authorize]
+
+<PageTitle>Checkout - RentIt</PageTitle>
+
+<div class="page-container">
+    <div class="breadcrumbs">
+        <a href="/">Home</a> <span>/</span> 
+        <a href="/properties/@Id">Property Details</a> <span>/</span> 
+        <span class="active">Checkout</span>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="loading-spinner-container">
+            <span class="spinner large"></span>
+        </div>
+    }
+    else if (_property == null)
+    {
+        <div class="alert alert-danger">
+            Property not found. Return to <a href="/">Home</a>.
+        </div>
+    }
+    else
+    {
+        <h1 class="page-title mb-6">Confirm and pay</h1>
+
+        <div class="checkout-layout">
+            <!-- Left Column: Payment Details -->
+            <div class="checkout-form-section">
+                
+                <section class="mb-8">
+                    <h2 class="section-title">Your trip</h2>
+                    <div class="trip-detail">
+                        <div class="detail-label">Dates</div>
+                        <div class="detail-value">@CheckInDate?.ToString("MMM dd") - @CheckOutDate?.ToString("MMM dd")</div>
+                    </div>
+                </section>
+
+                <hr class="divider mb-8" />
+
+                <section class="mb-8">
+                    <h2 class="section-title">Pay with</h2>
+                    
+                    <div class="payment-methods">
+                        <div class="payment-option @(_selectedPaymentMethod == "mobile_money" ? "selected" : "")" @onclick='() => _selectedPaymentMethod = "mobile_money"'>
+                            <div class="option-icon">
+                                <i class="bi bi-phone"></i>
+                            </div>
+                            <div class="option-content">
+                                <div class="option-title">Mobile Money</div>
+                                <div class="option-desc">MTN, Vodafone, AirtelTigo</div>
+                            </div>
+                            <div class="option-radio">
+                                <i class="bi @(_selectedPaymentMethod == "mobile_money" ? "bi-check-circle-fill text-primary" : "bi-circle")"></i>
+                            </div>
+                        </div>
+
+                        <div class="payment-option @(_selectedPaymentMethod == "card" ? "selected" : "")" @onclick='() => _selectedPaymentMethod = "card"'>
+                            <div class="option-icon">
+                                <i class="bi bi-credit-card"></i>
+                            </div>
+                            <div class="option-content">
+                                <div class="option-title">Credit or Debit Card</div>
+                                <div class="option-desc">Visa, Mastercard</div>
+                            </div>
+                            <div class="option-radio">
+                                <i class="bi @(_selectedPaymentMethod == "card" ? "bi-check-circle-fill text-primary" : "bi-circle")"></i>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <hr class="divider mb-8" />
+                
+                <section>
+                    <h2 class="section-title">Cancellation policy</h2>
+                    <p class="text-secondary">
+                        <span class="font-weight-600">Free cancellation for 48 hours.</span> Cancel before check-in for a partial refund.
+                    </p>
+                </section>
+
+                <hr class="divider mb-8" />
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="alert alert-danger mb-4">
+                        <i class="bi bi-exclamation-circle-fill mr-2"></i> @_errorMessage
+                    </div>
+                }
+
+                <button class="btn btn-primary btn-large full-width" @onclick="ConfirmBookingAsync" disabled="@_isProcessing">
+                    @if (_isProcessing)
+                    {
+                        <span class="spinner"></span> <span>Processing...</span>
+                    }
+                    else
+                    {
+                        <span>Confirm and pay</span>
+                    }
+                </button>
+            </div>
+
+            <!-- Right Column: Order Summary -->
+            <div class="checkout-summary-section">
+                <div class="summary-card">
+                    <div class="property-summary">
+                        <img src="@GetImageUrl()" alt="Property" class="summary-img" />
+                        <div class="summary-info">
+                            <div class="summary-title">@_property.Title</div>
+                            <div class="summary-location">@_property.Location</div>
+                            <div class="summary-rating">
+                                <i class="bi bi-star-fill text-warning"></i> <span>@_property.Rating</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="divider my-4" />
+
+                    <h3 class="price-details-title">Price details</h3>
+                    
+                    <div class="price-row mb-2">
+                        <span>$@_property.PricePerNight.ToString("0.00") x @GetNights() nights</span>
+                        <span>$@GetBasePrice().ToString("0.00")</span>
+                    </div>
+                    <div class="price-row mb-2">
+                        <span>Cleaning fee</span>
+                        <span>$@_cleaningFee.ToString("0.00")</span>
+                    </div>
+                    <div class="price-row mb-2">
+                        <span>Service fee</span>
+                        <span>$@_serviceFee.ToString("0.00")</span>
+                    </div>
+
+                    <hr class="divider my-4" />
+
+                    <div class="price-row total-row">
+                        <span>Total (USD)</span>
+                        <span>$@GetTotalPrice().ToString("0.00")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public string? CheckIn { get; set; }
+    
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public string? CheckOut { get; set; }
+
+    private PropertyDto? _property;
+    private bool _isLoading = true;
+    private bool _isProcessing = false;
+    private string _errorMessage = string.Empty;
+    
+    private DateTime? CheckInDate;
+    private DateTime? CheckOutDate;
+    
+    private string _selectedPaymentMethod = "mobile_money";
+
+    private const decimal _cleaningFee = 35.00m;
+    private const decimal _serviceFee = 25.00m;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _isLoading = true;
+        
+        if (DateTime.TryParse(CheckIn, out var ci)) CheckInDate = ci;
+        if (DateTime.TryParse(CheckOut, out var co)) CheckOutDate = co;
+
+        _property = await PropertyService.GetPropertyByIdAsync(Id);
+        
+        _isLoading = false;
+    }
+
+    private string GetImageUrl() => _property?.ImageUrls.FirstOrDefault() ?? string.Empty;
+
+    private int GetNights()
+    {
+        if (CheckInDate.HasValue && CheckOutDate.HasValue)
+        {
+            var nights = (CheckOutDate.Value - CheckInDate.Value).Days;
+            return nights > 0 ? nights : 1;
+        }
+        return 1;
+    }
+
+    private decimal GetBasePrice() => _property != null ? _property.PricePerNight * GetNights() : 0;
+    
+    private decimal GetTotalPrice() => GetBasePrice() + _cleaningFee + _serviceFee;
+
+    private async Task ConfirmBookingAsync()
+    {
+        _errorMessage = string.Empty;
+
+        if (CheckInDate == null || CheckOutDate == null)
+        {
+            _errorMessage = "Invalid booking dates.";
+            return;
+        }
+
+        try
+        {
+            _isProcessing = true;
+            
+            // Simulate payment processing delay
+            await Task.Delay(1500);
+            
+            await BookingService.CreateBookingAsync(Id, DateOnly.FromDateTime(CheckInDate.Value), DateOnly.FromDateTime(CheckOutDate.Value));
+            
+            Navigation.NavigateTo("/bookings");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Payment failed: " + ex.Message;
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+}

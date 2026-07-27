@@ -27,6 +27,8 @@ public sealed class GetUserQueryHandler(IUserRepository userRepository) : IReque
             PhoneNumber = user.PhoneNumber.Value,
             FirstName = user.FirstName,
             LastName = user.LastName,
+            Address = user.Address,
+            ProfileImageUrl = user.ProfileImageUrl,
             Role = user.Role.ToString(),
             Status = user.Status.ToString(),
             IsEmailVerified = user.IsEmailVerified,

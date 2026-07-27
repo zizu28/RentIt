@@ -1,0 +1,106 @@
+@page "/profile/personal-info"
+@namespace RentIt.Client.Web.Pages.ProfileSettings
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Components.Authorization
+@using RentIt.Client.Web.Auth
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+
+<PageTitle>Personal Info - RentIt</PageTitle>
+
+<div class="page-container">
+    <div class="breadcrumbs">
+        <a href="/">Home</a> <span>/</span> 
+        <a href="/profile">Profile</a> <span>/</span> 
+        <span class="active">Personal Info</span>
+    </div>
+
+    <h1 class="page-title mb-6">Personal info</h1>
+
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-content">
+                <div class="info-label">Legal name</div>
+                <div class="info-value">@_userName</div>
+            </div>
+            <button class="btn btn-text" @onclick="GoToEdit">Edit</button>
+        </div>
+        <hr class="divider" />
+        
+        <div class="info-row">
+            <div class="info-content">
+                <div class="info-label">Email address</div>
+                <div class="info-value">@_userEmail</div>
+            </div>
+            <!-- Email editing disabled for now -->
+            <button class="btn btn-text text-muted" disabled>Edit</button>
+        </div>
+        <hr class="divider" />
+        
+        <div class="info-row">
+            <div class="info-content">
+                <div class="info-label">Phone numbers</div>
+                <div class="info-value">@_userPhone</div>
+            </div>
+            <!-- Phone editing disabled for now -->
+            <button class="btn btn-text text-muted" disabled>Edit</button>
+        </div>
+        <hr class="divider" />
+        
+        <div class="info-row">
+            <div class="info-content">
+                <div class="info-label">Government ID</div>
+                <div class="info-value">Provided</div>
+            </div>
+            <button class="btn btn-text" @onclick='() => Navigation.NavigateTo("/profile/identity")'>Edit</button>
+        </div>
+        <hr class="divider" />
+        
+        <div class="info-row">
+            <div class="info-content">
+                <div class="info-label">Address</div>
+                <div class="info-value">@_userAddress</div>
+            </div>
+            <button class="btn btn-text" @onclick="GoToEdit">@(string.IsNullOrEmpty(_userAddress) || _userAddress == "Not provided" ? "Add" : "Edit")</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _userName = "User";
+    private string _userEmail = "";
+    private string _userPhone = "Not provided";
+    private string _userAddress = "Not provided";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userProfile = await AuthService.GetCurrentUserAsync();
+
+        if (userProfile != null)
+        {
+            var firstName = userProfile.FirstName ?? "";
+            var lastName = userProfile.LastName ?? "";
+            
+            if (!string.IsNullOrWhiteSpace(firstName) || !string.IsNullOrWhiteSpace(lastName))
+            {
+                _userName = $"{firstName} {lastName}".Trim();
+            }
+            else
+            {
+                _userName = "User";
+            }
+            
+            _userEmail = userProfile.Email ?? "";
+            _userPhone = string.IsNullOrWhiteSpace(userProfile.PhoneNumber) ? "Not provided" : userProfile.PhoneNumber;
+            _userAddress = string.IsNullOrWhiteSpace(userProfile.Address) ? "Not provided" : userProfile.Address;
+        }
+    }
+
+    private void GoToEdit()
+    {
+        Navigation.NavigateTo("/profile/edit");
+    }
+}
+
