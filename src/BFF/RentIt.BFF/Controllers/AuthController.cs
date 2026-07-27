@@ -19,7 +19,7 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory, ILogger
     {
         var client = _httpClientFactory.CreateClient("Gateway");
 
-        var response = await client.PostAsJsonAsync("/identity/auth/login", request, cancellationToken);
+        var response = await client.PostAsJsonAsync("/api/identity/auth/login", request, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -46,21 +46,14 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory, ILogger
             ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1)
         };
 
-        await HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            new ClaimsPrincipal(claimsIdentity),
-            authProperties);
-
-        // Store the JWT in the authentication properties to be extracted by YARP
-        var tokenAuthProperties = new AuthenticationProperties();
-        tokenAuthProperties.StoreTokens([
+        authProperties.StoreTokens([
             new AuthenticationToken { Name = "access-token", Value = loginResponse.AccessToken }
         ]);
 
         await HttpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
             new ClaimsPrincipal(claimsIdentity),
-            tokenAuthProperties);
+            authProperties);
 
         return Ok(new { message = "Logged in successfully" });
     }

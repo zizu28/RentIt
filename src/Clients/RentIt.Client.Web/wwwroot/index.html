@@ -11,14 +11,34 @@
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="RentIt.Client.Web.styles.css" rel="stylesheet" />
-    <script type="importmap"></script>
+    <script>
+        // Initialize theme before rendering to avoid flash
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        } else {
+            // Default to dark or system preference if you like, we'll just use dark
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
 
+        window.toggleTheme = () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            return newTheme;
+        };
+        
+        window.getTheme = () => {
+            return document.documentElement.getAttribute('data-theme') || 'dark';
+        };
+    </script>
+    <script type="importmap"></script>
 </head>
 
 <body>
-    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <div id="app">
         <svg class="loading-progress">
             <circle r="40%" cx="50%" cy="50%" />

@@ -1,5 +1,8 @@
-﻿@page "/not-found"
-@layout MainLayout
+@page "/not-found"
 
-<h3>Not Found</h3>
-<p>Sorry, the content you are looking for does not exist.</p>
+<div class="empty-state" style="margin: 4rem auto; max-width: 600px;">
+    <i class="bi bi-exclamation-triangle empty-state-icon text-warning"></i>
+    <h2>Page Not Found</h2>
+    <p>Sorry, the content you are looking for does not exist or has been moved.</p>
+    <a href="/" class="btn btn-primary mt-4">Return Home</a>
+</div>

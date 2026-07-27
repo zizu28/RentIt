@@ -50,4 +50,17 @@ public class AuthService(
         await _httpClient.PostAsync("/bff/auth/logout", null);
         _authenticationStateProvider.NotifyUserAuthenticationStateChanged();
     }
+
+    public async Task<bool> RegisterAsync(RegisterUserRequest request)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("/api/identity/auth/register", request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
 }

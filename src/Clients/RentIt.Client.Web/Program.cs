@@ -1,16 +1,12 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.Authorization;
-using MudBlazor.Services;
 using RentIt.Client.Web;
 using RentIt.Client.Web.Auth;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
-
-// Register MudBlazor
-builder.Services.AddMudServices();
 
 // Authentication & BFF setup
 builder.Services.AddAuthorizationCore();

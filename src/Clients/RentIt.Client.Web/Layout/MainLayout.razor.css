@@ -1,77 +1,227 @@
-.page {
-    position: relative;
+/* CraftedToNav.razor.css — Design System Migration */
+
+/* =========================================
+   1. Header Layout
+   ========================================= */
+.top-nav-header {
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border-default);
+    position: sticky; /* Or fixed depending on layout needs */
+    top: 0;
+    z-index: 50;
+    font-family: var(--font-body);
+}
+
+.nav-content {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 64px;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
 }
 
-main {
-    flex: 1;
+/* =========================================
+   2. Branding & Navigation
+   ========================================= */
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 32px;
 }
 
-.sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text-primary);
 }
 
-.top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: flex-end;
-    height: 3.5rem;
+.logo-img {
+    height: 32px;
+    width: auto;
+}
+
+.logo-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.main-navigation {
+    display: flex;
+    gap: 24px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color var(--transition-fast);
+}
+
+    .nav-link:hover, .nav-link.active {
+        color: var(--accent-primary);
+    }
+
+/* =========================================
+   3. Right Actions
+   ========================================= */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    position: relative;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--transition-fast);
+}
+
+    .icon-btn:hover {
+        color: var(--text-primary);
+    }
+
+.user-greeting {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+    .user-greeting strong {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+/* Logout Button */
+.btn-logout {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--color-danger); /* Red */
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .btn-logout:hover {
+        background-color: var(--bg-tertiary);
+        border-color: var(--color-danger);
+    }
+
+.notification-dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-danger); /* Red */
+    border-radius: 50%;
+    border: 1px solid var(--bg-primary);
+}
+
+.profile-btn {
+    text-decoration: none;
     display: flex;
     align-items: center;
 }
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        white-space: nowrap;
-        margin-left: 1.5rem;
-        text-decoration: none;
+.avatar-initials, .avatar-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-initials {
+    background-color: var(--bg-secondary);
+    color: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-default);
+}
+
+/* =========================================
+   4. Mobile Menu
+   ========================================= */
+.mobile-menu-btn {
+    display: none; /* Hidden on desktop */
+}
+
+.mobile-menu {
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border-default);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+}
+
+.mobile-link {
+    padding: 12px 16px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: transparent;
+    text-align: left;
+    font-size: 1rem;
+    width: 100%;
+}
+
+    .mobile-link:hover {
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
     }
 
-    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-        text-decoration: underline;
+.logout-link {
+    color: var(--color-danger); /* Red */
+    margin-top: 8px;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 16px;
+}
+
+/* =========================================
+   5. Responsiveness
+   ========================================= */
+@media (max-width: 768px) {
+    .main-navigation {
+        display: none; /* Hide Desktop Nav */
     }
 
-    .top-row ::deep a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
+    .mobile-menu-btn {
+        display: flex; /* Show Hamburger */
     }
 
-@media (max-width: 640.98px) {
-    .top-row {
-        justify-content: space-between;
-    }
-
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        margin-left: 0;
+    .nav-content {
+        padding: 0 16px;
     }
 }
 
-@media (min-width: 641px) {
-    .page {
-        flex-direction: row;
-    }
+.layout-container { background: var(--bg-base); min-height: 100vh; transition: background-color var(--transition-theme); }
+.main-content { min-height: calc(100vh - 64px); }
 
-    .sidebar {
-        width: 250px;
-        height: 100vh;
-        position: sticky;
-        top: 0;
-    }
-
-    .top-row {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .top-row.auth ::deep a:first-child {
-        flex: 1;
-        text-align: right;
-        width: 0;
-    }
-
-    .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
-    }
-}

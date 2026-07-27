@@ -1,4 +1,5 @@
 @page "/login"
+@layout RentIt.Client.Web.Layout.AuthLayout
 @using RentIt.Client.Web.Auth
 @using RentIt.Shared.DTOs.Identity
 @inject IAuthService AuthService
@@ -6,82 +7,88 @@
 @inject IJSRuntime JSRuntime
 @inject IHttpClientFactory httpClientFactory
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
-    <MudPaper Class="pa-8">
-        <MudText Typo="Typo.h5" Class="mb-4">Login</MudText>
+<div class="login-card">
+    <header class="login-card-header">
+        <h2>Welcome Back</h2>
+        <p>Log in to your account to continue.</p>
+    </header>
+
+    <EditForm Model="@_loginRequest" OnValidSubmit="HandleLogin" class="login-form">
+        <DataAnnotationsValidator />
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <InputText id="email" @bind-Value="_loginRequest.Email" class="form-control" placeholder="you@example.com" />
+            <ValidationMessage For="() => _loginRequest.Email" />
+        </div>
+
+        <div class="form-group">
+            <div class="label-row">
+                <label for="password">Password</label>
+                <a href="/forgot-password" class="link-forgot">Forgot Password?</a>
+            </div>
+            <div class="password-wrapper">
+                <InputText id="password" @bind-Value="_loginRequest.Password" type="@(showPassword ? "text" : "password")" class="form-control" placeholder="••••••••" />
+                <button type="button" class="password-toggle-btn" @onclick="TogglePasswordVisibility" tabindex="-1">
+                    <i class="bi @(showPassword ? "bi-eye" : "bi-eye-slash")"></i>
+                </button>
+            </div>
+            <ValidationMessage For="() => _loginRequest.Password" />
+        </div>
+
+        <button type="submit" class="btn-submit" disabled="@_isSubmitting">
+            @if (_isSubmitting)
+            {
+                <span class="spinner"></span>
+                <span>Logging in...</span>
+            }
+            else
+            {
+                <span>Log in</span>
+                <i class="bi bi-arrow-right"></i>
+            }
+        </button>
 
         @if (!string.IsNullOrEmpty(_errorMessage))
         {
-            <MudAlert Severity="Severity.Error" Class="mb-4">@_errorMessage</MudAlert>
+            <div class="alert alert-danger mt-2" style="font-size: 0.9rem; padding: 10px;">
+                @_errorMessage
+            </div>
         }
+    </EditForm>
 
-        <EditForm Model="@_loginRequest" OnValidSubmit="HandleLogin">
-            <DataAnnotationsValidator />
-            
-            <MudTextField @bind-Value="_loginRequest.Email" 
-                          Label="Email" 
-                          Variant="Variant.Outlined" 
-                          For="@(() => _loginRequest.Email)" 
-                          Class="mb-4" />
-                          
-            <MudTextField @bind-Value="_loginRequest.Password" 
-                          Label="Password" 
-                          Variant="Variant.Outlined" 
-                          InputType="InputType.Password" 
-                          For="@(() => _loginRequest.Password)" 
-                          Class="mb-6" />
-                          
-            <MudButton ButtonType="ButtonType.Submit" 
-                       Variant="Variant.Filled" 
-                       Color="Color.Primary" 
-                       FullWidth="true" 
-                       Disabled="@_isSubmitting">
-                @if (_isSubmitting)
-                {
-                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                    <MudText Class="ms-2">Logging in...</MudText>
-                }
-                else
-                {
-                    <MudText>Login</MudText>
-                }
-            </MudButton>
-        </EditForm>
+    <div class="separator">Or continue with</div>
 
-        <div class="d-flex align-center justify-center my-6">
-            <MudDivider Class="flex-grow-1" />
-            <MudText Typo="Typo.body2" Class="mx-4 text-center" Color="Color.Secondary">OR</MudText>
-            <MudDivider Class="flex-grow-1" />
-        </div>
+    <div class="social-login-group">
+        <button type="button" class="btn-social" @onclick="@(async () => await AuthService.InitiateSocialLogin("Google"))">
+            <i class="bi bi-google"></i>
+            <span>Google</span>
+        </button>
+        <button type="button" class="btn-social" @onclick="@(async () => await AuthService.InitiateSocialLogin("Facebook"))">
+            <i class="bi bi-facebook"></i>
+            <span>Facebook</span>
+        </button>
+        <button type="button" class="btn-social" @onclick="@(async () => await AuthService.InitiateSocialLogin("Microsoft"))">
+            <i class="bi bi-microsoft"></i>
+            <span>Microsoft</span>
+        </button>
+    </div>
 
-        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-3 d-flex justify-start px-4 py-2" Style="border-color: #db4437; color: #db4437; border-width: 2px;" @onclick="@(async () => await AuthService.InitiateSocialLogin("Google"))">
-            <MudIcon Icon="@Icons.Custom.Brands.Google" Class="mr-3" />
-            Continue with Google
-        </MudButton>
-        
-        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-3 d-flex justify-start px-4 py-2" Style="border-color: #4267B2; color: #4267B2; border-width: 2px;" @onclick="@(async () => await AuthService.InitiateSocialLogin("Facebook"))">
-            <MudIcon Icon="@Icons.Custom.Brands.Facebook" Class="mr-3" />
-            Continue with Facebook
-        </MudButton>
-        
-        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-4 d-flex justify-start px-4 py-2" Style="border-color: #00a4ef; color: #00a4ef; border-width: 2px;" @onclick="@(async () => await AuthService.InitiateSocialLogin("Microsoft"))">
-            <MudIcon Icon="@Icons.Custom.Brands.Microsoft" Class="mr-3" />
-            Continue with Microsoft
-        </MudButton>
-        
-        <div class="text-center mt-4">
-            <MudText Typo="Typo.body2">Don't have an account?
-                <MudLink Href="/register" Color="Color.Primary" Style="font-weight: 600;">Sign up</MudLink>
-            </MudText>
-        </div>
-    </MudPaper>
-</MudContainer>
+    <div class="signup-link">
+        Don't have an account? <a href="/register">Sign Up</a>
+    </div>
+</div>
 
 @code {
     private LoginRequest _loginRequest = new();
     private string _errorMessage = string.Empty;
     private bool _isSubmitting;
+    private bool showPassword;
 
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
 
     private async Task HandleLogin()
     {

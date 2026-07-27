@@ -81,20 +81,31 @@ public class FacebookAuthService : ISocialAuthService
 
     private class FacebookTokenValidationResponse
     {
+        [System.Text.Json.Serialization.JsonPropertyName("data")]
         public FacebookTokenValidationData Data { get; set; } = null!;
     }
 
     private class FacebookTokenValidationData
     {
+        [System.Text.Json.Serialization.JsonPropertyName("app_id")]
         public string AppId { get; set; } = string.Empty;
+        
+        [System.Text.Json.Serialization.JsonPropertyName("is_valid")]
         public bool IsValid { get; set; }
     }
 
     private class FacebookUserInfoResponse
     {
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;
+        
+        [System.Text.Json.Serialization.JsonPropertyName("email")]
         public string Email { get; set; } = string.Empty;
+        
+        [System.Text.Json.Serialization.JsonPropertyName("first_name")]
         public string FirstName { get; set; } = string.Empty;
+        
+        [System.Text.Json.Serialization.JsonPropertyName("last_name")]
         public string LastName { get; set; } = string.Empty;
     }
 }

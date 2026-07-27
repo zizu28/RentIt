@@ -1,0 +1,44 @@
+@inherits LayoutComponentBase
+
+<div class="login-layout-container">
+    <header class="login-header">
+        <a href="/" class="logo-link">
+            <i class="logo-icon bi bi-house-door-fill" style="font-size: 2rem; color: var(--accent-primary);"></i>
+        </a>
+    </header>
+
+    <main class="main-login-content">
+        @Body
+    </main>
+
+    <footer class="login-footer">
+        <button class="icon-btn theme-toggle" @onclick="ToggleTheme" title="Toggle Theme" style="margin-right: 12px; display: inline-block;">
+            <i class="bi @(_isDarkMode ? "bi-moon-fill" : "bi-sun-fill")"></i>
+        </button>
+        <a href="/terms">Terms of Service</a>
+        <span>·</span>
+        <a href="/privacy">Privacy Policy</a>
+    </footer>
+</div>
+
+@code {
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+    
+    private bool _isDarkMode = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var theme = await JSRuntime.InvokeAsync<string>("getTheme");
+            _isDarkMode = theme == "dark";
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleTheme()
+    {
+        var newTheme = await JSRuntime.InvokeAsync<string>("toggleTheme");
+        _isDarkMode = newTheme == "dark";
+    }
+}

@@ -4,148 +4,321 @@
 @inject IPropertyService PropertyService
 @inject IBookingService BookingService
 @inject NavigationManager Navigation
-@inject ISnackbar Snackbar
+@* Removing Snackbar dependency as we don't have MudBlazor anymore, we will use a simple status message *@
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="my-8">
-    <MudBreadcrumbs Items="_breadcrumbItems" Class="px-0 pb-4"></MudBreadcrumbs>
+<div class="page-container">
+    <div class="breadcrumbs">
+        <a href="/">Home</a> <span>/</span> 
+        <span class="active">@(_property?.Title ?? "Property Details")</span>
+    </div>
+
     @if (_property == null)
     {
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="d-flex mx-auto mt-16" />
+        <div class="loading-spinner-container">
+            <span class="spinner large"></span>
+        </div>
     }
     else
     {
-        <MudText Typo="Typo.h3" Style="font-weight: 700;" Class="mb-2">@_property.Title</MudText>
-        <div class="d-flex align-center mb-6">
-            <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" Class="mr-1" />
-            <MudText Typo="Typo.subtitle1" Class="mr-4" Style="font-weight: 600;">@_property.Rating</MudText>
-            <MudText Typo="Typo.subtitle1" Color="Color.Secondary" Class="mr-4">·</MudText>
-            <MudIcon Icon="@Icons.Material.Outlined.LocationOn" Size="Size.Small" Class="mr-1" />
-            <MudText Typo="Typo.subtitle1" Style="text-decoration: underline;">@_property.Location</MudText>
+        <h1 class="page-title mb-2">@_property.Title</h1>
+        <div class="property-meta mb-6">
+            <i class="bi bi-star-fill text-warning"></i>
+            <span class="font-weight-600">@_property.Rating</span>
+            <span class="text-secondary mx-2">·</span>
+            <i class="bi bi-geo-alt"></i>
+            <span class="text-underline">@_property.Location</span>
         </div>
 
-        @* Image Gallery (Simplified as single large image for now) *@
-        <div class="rounded-xl overflow-hidden mb-8" style="height: 500px; width: 100%;">
-            <MudImage Src="@GetImageUrl()" Style="object-fit: cover; width: 100%; height: 100%;" />
+        <div class="property-gallery mb-8">
+            <img src="@GetImageUrl()" alt="Property Image" class="gallery-main-img" />
         </div>
 
-        <MudGrid>
-            <MudItem xs="12" md="8">
-                <MudText Typo="Typo.h5" Style="font-weight: 700;" Class="mb-2">Entire home hosted by RentIt</MudText>
-                <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">@_property.MaxGuests guests · Entire place</MudText>
+        <div class="property-layout">
+            <div class="property-info">
+                <h2 class="section-subtitle">Entire home hosted by RentIt</h2>
+                <p class="text-secondary mb-6">@_property.MaxGuests guests · Entire place</p>
                 
-                <MudDivider Class="mb-6" />
+                <hr class="divider mb-6" />
                 
-                <MudText Typo="Typo.body1" Class="mb-6" Style="line-height: 1.8;">@_property.Description</MudText>
+                <p class="property-description mb-6">@_property.Description</p>
 
-                <MudDivider Class="mb-6" />
+                <hr class="divider mb-6" />
 
-                <MudText Typo="Typo.h5" Style="font-weight: 700;" Class="mb-4">What this place offers</MudText>
-                <MudGrid>
+                <h2 class="section-subtitle mb-4">What this place offers</h2>
+                <div class="amenities-grid">
                     @foreach (var amenity in _property.Amenities)
                     {
-                        <MudItem xs="6" Class="d-flex align-center">
-                            <MudIcon Icon="@Icons.Material.Outlined.CheckCircleOutline" Class="mr-3" Color="Color.Primary" />
-                            <MudText Typo="Typo.body1">@amenity</MudText>
-                        </MudItem>
+                        <div class="amenity-item">
+                            <i class="bi bi-check-circle amenity-icon"></i>
+                            <span>@amenity</span>
+                        </div>
                     }
-                </MudGrid>
-            </MudItem>
+                </div>
+            </div>
 
-            <MudItem xs="12" md="4">
-                <MudPaper Class="pa-6 rounded-xl booking-widget" Elevation="4">
-                    <div class="d-flex align-end mb-6">
-                        <MudText Typo="Typo.h4" Style="font-weight: 700;" Class="mr-2">$@_property.PricePerNight</MudText>
-                        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="pb-1">night</MudText>
+            <div class="property-booking">
+                <div class="booking-widget">
+                    <div class="booking-price mb-6">
+                        <span class="price-amount">$@_property.PricePerNight</span>
+                        <span class="price-label">night</span>
                     </div>
 
-                    <MudDateRangePicker @bind-DateRange="_dateRange" Label="Check-in - Check-out" Variant="Variant.Outlined" Class="mb-4" Margin="Margin.Dense" />
+                    <div class="form-group">
+                        <label>Check-in</label>
+                        <input type="date" class="form-control mb-3" @bind="CheckInDate" />
+                        
+                        <label>Check-out</label>
+                        <input type="date" class="form-control mb-4" @bind="CheckOutDate" />
+                    </div>
                     
-                    <MudSelect T="int" Label="Guests" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Class="mb-6" Margin="Margin.Dense">
-                        @for (int i = 1; i <= _property.MaxGuests; i++)
-                        {
-                            <MudSelectItem Value="@i">@i guest@(i > 1 ? "s" : "")</MudSelectItem>
-                        }
-                    </MudSelect>
+                    <div class="form-group mb-6">
+                        <label>Guests</label>
+                        <select class="form-control" @bind="_guests">
+                            @for (int i = 1; i <= _property.MaxGuests; i++)
+                            {
+                                <option value="@i">@i guest@(i > 1 ? "s" : "")</option>
+                            }
+                        </select>
+                    </div>
 
-                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Large" FullWidth="true" Class="rounded-lg py-3 mb-4" OnClick="ReserveAsync" Disabled="@_isBooking">
+                    @if (!string.IsNullOrEmpty(_statusMessage))
+                    {
+                        <div class="alert @(_isError ? "alert-danger" : "alert-success") mb-4">
+                            @_statusMessage
+                        </div>
+                    }
+
+                    <button class="btn btn-primary full-width rounded-lg py-3 mb-4" @onclick="ReserveAsync" disabled="@_isBooking">
                         @if (_isBooking)
                         {
-                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                            <MudText Class="ms-2">Processing</MudText>
+                            <span class="spinner"></span>
+                            <span>Processing...</span>
                         }
                         else
                         {
-                            <MudText>Reserve</MudText>
+                            <span>Reserve</span>
                         }
-                    </MudButton>
+                    </button>
 
-                    @if (_dateRange?.Start != null && _dateRange?.End != null)
+                    @if (CheckInDate.HasValue && CheckOutDate.HasValue && (CheckOutDate.Value - CheckInDate.Value).Days > 0)
                     {
-                        var nights = (_dateRange.End.Value - _dateRange.Start.Value).Days;
-                        if (nights > 0)
-                        {
-                            <div class="d-flex justify-space-between mb-2">
-                                <MudText Typo="Typo.body1" Color="Color.Secondary">$@_property.PricePerNight x @nights nights</MudText>
-                                <MudText Typo="Typo.body1">$@(_property.PricePerNight * nights)</MudText>
+                        var nights = (CheckOutDate.Value - CheckInDate.Value).Days;
+                        <div class="price-breakdown">
+                            <div class="price-row mb-2">
+                                <span>$@_property.PricePerNight x @nights nights</span>
+                                <span>$@(_property.PricePerNight * nights)</span>
                             </div>
-                            <MudDivider Class="my-4" />
-                            <div class="d-flex justify-space-between">
-                                <MudText Typo="Typo.h6" Style="font-weight: 700;">Total</MudText>
-                                <MudText Typo="Typo.h6" Style="font-weight: 700;">$@(_property.PricePerNight * nights)</MudText>
+                            <hr class="divider my-4" />
+                            <div class="price-row total-row">
+                                <span>Total</span>
+                                <span>$@(_property.PricePerNight * nights)</span>
                             </div>
-                        }
+                        </div>
                     }
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
+                </div>
+            </div>
+        </div>
     }
-</MudContainer>
+</div>
+
+<style>
+    .page-container {
+        padding: 2rem 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .breadcrumbs {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+    }
+    .breadcrumbs a {
+        color: var(--text-link);
+        text-decoration: none;
+    }
+    .breadcrumbs .active {
+        color: var(--text-primary);
+    }
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+    }
+    .property-meta {
+        display: flex;
+        align-items: center;
+        font-size: 1rem;
+        color: var(--text-primary);
+    }
+    .property-meta i {
+        margin-right: 6px;
+    }
+    .text-warning { color: var(--color-warning); }
+    .text-secondary { color: var(--text-secondary); }
+    .text-underline { text-decoration: underline; }
+    .font-weight-600 { font-weight: 600; }
+    .mx-2 { margin-left: 0.5rem; margin-right: 0.5rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .mb-8 { margin-bottom: 2rem; }
+    .my-4 { margin-top: 1rem; margin-bottom: 1rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+
+    .property-gallery {
+        height: 500px;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+    }
+    .gallery-main-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .property-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 4rem;
+    }
+    @@media (max-width: 900px) {
+        .property-layout {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+    }
+
+    .section-subtitle {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    .property-description {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: var(--text-primary);
+    }
+    .divider {
+        border: 0;
+        height: 1px;
+        background: var(--border-default);
+    }
+    .amenities-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    .amenity-item {
+        display: flex;
+        align-items: center;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+    }
+    .amenity-icon {
+        color: var(--accent-primary);
+        margin-right: 12px;
+        font-size: 1.2rem;
+    }
+
+    .booking-widget {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-default);
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: var(--shadow-lg);
+        position: sticky;
+        top: 100px;
+    }
+    .booking-price {
+        display: flex;
+        align-items: baseline;
+    }
+    .price-amount {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-right: 8px;
+    }
+    .price-label {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+    }
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+    .total-row {
+        color: var(--text-primary);
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+    .full-width {
+        width: 100%;
+    }
+    .loading-spinner-container {
+        display: flex;
+        justify-content: center;
+        padding: 4rem;
+    }
+    .alert-success { background-color: var(--color-success-subtle); color: var(--color-success); }
+</style>
 
 @code {
     [Parameter] public Guid Id { get; set; }
     private PropertyDto? _property;
-    private MudBlazor.DateRange? _dateRange;
+    private DateTime? CheckInDate;
+    private DateTime? CheckOutDate;
+    private int _guests = 1;
     private bool _isBooking;
-    private List<BreadcrumbItem> _breadcrumbItems = new List<BreadcrumbItem>
-    {
-        new BreadcrumbItem("Home", href: "/")
-    };
+    
+    private string _statusMessage = string.Empty;
+    private bool _isError = false;
 
     protected override async Task OnInitializedAsync()
     {
         _property = await PropertyService.GetPropertyByIdAsync(Id);
-        if (_property != null)
-        {
-            _breadcrumbItems.Add(new BreadcrumbItem(_property.Title, href: null, disabled: true));
-        }
     }
 
     private string GetImageUrl() => _property?.ImageUrls.FirstOrDefault() ?? string.Empty;
 
     private async Task ReserveAsync()
     {
-        if (_dateRange?.Start == null || _dateRange?.End == null)
+        _statusMessage = string.Empty;
+
+        if (CheckInDate == null || CheckOutDate == null)
         {
-            Snackbar.Add("Please select check-in and check-out dates.", Severity.Warning);
+            _statusMessage = "Please select check-in and check-out dates.";
+            _isError = true;
             return;
         }
 
-        if ((_dateRange.End.Value - _dateRange.Start.Value).Days <= 0)
+        if ((CheckOutDate.Value - CheckInDate.Value).Days <= 0)
         {
-             Snackbar.Add("Check-out date must be after check-in date.", Severity.Warning);
-             return;
+            _statusMessage = "Check-out date must be after check-in date.";
+            _isError = true;
+            return;
         }
 
         try
         {
             _isBooking = true;
-            await BookingService.CreateBookingAsync(Id, DateOnly.FromDateTime(_dateRange.Start.Value), DateOnly.FromDateTime(_dateRange.End.Value));
-            Snackbar.Add("Booking confirmed successfully!", Severity.Success);
+            await BookingService.CreateBookingAsync(Id, DateOnly.FromDateTime(CheckInDate.Value), DateOnly.FromDateTime(CheckOutDate.Value));
+            _statusMessage = "Booking confirmed successfully!";
+            _isError = false;
+            
+            // Allow user to see the success message briefly
+            await Task.Delay(1000); 
             Navigation.NavigateTo("/bookings");
         }
         catch (Exception ex)
         {
-            Snackbar.Add("Failed to create booking: " + ex.Message, Severity.Error);
+            _statusMessage = "Failed to create booking: " + ex.Message;
+            _isError = true;
         }
         finally
         {

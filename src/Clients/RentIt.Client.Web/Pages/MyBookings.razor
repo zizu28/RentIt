@@ -5,67 +5,194 @@
 @inject NavigationManager Navigation
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="my-8">
-    <MudBreadcrumbs Items="_breadcrumbItems" Class="px-0 pb-4"></MudBreadcrumbs>
-    <MudText Typo="Typo.h3" Style="font-weight: 700;" Class="mb-8">My Bookings</MudText>
+<div class="page-container">
+    <div class="breadcrumbs">
+        <a href="/">Home</a> <span>/</span> <span class="active">My Bookings</span>
+    </div>
+    
+    <h1 class="page-title">My Bookings</h1>
 
     @if (_bookings == null)
     {
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="d-flex mx-auto mt-16" />
+        <div class="loading-spinner-container">
+            <span class="spinner large"></span>
+        </div>
     }
     else if (!_bookings.Any())
     {
-        <MudPaper Class="pa-16 text-center rounded-xl" Elevation="2">
-            <MudIcon Icon="@Icons.Material.Filled.FlightTakeoff" Size="Size.Large" Color="Color.Primary" Class="mb-4" Style="font-size: 4rem;" />
-            <MudText Typo="Typo.h5" Style="font-weight: 600;" Class="mb-2">No trips booked... yet!</MudText>
-            <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-6">Time to dust off your bags and start planning your next adventure.</MudText>
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" Class="rounded-lg px-8" Href="/">Start searching</MudButton>
-        </MudPaper>
+        <div class="empty-state">
+            <i class="bi bi-airplane empty-state-icon"></i>
+            <h2>No trips booked... yet!</h2>
+            <p>Time to dust off your bags and start planning your next adventure.</p>
+            <a href="/" class="btn btn-primary mt-4">Start searching</a>
+        </div>
     }
     else
     {
-        <MudGrid>
+        <div class="bookings-grid">
             @foreach (var booking in _bookings.OrderBy(b => b.StartDate))
             {
-                <MudItem xs="12" md="6" lg="4">
-                    <MudCard Elevation="3" Class="rounded-xl h-100 d-flex flex-column" Style="overflow: hidden;">
-                        <MudCardMedia Image="@booking.PropertyImageUrl" Height="200" />
-                        <MudCardContent Class="flex-grow-1">
-                            <div class="d-flex justify-space-between align-start mb-2">
-                                <MudText Typo="Typo.h6" Style="font-weight: 600; line-height: 1.2;">@booking.PropertyTitle</MudText>
-                                <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Outlined">@booking.Status</MudChip>
-                            </div>
-                            <MudDivider Class="my-4" />
-                            
-                            <div class="d-flex align-center mb-2">
-                                <MudIcon Icon="@Icons.Material.Outlined.DateRange" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
-                                <MudText Typo="Typo.body2" Style="font-weight: 500;">
-                                    @booking.StartDate.ToString("MMM dd, yyyy") - @booking.EndDate.ToString("MMM dd, yyyy")
-                                </MudText>
-                            </div>
-                            
-                            <div class="d-flex align-center">
-                                <MudIcon Icon="@Icons.Material.Outlined.Payments" Size="Size.Small" Color="Color.Secondary" Class="mr-2" />
-                                <MudText Typo="Typo.body2" Style="font-weight: 500;">$@booking.TotalPrice total</MudText>
-                            </div>
-                        </MudCardContent>
-                        <MudCardActions Class="pa-4 pt-0">
-                            <MudButton Variant="Variant.Text" Color="Color.Primary" FullWidth="true" OnClick="() => NavigateToProperty(booking.PropertyId)">View Property</MudButton>
-                        </MudCardActions>
-                    </MudCard>
-                </MudItem>
+                <div class="booking-card">
+                    <div class="booking-img-wrapper">
+                        <img src="@booking.PropertyImageUrl" alt="@booking.PropertyTitle" class="booking-img" />
+                        <span class="booking-status badge-success">@booking.Status</span>
+                    </div>
+                    <div class="booking-content">
+                        <h3 class="booking-title">@booking.PropertyTitle</h3>
+                        <hr class="divider" />
+                        
+                        <div class="booking-detail">
+                            <i class="bi bi-calendar3"></i>
+                            <span>@booking.StartDate.ToString("MMM dd, yyyy") - @booking.EndDate.ToString("MMM dd, yyyy")</span>
+                        </div>
+                        
+                        <div class="booking-detail">
+                            <i class="bi bi-credit-card"></i>
+                            <span>$@booking.TotalPrice total</span>
+                        </div>
+                    </div>
+                    <div class="booking-actions">
+                        <button class="btn btn-outline full-width" @onclick="() => NavigateToProperty(booking.PropertyId)">View Property</button>
+                    </div>
+                </div>
             }
-        </MudGrid>
+        </div>
     }
-</MudContainer>
+</div>
+
+<style>
+    .page-container {
+        padding: 2rem 24px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .breadcrumbs {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+    }
+    .breadcrumbs a {
+        color: var(--text-link);
+        text-decoration: none;
+    }
+    .breadcrumbs .active {
+        color: var(--text-primary);
+    }
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 2rem;
+    }
+    .empty-state {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-default);
+        border-radius: 24px;
+        padding: 4rem 2rem;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+    }
+    .empty-state-icon {
+        font-size: 4rem;
+        color: var(--accent-primary);
+        margin-bottom: 1.5rem;
+        display: block;
+    }
+    .empty-state h2 {
+        font-size: 1.8rem;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+    .empty-state p {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+    .bookings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+    }
+    .booking-card {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-default);
+        border-radius: 16px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .booking-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+    .booking-img-wrapper {
+        position: relative;
+        height: 200px;
+    }
+    .booking-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .booking-status {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: var(--color-success);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 100px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+    .booking-content {
+        padding: 1.5rem;
+        flex: 1;
+    }
+    .booking-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 1rem 0;
+        line-height: 1.3;
+    }
+    .divider {
+        border: 0;
+        height: 1px;
+        background: var(--border-default);
+        margin: 1rem 0;
+    }
+    .booking-detail {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+    }
+    .booking-detail i {
+        color: var(--text-muted);
+    }
+    .booking-actions {
+        padding: 1rem 1.5rem;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-default);
+    }
+    .full-width {
+        width: 100%;
+    }
+    .loading-spinner-container {
+        display: flex;
+        justify-content: center;
+        padding: 4rem;
+    }
+</style>
 
 @code {
     private IEnumerable<BookingDto>? _bookings;
-    private List<BreadcrumbItem> _breadcrumbItems = new List<BreadcrumbItem>
-    {
-        new BreadcrumbItem("Home", href: "/"),
-        new BreadcrumbItem("My Bookings", href: null, disabled: true)
-    };
 
     protected override async Task OnInitializedAsync()
     {

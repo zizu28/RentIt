@@ -2,6 +2,8 @@ using RentIt.Modules.Identity.Application;
 using RentIt.Modules.Identity.Infrastructure;
 using RentIt.Shared.Abstractions.BackgroundJobs;
 
+using RentIt.Shared.Infrastructure.Email;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var mvcBuilder = builder.Services.AddControllers();
@@ -16,6 +18,7 @@ if (assembliesPath != null)
     }
 }
 builder.Services.AddBackgroundJobs(builder.Configuration);
+builder.Services.AddSharedEmailServices();
 builder.Services.AddIdentityApplication();
 builder.Services.AddIdentityInfrastructure(builder.Configuration);
 

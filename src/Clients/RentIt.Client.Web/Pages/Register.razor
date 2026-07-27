@@ -1,105 +1,119 @@
 @page "/register"
+@layout RentIt.Client.Web.Layout.AuthLayout
 @using RentIt.Client.Web.Auth
 @using RentIt.Shared.DTOs.Identity
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8 mb-16">
-    <MudPaper Class="pa-8">
-        <MudText Typo="Typo.h5" Class="mb-4">Create an Account</MudText>
+<div class="login-card">
+    <header class="login-card-header">
+        <h2>Create an Account</h2>
+        <p>Join RentIt to find or list properties.</p>
+    </header>
+
+    <EditForm Model="@_registerRequest" OnValidSubmit="HandleRegister" class="login-form">
+        <DataAnnotationsValidator />
+
+        <div class="form-group row g-2">
+            <div class="col-6">
+                <label for="firstName">First Name</label>
+                <InputText id="firstName" @bind-Value="_registerRequest.FirstName" class="form-control" placeholder="John" />
+                <ValidationMessage For="() => _registerRequest.FirstName" />
+            </div>
+            <div class="col-6">
+                <label for="lastName">Last Name</label>
+                <InputText id="lastName" @bind-Value="_registerRequest.LastName" class="form-control" placeholder="Doe" />
+                <ValidationMessage For="() => _registerRequest.LastName" />
+            </div>
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="email">Email</label>
+            <InputText id="email" @bind-Value="_registerRequest.Email" class="form-control" placeholder="you@example.com" />
+            <ValidationMessage For="() => _registerRequest.Email" />
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="phone">Phone Number</label>
+            <InputText id="phone" @bind-Value="_registerRequest.PhoneNumber" class="form-control" placeholder="+1 234 567 890" />
+            <ValidationMessage For="() => _registerRequest.PhoneNumber" />
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="role">Account Role</label>
+            <InputSelect id="role" @bind-Value="_registerRequest.Role" class="form-control">
+                <option value="Renter">Renter</option>
+                <option value="Landlord">Landlord</option>
+                <option value="Agent">Agent</option>
+            </InputSelect>
+            <ValidationMessage For="() => _registerRequest.Role" />
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="password">Password</label>
+            <div class="password-wrapper">
+                <InputText id="password" @bind-Value="_registerRequest.Password" type="@(showPassword ? "text" : "password")" class="form-control" placeholder="••••••••" />
+                <button type="button" class="password-toggle-btn" @onclick="TogglePasswordVisibility" tabindex="-1">
+                    <i class="bi @(showPassword ? "bi-eye" : "bi-eye-slash")"></i>
+                </button>
+            </div>
+            <ValidationMessage For="() => _registerRequest.Password" />
+        </div>
+
+        <button type="submit" class="btn-submit" disabled="@_isSubmitting">
+            @if (_isSubmitting)
+            {
+                <span class="spinner"></span>
+                <span>Registering...</span>
+            }
+            else
+            {
+                <span>Sign Up</span>
+                <i class="bi bi-arrow-right"></i>
+            }
+        </button>
 
         @if (!string.IsNullOrEmpty(_errorMessage))
         {
-            <MudAlert Severity="Severity.Error" Class="mb-4">@_errorMessage</MudAlert>
+            <div class="alert alert-danger mt-2" style="font-size: 0.9rem; padding: 10px;">
+                @_errorMessage
+            </div>
         }
+    </EditForm>
 
-        <EditForm Model="@_registerRequest" OnValidSubmit="HandleRegister">
-            <DataAnnotationsValidator />
-            
-            <MudGrid>
-                <MudItem xs="12" sm="6" Class="pb-0">
-                    <MudTextField @bind-Value="_registerRequest.FirstName" 
-                                  Label="First Name" 
-                                  Variant="Variant.Outlined" 
-                                  For="@(() => _registerRequest.FirstName)" 
-                                  Class="mb-4" />
-                </MudItem>
-                <MudItem xs="12" sm="6" Class="pb-0">
-                    <MudTextField @bind-Value="_registerRequest.LastName" 
-                                  Label="Last Name" 
-                                  Variant="Variant.Outlined" 
-                                  For="@(() => _registerRequest.LastName)" 
-                                  Class="mb-4" />
-                </MudItem>
-            </MudGrid>
-            
-            <MudTextField @bind-Value="_registerRequest.Email" 
-                          Label="Email" 
-                          Variant="Variant.Outlined" 
-                          For="@(() => _registerRequest.Email)" 
-                          Class="mb-4" />
+    <div class="separator">Or continue with</div>
 
-            <MudTextField @bind-Value="_registerRequest.PhoneNumber" 
-                          Label="Phone Number (Optional)" 
-                          Variant="Variant.Outlined" 
-                          For="@(() => _registerRequest.PhoneNumber)" 
-                          Class="mb-4" />
-                          
-            <MudTextField @bind-Value="_registerRequest.Password" 
-                          Label="Password" 
-                          Variant="Variant.Outlined" 
-                          InputType="InputType.Password" 
-                          For="@(() => _registerRequest.Password)" 
-                          Class="mb-6" />
-                          
-            <MudButton ButtonType="ButtonType.Submit" 
-                       Variant="Variant.Filled" 
-                       Color="Color.Primary" 
-                       FullWidth="true" 
-                       Disabled="@_isSubmitting">
-                @if (_isSubmitting)
-                {
-                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
-                    <MudText Class="ms-2">Registering...</MudText>
-                }
-                else
-                {
-                    <MudText>Sign Up</MudText>
-                }
-            </MudButton>
-        </EditForm>
+    <div class="social-login-group">
+        <button type="button" class="btn-social" @onclick="@(async () => await AuthService.InitiateSocialLogin("Google"))">
+            <i class="bi bi-google"></i>
+            <span>Google</span>
+        </button>
+        <button type="button" class="btn-social" @onclick="@(async () => await AuthService.InitiateSocialLogin("Facebook"))">
+            <i class="bi bi-facebook"></i>
+            <span>Facebook</span>
+        </button>
+        <button type="button" class="btn-social" @onclick="@(async () => await AuthService.InitiateSocialLogin("Microsoft"))">
+            <i class="bi bi-microsoft"></i>
+            <span>Microsoft</span>
+        </button>
+    </div>
 
-        <div class="d-flex align-center justify-center my-6">
-            <MudDivider Class="flex-grow-1" />
-            <MudText Typo="Typo.body2" Class="mx-4 text-center" Color="Color.Secondary">OR</MudText>
-            <MudDivider Class="flex-grow-1" />
-        </div>
-
-        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-3 d-flex justify-start px-4 py-2" Style="border-color: #db4437; color: #db4437; border-width: 2px;" @onclick="@(() => AuthService.InitiateSocialLogin("Google"))">
-            <MudIcon Icon="@Icons.Custom.Brands.Google" Class="mr-3" />
-            Sign up with Google
-        </MudButton>
-        
-        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-3 d-flex justify-start px-4 py-2" Style="border-color: #4267B2; color: #4267B2; border-width: 2px;" @onclick="@(() => AuthService.InitiateSocialLogin("Facebook"))">
-            <MudIcon Icon="@Icons.Custom.Brands.Facebook" Class="mr-3" />
-            Sign up with Facebook
-        </MudButton>
-        
-        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="mb-4 d-flex justify-start px-4 py-2" Style="border-color: #00a4ef; color: #00a4ef; border-width: 2px;" @onclick="@(() => AuthService.InitiateSocialLogin("Microsoft"))">
-            <MudIcon Icon="@Icons.Custom.Brands.Microsoft" Class="mr-3" />
-            Sign up with Microsoft
-        </MudButton>
-        
-        <div class="text-center mt-4">
-            <MudText Typo="Typo.body2">Already have an account? <MudLink Href="/login" Color="Color.Primary" Style="font-weight: 600;">Login</MudLink></MudText>
-        </div>
-    </MudPaper>
-</MudContainer>
+    <div class="signup-link">
+        Already have an account?
+        <a href="/login">Login</a>
+    </div>
+</div>
 
 @code {
-    private RegisterUserRequest _registerRequest = new() { Role = "User" };
+    private RegisterUserRequest _registerRequest = new() { Role = "Renter" };
     private string _errorMessage = string.Empty;
     private bool _isSubmitting;
+    private bool showPassword;
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
 
     private async Task HandleRegister()
     {
@@ -108,9 +122,16 @@
 
         try
         {
-            // Placeholder: Call AuthService.RegisterAsync(_registerRequest) once implemented
-            await Task.Delay(500); // Simulate network request
-            Navigation.NavigateTo("/login");
+            var success = await AuthService.RegisterAsync(_registerRequest);
+            
+            if (success)
+            {
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                _errorMessage = "Registration failed. The email might already be taken or your input is invalid.";
+            }
         }
         catch (Exception)
         {

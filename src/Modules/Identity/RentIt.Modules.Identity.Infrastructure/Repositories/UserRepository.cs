@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using RentIt.Modules.Identity.Domain.Entities;
 using RentIt.Modules.Identity.Domain.Repositories;
+using RentIt.Modules.Identity.Domain.ValueObjects;
 using RentIt.Modules.Identity.Infrastructure.Persistence;
 
 namespace RentIt.Modules.Identity.Infrastructure.Repositories;
@@ -26,8 +27,16 @@ internal sealed class UserRepository(IdentityDbContext dbContext) : IUserReposit
 
     public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users
-            .FirstOrDefaultAsync(u => u.Email.Value.Equals(email, StringComparison.OrdinalIgnoreCase), cancellationToken);
+        try
+        {
+            var emailObj = Email.Create(email);
+            return await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.Email == emailObj, cancellationToken);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
     }
 
     public async Task<User?> GetByEmailForUpdateAsync(string email, CancellationToken cancellationToken = default)
@@ -41,20 +50,45 @@ internal sealed class UserRepository(IdentityDbContext dbContext) : IUserReposit
 
     public async Task<User?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users
-            .FirstOrDefaultAsync(u => u.PhoneNumber.Value == phoneNumber, cancellationToken);
+        try
+        {
+            var phoneObj = PhoneNumber.Create(phoneNumber);
+            return await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.PhoneNumber == phoneObj, cancellationToken);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
     }
 
     public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users
-            .AnyAsync(u => u.Email.Value.Equals(email, StringComparison.OrdinalIgnoreCase), cancellationToken);
+        try
+        {
+            var emailObj = Email.Create(email);
+            return await _dbContext.Users
+                .AsNoTracking()
+                .AnyAsync(u => u.Email == emailObj, cancellationToken);
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
     }
 
     public async Task<bool> ExistsByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users
-            .AnyAsync(u => u.PhoneNumber.Value == phoneNumber, cancellationToken);
+        try
+        {
+            var phoneObj = PhoneNumber.Create(phoneNumber);
+            return await _dbContext.Users
+                .AnyAsync(u => u.PhoneNumber == phoneObj, cancellationToken);
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
     }
 
     public async Task AddAsync(User entity, CancellationToken cancellationToken = default)

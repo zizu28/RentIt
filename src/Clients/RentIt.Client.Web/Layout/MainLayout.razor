@@ -1,69 +1,75 @@
 @using Microsoft.AspNetCore.Components.Authorization
-@using MudBlazor
 @using RentIt.Client.Web.Auth
 @inherits LayoutComponentBase
 
-<MudThemeProvider Theme="_currentTheme" />
-<MudDialogProvider />
-<MudSnackbarProvider />
-<MudPopoverProvider />
+<div class="layout-container">
+    <header class="top-nav-header">
+        <div class="nav-content">
+            <div class="nav-left">
+                <a href="/" class="logo">
+                    <i class="bi bi-house-door-fill" style="font-size: 1.5rem; color: var(--accent-primary); margin-right: 8px;"></i>
+                    <span class="logo-text">RentIt</span>
+                </a>
 
-<MudLayout>
-    <MudAppBar Elevation="1" Color="Color.Surface">
-        <MudIcon Icon="@Icons.Material.Filled.HomeWork" Color="Color.Primary" Size="Size.Large" Class="mr-2" />
-        <MudText Typo="Typo.h5" Color="Color.Primary" Style="font-weight: 700;">RentIt</MudText>
-        <MudSpacer />
-        
-        <MudButton Href="/" Class="mr-4" Variant="Variant.Text">Home</MudButton>
-        <AuthorizeView>
-            <Authorized>
-                <MudButton Href="/bookings" Class="mr-4" Variant="Variant.Text">My Bookings</MudButton>
-                <MudText Class="mr-4" Typo="Typo.body1">@context.User.Identity?.Name</MudText>
-                <MudButton OnClick="Logout" Color="Color.Primary" Variant="Variant.Outlined">Logout</MudButton>
-            </Authorized>
-            <NotAuthorized>
-                <MudButton Color="Color.Primary" Variant="Variant.Outlined" Href="/login" Class="mr-2">Login</MudButton>
-                <MudButton Color="Color.Primary" Variant="Variant.Filled" Href="/register">Register</MudButton>
-            </NotAuthorized>
-        </AuthorizeView>
-    </MudAppBar>
+                <!-- Desktop Nav -->
+                <nav class="main-navigation">
+                    <NavLink href="/" Match="NavLinkMatch.All" class="nav-link">Home</NavLink>
+                    <AuthorizeView>
+                        <Authorized>
+                            <NavLink href="/bookings" Match="NavLinkMatch.Prefix" class="nav-link">My Bookings</NavLink>
+                        </Authorized>
+                    </AuthorizeView>
+                </nav>
+            </div>
 
-    <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-8">
-            @Body
-        </MudContainer>
-    </MudMainContent>
-</MudLayout>
+            <div class="nav-right">
+                <button class="icon-btn theme-toggle" @onclick="ToggleTheme" title="Toggle Theme" style="margin-right: 12px;">
+                    <i class="bi @(_isDarkMode ? "bi-moon-fill" : "bi-sun-fill")"></i>
+                </button>
+
+                <AuthorizeView>
+                    <Authorized>
+                        <span class="user-greeting">Welcome, <strong>@context.User.Identity?.Name</strong></span>
+                        <button class="btn btn-logout" @onclick="Logout" title="Log out">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </button>
+                    </Authorized>
+                    <NotAuthorized>
+                        <a href="/login" class="btn btn-outline" style="margin-right: 12px;">Login</a>
+                        <a href="/register" class="btn btn-primary">Register</a>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main-content">
+        @Body
+    </main>
+</div>
 
 @code {
     [Inject] private IAuthService AuthService { get; set; } = default!;
     [Inject] private NavigationManager Navigation { get; set; } = default!;
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+    
+    private bool _isDarkMode = true;
 
-    private MudTheme _currentTheme = new MudTheme()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        PaletteLight = new PaletteLight()
+        if (firstRender)
         {
-            Primary = "#5E35B1",
-            Secondary = "#FF4081",
-            AppbarBackground = "#ffffff",
-            Background = "#f9fafb",
-            Surface = "#ffffff",
-            DrawerBackground = "#ffffff",
-            TextPrimary = "#111827",
-            TextSecondary = "#4b5563"
-        },
-        Typography = new Typography()
-        {
-            Default = new Default() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" } },
-            H1 = new H1() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 700 },
-            H2 = new H2() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 700 },
-            H3 = new H3() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 600 },
-            H4 = new H4() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 600 },
-            H5 = new H5() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 500 },
-            H6 = new H6() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 500 },
-            Button = new Button() { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, FontWeight = 600 }
+            var theme = await JSRuntime.InvokeAsync<string>("getTheme");
+            _isDarkMode = theme == "dark";
+            StateHasChanged();
         }
-    };
+    }
+
+    private async Task ToggleTheme()
+    {
+        var newTheme = await JSRuntime.InvokeAsync<string>("toggleTheme");
+        _isDarkMode = newTheme == "dark";
+    }
 
     private async Task Logout()
     {

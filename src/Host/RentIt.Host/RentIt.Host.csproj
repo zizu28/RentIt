@@ -16,6 +16,7 @@
     <ProjectReference Include="..\..\Modules\Properties\RentIt.Modules.Properties.Api\RentIt.Modules.Properties.Api.csproj" />
     <ProjectReference Include="..\..\Modules\Reviews\RentIt.Modules.Reviews.Api\RentIt.Modules.Reviews.Api.csproj" />
     <ProjectReference Include="..\..\Modules\Verification\RentIt.Modules.Verification.Api\RentIt.Modules.Verification.Api.csproj" />
+    <ProjectReference Include="..\..\Shared\RentIt.Shared.Infrastructure\RentIt.Shared.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
