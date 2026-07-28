@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using RentIt.Modules.Identity.Application.Commands;
 using RentIt.Shared.DTOs.Identity;
 
@@ -8,6 +9,7 @@ namespace RentIt.Modules.Identity.Api.Controllers;
 
 [ApiController]
 [Route("api/identity/auth")]
+[EnableRateLimiting("auth")]
 public sealed class AuthController(ISender sender) : ControllerBase
 {
     private readonly ISender _sender = sender;

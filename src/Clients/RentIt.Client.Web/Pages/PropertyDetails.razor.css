@@ -142,3 +142,39 @@
         padding: 4rem;
     }
     .alert-success { background-color: var(--color-success-subtle); color: var(--color-success); }
+    
+    /* =========================================
+       Responsive Styles
+       ========================================= */
+    @media (max-width: 768px) {
+        .page-container {
+            padding: 1.5rem 16px;
+        }
+        .page-title {
+            font-size: 1.75rem;
+        }
+        .property-gallery {
+            height: 300px;
+        }
+        .booking-widget {
+            position: static; /* Drop sticky behavior */
+            margin-top: 2rem;
+            padding: 20px;
+        }
+        .amenities-grid {
+            grid-template-columns: 1fr; /* Stack amenities vertically */
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .property-gallery {
+            height: 250px;
+        }
+        .property-meta {
+            flex-wrap: wrap; /* Allow meta details to wrap */
+            gap: 8px;
+        }
+        .price-amount {
+            font-size: 1.75rem;
+        }
+    }

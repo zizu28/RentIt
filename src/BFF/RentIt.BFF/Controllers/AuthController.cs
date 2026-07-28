@@ -17,7 +17,7 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory, ILogger
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
-        var client = _httpClientFactory.CreateClient("Gateway");
+        var client = _httpClientFactory.CreateClient("Host");
 
         var response = await client.PostAsJsonAsync("/api/identity/auth/login", request, cancellationToken);
 
@@ -96,7 +96,7 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory, ILogger
             AccessToken = accessToken
         };
 
-        var client = _httpClientFactory.CreateClient("Gateway");
+        var client = _httpClientFactory.CreateClient("Host");
         var response = await client.PostAsJsonAsync("/api/identity/auth/social-login", socialLoginRequest, cancellationToken);
 
         if (!response.IsSuccessStatusCode)

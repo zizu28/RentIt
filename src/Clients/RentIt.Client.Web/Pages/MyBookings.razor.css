@@ -126,3 +126,23 @@
         justify-content: center;
         padding: 4rem;
     }
+    
+    /* =========================================
+       Responsive Styles
+       ========================================= */
+    @media (max-width: 768px) {
+        .page-container {
+            padding: 1.5rem 16px;
+        }
+        .page-title {
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .bookings-grid {
+            grid-template-columns: 1fr; /* 1 column on mobile */
+            gap: 1.5rem;
+        }
+        .empty-state {
+            padding: 2rem 1rem;
+        }
+    }

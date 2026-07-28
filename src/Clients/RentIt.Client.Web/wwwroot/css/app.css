@@ -785,3 +785,30 @@ code {
 .icon-btn { background: transparent; border: none; font-size: 1.25rem; color: var(--text-muted); cursor: pointer; position: relative; padding: 4px; display: inline-flex; align-items: center; justify-content: center; transition: color var(--transition-fast); }
 .icon-btn:hover { color: var(--text-primary); }
 
+/* =====================================================================
+   11. GLOBAL RESPONSIVE SCALING
+   ===================================================================== */
+@media (max-width: 768px) {
+    html {
+        font-size: 14px; /* Scales down all rem units slightly */
+    }
+    
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.15rem; }
+    h4 { font-size: 1rem; }
+    
+    /* General section padding adjustments for mobile */
+    .section-header-cc {
+        margin-bottom: var(--space-4);
+    }
+}
+
+@media (max-width: 480px) {
+    h1 { font-size: 1.75rem; }
+    h2 { font-size: 1.35rem; }
+    
+    .btn-cc-primary, .btn-cc-secondary, .btn-cc-accent {
+        width: 100%; /* Full width buttons on tiny screens if inside form/actions */
+    }
+}

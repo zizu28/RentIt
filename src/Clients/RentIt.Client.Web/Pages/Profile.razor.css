@@ -207,3 +207,31 @@
 .mt-8 { margin-top: 2rem; }
 .mb-6 { margin-bottom: 1.5rem; }
 .mr-2 { margin-right: 0.5rem; }
+
+/* =========================================
+   Responsive Styles
+   ========================================= */
+@media (max-width: 768px) {
+    .page-container {
+        padding: 1.5rem 16px;
+    }
+    .page-title {
+        font-size: 1.75rem;
+    }
+    .profile-card {
+        position: static; /* Drop sticky behavior */
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+    }
+    .avatar-container {
+        width: 100px;
+        height: 100px;
+    }
+    .settings-card {
+        padding: 1rem;
+    }
+    .settings-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+}

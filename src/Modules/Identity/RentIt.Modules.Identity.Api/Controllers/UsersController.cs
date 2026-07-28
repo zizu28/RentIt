@@ -2,6 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.RateLimiting;
 using RentIt.Modules.Identity.Application.Queries;
 
 using RentIt.Modules.Identity.Application.Commands;
@@ -13,11 +15,13 @@ namespace RentIt.Modules.Identity.Api.Controllers;
 [ApiController]
 [Route("api/identity/users")]
 [Authorize]
+[EnableRateLimiting("api")]
 public sealed class UsersController(ISender sender) : ControllerBase
 {
     private readonly ISender _sender = sender;
 
     [HttpGet("me")]
+    [OutputCache(PolicyName = "short")]
     public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken)
     {
         var identifier = JwtRegisteredClaimNames.Sub ?? ClaimTypes.NameIdentifier;

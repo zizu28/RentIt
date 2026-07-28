@@ -201,3 +201,36 @@
 .mb-8 { margin-bottom: 2rem; }
 .my-4 { margin-top: 1rem; margin-bottom: 1rem; }
 .mr-2 { margin-right: 0.5rem; }
+
+/* =========================================
+   Responsive Styles
+   ========================================= */
+@media (max-width: 768px) {
+    .page-container {
+        padding: 1.5rem 16px;
+    }
+    .page-title {
+        font-size: 1.75rem;
+    }
+    .summary-card {
+        position: static; /* Drop sticky behavior */
+        margin-top: 2rem;
+        padding: 20px;
+    }
+    .payment-option {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .property-summary {
+        flex-direction: column; /* Stack image and info */
+    }
+    .summary-img {
+        width: 100%;
+        height: 160px;
+    }
+    .option-icon {
+        margin-right: 1rem;
+    }
+}

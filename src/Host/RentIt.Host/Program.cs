@@ -1,4 +1,9 @@
 using System.Reflection;
+using System.Text;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.IdentityModel.Tokens;
 using RentIt.Modules.Identity.Application;
 using RentIt.Modules.Identity.Infrastructure;
 using RentIt.Shared.Abstractions.BackgroundJobs;
@@ -28,14 +33,106 @@ builder.Services.AddSharedPdfServices();
 builder.Services.AddIdentityApplication();
 builder.Services.AddIdentityInfrastructure(builder.Configuration);
 
+// Add Authentication for the monolith to validate JWTs forwarded by the BFF
+var secretKey = builder.Configuration["JWT:Key"] ?? "super_secret_key_that_is_at_least_32_characters_long_for_hmac_sha256!";
+var issuer = builder.Configuration["JWT:Issuer"] ?? "RentIt";
+var audience = builder.Configuration["JWT:Audience"] ?? "RentIt";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = issuer,
+            ValidAudience = audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// ─── Rate Limiting (replaces Ocelot Gateway rate limiting) ────────────────────
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Auth endpoints: 5 requests per 1-minute window per IP (login/register are expensive)
+    options.AddFixedWindowLimiter("auth", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 5;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+
+    // General API endpoints: 30 requests per 30-second window per IP
+    options.AddFixedWindowLimiter("api", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 30;
+        limiterOptions.Window = TimeSpan.FromSeconds(30);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 2;
+    });
+
+    // Global fallback: 100 requests per minute per IP
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.ContentType = "application/json";
+        await context.HttpContext.Response.WriteAsJsonAsync(
+            new { error = "Too many requests. Please slow down." },
+            cancellationToken);
+    };
+});
+
+// ─── Output Caching (reduces DB load on read-heavy GET endpoints) ─────────────
+builder.Services.AddOutputCache(options =>
+{
+    // Default policy: cache GET responses for 60 seconds
+    options.AddBasePolicy(builder => builder
+        .With(c => c.HttpContext.Request.Method == "GET")
+        .Expire(TimeSpan.FromSeconds(60))
+        .Tag("default"));
+
+    // Short-lived cache for user profile (10s) — balances freshness vs. performance
+    options.AddPolicy("short", builder => builder
+        .Expire(TimeSpan.FromSeconds(10))
+        .Tag("short"));
+
+    // Longer cache for property listings (5 min) — data changes infrequently
+    options.AddPolicy("listings", builder => builder
+        .Expire(TimeSpan.FromMinutes(5))
+        .Tag("listings"));
+});
+
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
 app.AddHangfireDashBoard();
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseRateLimiter();
+app.UseOutputCache();
+
 app.MapControllers();
 
 app.MapGet("/", () => "RentIt Modular Monolith Host is running.");
 
 app.Run();
+

@@ -215,13 +215,36 @@
 
     .mobile-menu-btn {
         display: flex; /* Show Hamburger */
+        padding: 8px;
     }
 
     .nav-content {
-        padding: 0 16px;
+        padding: 0 12px;
+        height: 56px; /* Slightly shorter on mobile */
+    }
+
+    .logo-img {
+        height: 28px; /* Slightly smaller logo */
+    }
+
+    .logo-text {
+        font-size: 1.15rem;
+    }
+    
+    .nav-left {
+        gap: 16px; /* Reduce gap between menu button and logo */
+    }
+}
+
+@media (max-width: 480px) {
+    .user-greeting {
+        display: none; /* Hide text greeting on very small screens, keep avatar */
+    }
+    
+    .nav-right {
+        gap: 10px;
     }
 }
 
 .layout-container { background: var(--bg-base); min-height: 100vh; transition: background-color var(--transition-theme); }
 .main-content { min-height: calc(100vh - 64px); }
-
