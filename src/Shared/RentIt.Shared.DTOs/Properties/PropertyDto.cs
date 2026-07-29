@@ -21,6 +21,23 @@ public sealed record PropertyDto
     public string Currency { get; init; } = string.Empty;
     public int Bedrooms { get; init; }
     public int Bathrooms { get; init; }
-    public List<string> Amenities { get; init; } = new();
-    public List<string> Images { get; init; } = new();
+    public int MaxGuests { get; init; } = 4;
+    public double Rating { get; init; } = 4.5;
+    public List<string> Amenities { get; init; } = [];
+    public List<string> Images { get; init; } = [];
+
+    // Computed properties for UI compatibility
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string Title => Name;
+    
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string Location => string.IsNullOrWhiteSpace(City) && string.IsNullOrWhiteSpace(Region) 
+        ? "Unknown Location" 
+        : $"{City}, {Region}".Trim(',', ' ');
+        
+    [System.Text.Json.Serialization.JsonIgnore]
+    public decimal PricePerNight => PricePerPeriod;
+    
+    [System.Text.Json.Serialization.JsonIgnore]
+    public List<string> ImageUrls => Images ?? [];
 }

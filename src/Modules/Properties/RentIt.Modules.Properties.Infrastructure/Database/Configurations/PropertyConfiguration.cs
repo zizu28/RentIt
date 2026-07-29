@@ -40,12 +40,14 @@ internal class PropertyConfiguration : IEntityTypeConfiguration<Property>
 
         builder.OwnsOne(x => x.PricePerPeriod, price =>
         {
-            price.Property(p => p.Amount).HasColumnName("Price_Amount").HasColumnType("decimal(18,2)").IsRequired();
+            price.Property(p => p.Amount)
+            .HasColumnName("Price_Amount")
+            .HasColumnType("decimal(18,2)").IsRequired();
             price.Property(p => p.Currency)
                 .HasColumnName("Price_Currency")
                 .HasConversion(
                     v => v.ToString(),
-                    v => (Currency)Enum.Parse(typeof(Currency), v))
+                    v => Enum.Parse<Currency>(v, true))
                 .HasMaxLength(3)
                 .IsRequired();
         });

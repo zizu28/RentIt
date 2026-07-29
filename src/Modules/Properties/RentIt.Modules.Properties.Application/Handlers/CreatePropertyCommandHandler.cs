@@ -16,13 +16,13 @@ internal sealed class CreatePropertyCommandHandler : IRequestHandler<Commands.Cr
 {
     private readonly IPropertyRepository _propertyRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger _logger;
+    private readonly Serilog.ILogger _logger;
     private readonly IBackgroundJob _backgroundJob;
 
     public CreatePropertyCommandHandler(
         IPropertyRepository propertyRepository,
         IUnitOfWork unitOfWork,
-        ILogger logger,
+        Serilog.ILogger logger,
         IBackgroundJob backgroundJob)
     {
         _propertyRepository = propertyRepository;

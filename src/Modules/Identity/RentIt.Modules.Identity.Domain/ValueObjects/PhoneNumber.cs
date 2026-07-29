@@ -7,9 +7,7 @@ namespace RentIt.Modules.Identity.Domain.ValueObjects;
 /// </summary>
 public sealed record PhoneNumber
 {
-    private static readonly Regex GhanaPhoneRegex = new(
-        @"^\+233[0-9]{9}$",
-        RegexOptions.Compiled);
+    private static readonly Regex GhanaPhoneRegex = new(@"^\+233[0-9]{9}$", RegexOptions.Compiled);
 
     public string Value { get; init; }
 

@@ -21,6 +21,10 @@ builder.AddSharedLogging();
 
 var mvcBuilder = builder.Services.AddControllers();
 
+// Add global exception handling
+builder.Services.AddExceptionHandler<RentIt.Shared.Infrastructure.Middleware.GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var assembliesPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 if (assembliesPath != null)
 {
@@ -147,6 +151,8 @@ builder.Services.AddOutputCache(options =>
 });
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 app.UseSerilogRequestLogging();
 app.AddHangfireDashBoard();

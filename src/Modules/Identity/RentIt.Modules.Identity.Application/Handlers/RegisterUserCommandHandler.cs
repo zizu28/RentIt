@@ -11,6 +11,7 @@ using RentIt.Shared.DTOs.Identity;
 using RentIt.Shared.Abstractions.BackgroundJobs;
 using RentIt.Shared.Abstractions.Email;
 using Microsoft.Extensions.Configuration;
+using RentIt.Modules.Identity.Application.Commands;
 
 namespace RentIt.Modules.Identity.Application.Handlers;
 
@@ -19,7 +20,7 @@ public sealed class RegisterUserCommandHandler(
     IPasswordHasher passwordHasher,
     IUnitOfWork unitOfWork,
     IBackgroundJob backgroundJob,
-    IConfiguration configuration) : IRequestHandler<Commands.RegisterUserCommand, Result<UserDto>>
+    IConfiguration configuration) : IRequestHandler<RegisterUserCommand, Result<UserDto>>
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IPasswordHasher _passwordHasher = passwordHasher;
@@ -27,7 +28,7 @@ public sealed class RegisterUserCommandHandler(
     private readonly IBackgroundJob _backgroundJob = backgroundJob;
     private readonly IConfiguration _configuration = configuration;
 
-    public async Task<Result<UserDto>> Handle(Commands.RegisterUserCommand request, CancellationToken cancellationToken)
+    public async Task<Result<UserDto>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
         try
@@ -44,9 +45,9 @@ public sealed class RegisterUserCommandHandler(
             if (await _userRepository.ExistsByPhoneNumberAsync(request.PhoneNumber, cancellationToken))
             {
                 await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                return Result.Failure<UserDto>(Error.Conflict(
-                    "User.PhoneExists",
-                    "A user with this phone number already exists"));
+                return Result.Failure<UserDto>(
+                    Error.Conflict("User.PhoneExists", "A user with this phone number already exists")
+                );
             }
 
             // Create value objects
@@ -57,9 +58,9 @@ public sealed class RegisterUserCommandHandler(
             if (!Enum.TryParse<UserRole>(request.Role, out var userRole))
             {
                 await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                return Result.Failure<UserDto>(Error.Validation(
-                    "User.InvalidRole",
-                    "Invalid user role"));
+                return Result.Failure<UserDto>(
+                    Error.Validation("User.InvalidRole", "Invalid user role")
+                );
             }
 
             // Hash password

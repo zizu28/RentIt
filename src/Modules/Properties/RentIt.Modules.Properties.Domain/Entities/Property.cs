@@ -2,6 +2,7 @@ using RentIt.Modules.Properties.Domain.Enums;
 using RentIt.Shared.Abstractions.Domain;
 using RentIt.Shared.Kernel.ValueObjects;
 using RentIt.Modules.Properties.Domain.Events;
+using System.Text.Json.Serialization;
 
 namespace RentIt.Modules.Properties.Domain.Entities;
 
@@ -11,8 +12,11 @@ public class Property : AggregateRoot<Guid>
     public string Name { get; private set; }
     public string Description { get; private set; }
     public Address Address { get; private set; }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public PropertyType Type { get; private set; }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public PropertyStatus Status { get; private set; }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public RentalPeriod RentalPeriod { get; private set; }
     public Money PricePerPeriod { get; private set; }
     public int Bedrooms { get; private set; }

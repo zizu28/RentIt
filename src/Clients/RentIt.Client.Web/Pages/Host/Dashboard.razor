@@ -1,37 +1,161 @@
 @page "/host/dashboard"
+@using RentIt.Shared.DTOs.Properties
+@using RentIt.Client.Web.Services
+@inject IPropertyService PropertyService
+@inject NavigationManager Navigation
 @attribute [Authorize]
 
 <PageTitle>Host Dashboard - RentIt</PageTitle>
 
-<div class="page-container">
-    <div class="breadcrumbs">
+<div class="page-container animate-fade-in-up">
+    <div class="breadcrumbs mb-4">
         <a href="/">Home</a> <span>/</span> 
         <a href="/profile">Profile</a> <span>/</span> 
-        <span class="active">Host</span>
+        <span class="active">Host Dashboard</span>
+    </div>
+    
+    <div class="section-header-cc mb-6">
+        <div>
+            <h1 class="page-title mb-2">Host Overview</h1>
+            <p class="hero-subtitle m-0">Manage your listings, track earnings, and host with confidence.</p>
+        </div>
+        @if (_properties != null && _properties.Any())
+        {
+            <button class="btn-cc-primary" @onclick='() => Navigation.NavigateTo("/host/properties/add")'>
+                <i class="bi bi-plus-lg"></i> Add New Listing
+            </button>
+        }
     </div>
 
-    <div class="hero-section text-center py-5">
-        <h1 class="page-title mb-4">Earn money doing what you love</h1>
-        <p class="hero-subtitle mb-6">Turn your extra space into extra income on RentIt.</p>
+    @if (_isLoading)
+    {
+        <div class="loading-spinner-container mt-5 text-center">
+            <div class="loading-progress">
+                <svg><circle cx="64" cy="64" r="56"></circle><circle cx="64" cy="64" r="56"></circle></svg>
+            </div>
+            <p class="mt-3 text-secondary">Loading your properties...</p>
+        </div>
+    }
+    else if (_properties != null && _properties.Any())
+    {
+        <div class="dashboard-stats mb-8 stagger-children">
+            <div class="stat-card-cc animate-fade-in-up">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-cc text-info">
+                        <i class="bi bi-house-door"></i>
+                    </div>
+                    <div class="stat-details-cc ml-4">
+                        <p class="stat-title-cc">Total Listings</p>
+                        <h3 class="stat-value-cc">@_properties.Count()</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card-cc animate-fade-in-up">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-cc text-warning">
+                        <i class="bi bi-star"></i>
+                    </div>
+                    <div class="stat-details-cc ml-4">
+                        <p class="stat-title-cc">Average Rating</p>
+                        <h3 class="stat-value-cc">@(_properties.Average(p => p.Rating).ToString("0.0"))</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card-cc animate-fade-in-up">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-cc text-success">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <div class="stat-details-cc ml-4">
+                        <p class="stat-title-cc">Est. Monthly Earnings</p>
+                        <h3 class="stat-value-cc">$@(_properties.Sum(p => p.PricePerNight) * 15)</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title mb-4">Your Properties</h2>
+        <div class="properties-grid stagger-children">
+            @foreach (var property in _properties)
+            {
+                <div class="card-glass property-card animate-fade-in-up" @onclick="@(() => Navigation.NavigateTo($"/properties/{property.Id}"))">
+                    <div class="property-img-wrapper">
+                        <img src="@(property.ImageUrls.FirstOrDefault() ?? "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800")" alt="@property.Title" class="property-img" />
+                        <div class="badge-cc badge-success property-badge">Active</div>
+                    </div>
+                    <div class="property-content p-4">
+                        <div class="property-header d-flex justify-content-between align-items-start mb-2">
+                            <h3 class="property-title m-0">@property.Title</h3>
+                            <div class="badge-cc badge-warning">
+                                <i class="bi bi-star-fill mr-1"></i> @property.Rating
+                            </div>
+                        </div>
+                        <div class="property-location text-secondary mb-3">
+                            <i class="bi bi-geo-alt-fill text-accent mr-1"></i> @property.Location
+                        </div>
+                        <div class="property-footer d-flex justify-content-between align-items-center mt-4 pt-3" style="border-top: 1px solid var(--border-default);">
+                            <div class="property-price">
+                                <strong class="text-primary" style="font-size: 1.25rem;">$@property.PricePerNight</strong> <span class="text-muted">/ night</span>
+                            </div>
+                            <button class="btn-cc-secondary btn-sm" @onclick:stopPropagation="true">
+                                Edit <i class="bi bi-pencil ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="hero-section text-center py-5 mt-4 card-glass animated-fade-in mx-auto" style="max-width: 800px;">
+            <div class="hero-icon-container mb-4">
+                <i class="bi bi-house-heart display-1 text-gradient"></i>
+            </div>
+            <h2 class="page-title hero-title mb-4 text-gradient">Unlock the potential of your space</h2>
+            <p class="hero-subtitle mb-6 text-secondary mx-auto" style="max-width: 600px;">
+                Join thousands of hosts on RentIt who are turning their extra rooms and homes into sustainable income. It's safe, simple, and rewarding.
+            </p>
+            
+            <button class="btn-cc-primary" @onclick='() => Navigation.NavigateTo("/host/properties/add")' style="padding: 14px 32px; font-size: 1.1rem;">
+                Get Started Today <i class="bi bi-arrow-right ml-2"></i>
+            </button>
+        </div>
         
-        <button class="btn btn-primary btn-large">Get Started</button>
-    </div>
-
-    <div class="features-grid mt-8">
-        <div class="feature-card">
-            <div class="feature-icon"><i class="bi bi-wallet2 text-accent"></i></div>
-            <h3>Earn more</h3>
-            <p>Hosts on RentIt earn an average of $500 per month just by sharing their spare space.</p>
+        <div class="features-grid mt-8 stagger-children">
+            <div class="feature-card card-solid animate-fade-in-up text-center p-5">
+                <div class="feature-icon mb-4"><i class="bi bi-wallet2 text-success display-4"></i></div>
+                <h3 class="mb-3">Maximize Earnings</h3>
+                <p class="text-secondary">Hosts on RentIt earn an average of $850 per month just by sharing their spare space on weekends.</p>
+            </div>
+            <div class="feature-card card-solid animate-fade-in-up text-center p-5">
+                <div class="feature-icon mb-4"><i class="bi bi-shield-check text-info display-4"></i></div>
+                <h3 class="mb-3">Host with Confidence</h3>
+                <p class="text-secondary">Every booking includes up to $1M in property damage protection and verified guest screening.</p>
+            </div>
+            <div class="feature-card card-solid animate-fade-in-up text-center p-5">
+                <div class="feature-icon mb-4"><i class="bi bi-globe-americas text-primary display-4"></i></div>
+                <h3 class="mb-3">Global Reach</h3>
+                <p class="text-secondary">Connect with a global community of travelers looking for unique and authentic stays.</p>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="feature-icon"><i class="bi bi-shield-lock text-accent"></i></div>
-            <h3>Host with confidence</h3>
-            <p>Every booking includes comprehensive Host Protection and verified guests.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon"><i class="bi bi-people text-accent"></i></div>
-            <h3>Join the community</h3>
-            <p>Connect with a global community of hosts and travelers.</p>
-        </div>
-    </div>
+    }
 </div>
+
+@code {
+    private IEnumerable<PropertyDto>? _properties;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _isLoading = true;
+            _properties = await PropertyService.GetHostPropertiesAsync();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

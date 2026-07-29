@@ -1,0 +1,23 @@
+.add-property-form-container {
+    background-color: var(--card-bg, #ffffff);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-color, #222222);
+}
+
+.image-upload-area {
+    border: 2px dashed #dddddd;
+    transition: all 0.2s ease;
+}
+
+.image-upload-area:hover {
+    border-color: var(--accent-color, #ff385c);
+    background-color: rgba(255, 56, 92, 0.05);
+}

@@ -1,25 +1,27 @@
 using RentIt.Modules.Properties.Application.Services;
+using RentIt.Shared.Abstractions.Email;
 using Serilog;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace RentIt.Modules.Properties.Infrastructure.Services;
 
-internal sealed class PropertyEmailService : IPropertyEmailService
+internal sealed class PropertyEmailService(Serilog.ILogger logger, IEmailService emailService) : IPropertyEmailService
 {
-    private readonly ILogger _logger;
+    private readonly Serilog.ILogger _logger = logger;
+    private readonly IEmailService _emailService = emailService;
 
-    public PropertyEmailService(ILogger logger)
+    public async Task SendPropertyCreationEmailAsync(Guid hostId, Guid propertyId, CancellationToken cancellationToken = default)
     {
-        _logger = logger;
-    }
-
-    public Task SendPropertyCreationEmailAsync(Guid hostId, Guid propertyId, CancellationToken cancellationToken = default)
-    {
-        // TODO: Integrate with real email service
         _logger.Information("Sending Property Creation Email to Host: {HostId} for Property: {PropertyId}", hostId, propertyId);
+
+        // In a real scenario, we would retrieve the host's email address using the hostId.
+        // For demonstration with Mailtrap, we'll send it to a test email address.
+        var hostEmail = "host@rentit.com"; 
         
-        return Task.CompletedTask;
+        var subject = $"Your Property {propertyId} has been successfully created!";
+        var body = $"Hello, \n\nYour new property with ID {propertyId} was successfully created on RentIt. It will be available for rent shortly.";
+        
+        await _emailService.SendEmailAsync(hostEmail, subject, body, cancellationToken);
+        
+        _logger.Information("Successfully sent Property Creation Email for Property: {PropertyId}", propertyId);
     }
 }

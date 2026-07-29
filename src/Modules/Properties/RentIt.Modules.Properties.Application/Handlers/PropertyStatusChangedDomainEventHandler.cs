@@ -12,12 +12,12 @@ public sealed class PropertyStatusChangedDomainEventHandler : INotificationHandl
 {
     private readonly IEventBus _eventBus;
     private readonly IPropertyRepository _propertyRepository;
-    private readonly ILogger _logger;
+    private readonly Serilog.ILogger _logger;
 
     public PropertyStatusChangedDomainEventHandler(
         IEventBus eventBus, 
         IPropertyRepository propertyRepository,
-        ILogger logger)
+        Serilog.ILogger logger)
     {
         _eventBus = eventBus;
         _propertyRepository = propertyRepository;
