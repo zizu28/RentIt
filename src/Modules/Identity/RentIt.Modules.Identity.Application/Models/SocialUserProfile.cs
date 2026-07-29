@@ -5,5 +5,7 @@ public sealed record SocialUserProfile(
     string ProviderId,
     string Email,
     string? FirstName,
-    string? LastName
+    string? LastName,
+    string? ProfileImageUrl = null,
+    string? Address = null
 );

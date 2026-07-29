@@ -1,9 +1,10 @@
 @page "/profile/edit"
 @namespace RentIt.Client.Web.Pages.ProfileSettings
 @attribute [Authorize]
-@using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
 @using RentIt.Client.Web.Auth
+@using RentIt.Shared.DTOs.Identity
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
@@ -53,8 +54,8 @@
             </div>
 
             <div class="form-group">
-                <label for="phone">Phone number (cannot be changed here)</label>
-                <input type="tel" id="phone" class="form-control disabled" @bind="_phone" disabled />
+                <label for="phone">Phone number</label>
+                <input type="tel" id="phone" class="form-control" @bind="_phone" />
             </div>
 
             <div class="form-group">
@@ -100,11 +101,12 @@
     {
         _isSaving = true;
         
-        var request = new RentIt.Shared.DTOs.Identity.UpdateProfileRequest 
+        var request = new UpdateProfileRequest 
         { 
             FirstName = _firstName, 
             LastName = _lastName, 
-            Address = _address 
+            Address = _address,
+            Phone = _phone
         };
         
         var success = await AuthService.UpdateUserProfileAsync(request);

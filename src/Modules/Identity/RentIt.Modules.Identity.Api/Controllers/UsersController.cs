@@ -9,6 +9,8 @@ using RentIt.Modules.Identity.Application.Queries;
 using RentIt.Modules.Identity.Application.Commands;
 using RentIt.Shared.DTOs.Identity;
 using Microsoft.AspNetCore.Authorization;
+using RentIt.Shared.Abstractions.Storage;
+using Microsoft.AspNetCore.Http;
 
 namespace RentIt.Modules.Identity.Api.Controllers;
 
@@ -24,8 +26,7 @@ public sealed class UsersController(ISender sender) : ControllerBase
     [OutputCache(PolicyName = "short")]
     public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken)
     {
-        var identifier = JwtRegisteredClaimNames.Sub ?? ClaimTypes.NameIdentifier;
-        var userIdClaim = User.FindFirst(identifier);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst(JwtRegisteredClaimNames.Sub);
         if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
         {
             return Unauthorized("Token does not contain a User ID claim.");
@@ -47,8 +48,7 @@ public sealed class UsersController(ISender sender) : ControllerBase
     [HttpPut("me/profile")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request, CancellationToken cancellationToken)
     {
-        var identifier = JwtRegisteredClaimNames.Sub ?? ClaimTypes.NameIdentifier;
-        var userIdClaim = User.FindFirst(identifier);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst(JwtRegisteredClaimNames.Sub);
         if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
         {
             return Unauthorized("Token does not contain a User ID claim.");
@@ -59,11 +59,52 @@ public sealed class UsersController(ISender sender) : ControllerBase
             return Unauthorized($"Token User ID {Id} is not a valid GUID.");
         }
 
-        var command = new UpdateUserProfileCommand(Id, request.FirstName, request.LastName, request.Address);
+        var command = new UpdateUserProfileCommand(Id, request.FirstName, request.LastName, request.Address, request.Phone);
         var result = await _sender.Send(command, cancellationToken);
 
         return result.IsSuccess
             ? Ok()
             : BadRequest(new { error = result.Error.Message });
+    }
+
+    [HttpPost("me/profile-image")]
+    public async Task<IActionResult> UploadProfileImage(
+        [FromForm] IFormFile file,
+        [FromServices] IStorageService storageService,
+        CancellationToken cancellationToken)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst(JwtRegisteredClaimNames.Sub);
+        if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
+        {
+            return Unauthorized("Token does not contain a User ID claim.");
+        }
+
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest(new { error = "No file uploaded." });
+        }
+
+        // Limit to 5MB
+        if (file.Length > 5 * 1024 * 1024)
+        {
+            return BadRequest(new { error = "File size exceeds the 5MB limit." });
+        }
+
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            var imageUrl = await storageService.UploadImageAsync(stream, file.FileName, cancellationToken);
+
+            var command = new UpdateProfileImageCommand(userIdClaim.Value, imageUrl);
+            var result = await _sender.Send(command, cancellationToken);
+
+            return result.IsSuccess
+                ? Ok(result.Value)
+                : BadRequest(new { error = result.Error.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "An error occurred while uploading the image.", details = ex.Message });
+        }
     }
 }

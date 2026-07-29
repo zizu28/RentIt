@@ -43,23 +43,41 @@ public sealed class SocialLoginCommandHandler(
         {
             // Get user by email
             var user = await _userRepository.GetByEmailForUpdateAsync(profile.Email, cancellationToken);
-            
+            var email = Email.Create(profile.Email);
+            var phoneNumber = PhoneNumber.Create("0000000000");
+
             if (user == null)
             {
                 // Create user if they don't exist
                 var randomPassword = Guid.NewGuid().ToString("N") + "Aa1!";
                 var hash = _passwordHasher.HashPassword(randomPassword);
                 var passwordHash = PasswordHash.Create(hash);
-                var email = Email.Create(profile.Email);
-                var phoneNumber = PhoneNumber.Create("0000000000"); // Placeholder
-                
+                                
                 user = User.Create(email, phoneNumber, passwordHash, UserRole.Renter);
-                user.UpdateProfile(profile.FirstName, profile.LastName, null);
+                user.UpdateProfile(profile.FirstName, profile.LastName, profile.Address, phoneNumber.Value);
+                if (!string.IsNullOrWhiteSpace(profile.ProfileImageUrl))
+                {
+                    user.UpdateProfileImage(profile.ProfileImageUrl);
+                }
+
                 // Mark email as verified since it came from a trusted provider
                 user.SetVerificationToken("SOCIAL_LOGIN");
                 user.VerifyEmail("SOCIAL_LOGIN");
                 
                 await _userRepository.AddAsync(user, cancellationToken);
+            }
+            else
+            {
+                // For existing users, only update missing information
+                if (string.IsNullOrWhiteSpace(user.ProfileImageUrl) && !string.IsNullOrWhiteSpace(profile.ProfileImageUrl))
+                {
+                    user.UpdateProfileImage(profile.ProfileImageUrl);
+                }
+                
+                if (string.IsNullOrWhiteSpace(user.Address) && !string.IsNullOrWhiteSpace(profile.Address))
+                {
+                    user.UpdateProfile(user.FirstName, user.LastName, profile.Address, user.PhoneNumber.Value);
+                }
             }
 
             // Check if user is active
@@ -98,7 +116,8 @@ public sealed class SocialLoginCommandHandler(
                 IsEmailVerified = user.IsEmailVerified,
                 IsPhoneVerified = user.IsPhoneVerified,
                 CreatedAt = user.CreatedAt,
-                LastLoginAt = user.LastLoginAt
+                LastLoginAt = user.LastLoginAt,
+                ProfileImageUrl = user.ProfileImageUrl
             };
 
             var response = new LoginResponse

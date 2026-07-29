@@ -10,4 +10,5 @@ public interface IAuthService
     Task<bool> VerifyEmailAsync(string email, string token);
     Task<UserDto?> GetCurrentUserAsync();
     Task<bool> UpdateUserProfileAsync(UpdateProfileRequest request);
+    Task<UserDto?> UploadProfileImageAsync(Microsoft.AspNetCore.Components.Forms.IBrowserFile file);
 }

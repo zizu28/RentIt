@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Configuration;
 using RentIt.Modules.Identity.Application.Abstractions;
 using RentIt.Modules.Identity.Application.Models;
@@ -8,7 +9,7 @@ namespace RentIt.Modules.Identity.Infrastructure.Services.SocialAuth;
 
 public class FacebookAuthService : ISocialAuthService
 {
-    private const string FacebookApiUrl = "https://graph.facebook.com/v19.0/me?fields=id,email,first_name,last_name&access_token={0}";
+    private const string FacebookApiUrl = "https://graph.facebook.com/v19.0/me?fields=id,email,first_name,last_name,picture.type(large),location&access_token={0}";
     private const string FacebookTokenValidationUrl = "https://graph.facebook.com/debug_token?input_token={0}&access_token={1}|{2}";
     
     private readonly HttpClient _httpClient;
@@ -68,7 +69,9 @@ public class FacebookAuthService : ISocialAuthService
                 ProviderId: userInfo.Id,
                 Email: userInfo.Email,
                 FirstName: userInfo.FirstName,
-                LastName: userInfo.LastName
+                LastName: userInfo.LastName,
+                ProfileImageUrl: userInfo.Picture?.Data?.Url,
+                Address: userInfo.Location?.Name
             );
 
             return Result.Success(profile);
@@ -81,31 +84,55 @@ public class FacebookAuthService : ISocialAuthService
 
     private class FacebookTokenValidationResponse
     {
-        [System.Text.Json.Serialization.JsonPropertyName("data")]
+        [JsonPropertyName("data")]
         public FacebookTokenValidationData Data { get; set; } = null!;
     }
 
     private class FacebookTokenValidationData
     {
-        [System.Text.Json.Serialization.JsonPropertyName("app_id")]
+        [JsonPropertyName("app_id")]
         public string AppId { get; set; } = string.Empty;
         
-        [System.Text.Json.Serialization.JsonPropertyName("is_valid")]
+        [JsonPropertyName("is_valid")]
         public bool IsValid { get; set; }
     }
 
     private class FacebookUserInfoResponse
     {
-        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;
         
-        [System.Text.Json.Serialization.JsonPropertyName("email")]
+        [JsonPropertyName("email")]
         public string Email { get; set; } = string.Empty;
         
-        [System.Text.Json.Serialization.JsonPropertyName("first_name")]
+        [JsonPropertyName("first_name")]
         public string FirstName { get; set; } = string.Empty;
         
-        [System.Text.Json.Serialization.JsonPropertyName("last_name")]
+        [JsonPropertyName("last_name")]
         public string LastName { get; set; } = string.Empty;
+        
+        [JsonPropertyName("picture")]
+        public FacebookPictureResponse? Picture { get; set; }
+
+        [JsonPropertyName("location")]
+        public FacebookLocationResponse? Location { get; set; }
+    }
+
+    private class FacebookPictureResponse
+    {
+        [JsonPropertyName("data")]
+        public FacebookPictureData? Data { get; set; }
+    }
+
+    private class FacebookPictureData
+    {
+        [JsonPropertyName("url")]
+        public string Url { get; set; } = string.Empty;
+    }
+
+    private class FacebookLocationResponse
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
     }
 }

@@ -38,7 +38,9 @@ public sealed class GoogleAuthService(HttpClient httpClient) : ISocialAuthServic
                 ProviderId: userInfo.Sub,
                 Email: userInfo.Email,
                 FirstName: userInfo.GivenName ?? string.Empty,
-                LastName: userInfo.FamilyName ?? string.Empty
+                LastName: userInfo.FamilyName ?? string.Empty,
+                ProfileImageUrl: userInfo.Picture,
+                Address: userInfo.Locale
             );
 
             return Result.Success(profile);
@@ -62,5 +64,11 @@ public sealed class GoogleAuthService(HttpClient httpClient) : ISocialAuthServic
 
         [JsonPropertyName("family_name")]
         public string? FamilyName { get; set; }
+
+        [JsonPropertyName("picture")]
+        public string? Picture { get; set; }
+
+        [JsonPropertyName("locale")]
+        public string? Locale { get; set; }
     }
 }

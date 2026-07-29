@@ -72,7 +72,7 @@ public sealed class RegisterUserCommandHandler(
             // Update profile if name provided
             if (!string.IsNullOrWhiteSpace(request.FirstName) || !string.IsNullOrWhiteSpace(request.LastName))
             {
-                user.UpdateProfile(request.FirstName, request.LastName, null);
+                user.UpdateProfile(request.FirstName, request.LastName, null, null);
             }
 
             // Generate a random token for verification (stub)
@@ -86,7 +86,7 @@ public sealed class RegisterUserCommandHandler(
 
             // Send Welcome Email and Verification Email in the background
             _backgroundJob.Enqueue<IEmailService>(
-                "default", 
+                "alpha", 
                 emailService => emailService.SendEmailAsync(
                     user.Email.Value, 
                     "Welcome to RentIt!", 

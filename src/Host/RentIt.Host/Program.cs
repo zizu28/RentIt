@@ -6,11 +6,14 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using RentIt.Modules.Identity.Application;
 using RentIt.Modules.Identity.Infrastructure;
+using RentIt.Modules.Properties.Application;
+using RentIt.Modules.Properties.Infrastructure;
 using RentIt.Shared.Abstractions.BackgroundJobs;
 
 using RentIt.Shared.Infrastructure.Email;
 using RentIt.Shared.Infrastructure.Logging;
 using RentIt.Shared.Infrastructure.Pdf;
+using RentIt.Shared.Infrastructure.Storage;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,8 +33,12 @@ if (assembliesPath != null)
 builder.Services.AddBackgroundJobs(builder.Configuration);
 builder.Services.AddSharedEmailServices();
 builder.Services.AddSharedPdfServices();
+builder.Services.AddStorage(builder.Configuration);
 builder.Services.AddIdentityApplication();
 builder.Services.AddIdentityInfrastructure(builder.Configuration);
+
+builder.Services.AddPropertiesApplication();
+builder.Services.AddPropertiesInfrastructure(builder.Configuration);
 
 // Add Authentication for the monolith to validate JWTs forwarded by the BFF
 var secretKey = builder.Configuration["JWT:Key"] ?? "super_secret_key_that_is_at_least_32_characters_long_for_hmac_sha256!";
@@ -51,6 +58,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
             ClockSkew = TimeSpan.Zero
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Serilog.Log.Error("Host JWT Authentication Failed: {Exception}", context.Exception.Message);
+                return Task.CompletedTask;
+            },
+            OnChallenge = context =>
+            {
+                if (context.AuthenticateFailure != null)
+                {
+                    Serilog.Log.Error("Host JWT Challenge Failure: {Failure}", context.AuthenticateFailure.Message);
+                }
+                else
+                {
+                    Serilog.Log.Error("Host JWT Challenge triggered without specific Exception. Error: {Error}, ErrorDescription: {ErrorDescription}", context.Error, context.ErrorDescription);
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 

@@ -102,4 +102,31 @@ public class AuthService(
             return false;
         }
     }
+
+    public async Task<UserDto?> UploadProfileImageAsync(Microsoft.AspNetCore.Components.Forms.IBrowserFile file)
+    {
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            // Maximum of 5MB
+            var stream = file.OpenReadStream(5 * 1024 * 1024);
+            var fileContent = new StreamContent(stream);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+            
+            content.Add(fileContent, "file", file.Name);
+
+            var response = await _httpClient.PostAsync("/api/identity/users/me/profile-image", content);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<UserDto>();
+            }
+            
+            return null;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
 }

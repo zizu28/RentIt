@@ -7,28 +7,31 @@ public class HangfireBackgroundJob(
     IBackgroundJobClient jobClient,
     IRecurringJobManager recurringJob) : IBackgroundJob
 {
+    private readonly IBackgroundJobClient _jobClient = jobClient;
+    private readonly IRecurringJobManager _recurringJob = recurringJob;
+
     public string ContinueWith<T>(string parentJobId, string continuationJobName, Expression<Func<T, Task>> methodCall)
     {
-        return jobClient.ContinueJobWith(parentJobId, continuationJobName, methodCall);
+        return _jobClient.ContinueJobWith(parentJobId, continuationJobName, methodCall);
     }
 
     public bool Delete(string jobId)
     {
-        return jobClient.Delete(jobId);
+        return _jobClient.Delete(jobId);
     }
 
     public string Enqueue<T>(string jobName, Expression<Func<T, Task>> methodCall)
     {
-        return jobClient.Enqueue(jobName, methodCall);
+        return _jobClient.Enqueue(jobName, methodCall);
     }
 
     public void Recurring<T>(string jobName, Expression<Func<T, Task>> methodCall, string cronExpression)
     {
-        recurringJob.AddOrUpdate(jobName, methodCall, cronExpression);
+        _recurringJob.AddOrUpdate(jobName, methodCall, cronExpression);
     }
 
     public string Schedule<T>(string jobName, Expression<Func<T, Task>> methodCall, TimeSpan delay)
     {
-        return jobClient.Schedule(jobName, methodCall, delay);
+        return _jobClient.Schedule(jobName, methodCall, delay);
     }
 }

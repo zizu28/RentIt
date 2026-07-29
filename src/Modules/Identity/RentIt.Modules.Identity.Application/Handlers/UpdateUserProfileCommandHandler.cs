@@ -25,7 +25,7 @@ public sealed class UpdateUserProfileCommandHandler(
                 return Result.Failure(Error.NotFound("User.NotFound", "User not found"));
             }
 
-            user.UpdateProfile(request.FirstName, request.LastName, request.Address);
+            user.UpdateProfile(request.FirstName, request.LastName, request.Address, request.Phone);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);

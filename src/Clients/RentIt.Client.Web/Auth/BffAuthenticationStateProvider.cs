@@ -39,6 +39,27 @@ public class BffAuthenticationStateProvider(HttpClient httpClient) : Authenticat
                         new(ClaimTypes.Role, user.Role)
                     };
 
+                    if (!string.IsNullOrEmpty(user.FirstName))
+                    {
+                        claims.Add(new Claim(ClaimTypes.GivenName, user.FirstName));
+                    }
+                    
+                    if (!string.IsNullOrEmpty(user.LastName))
+                    {
+                        claims.Add(new Claim(ClaimTypes.Surname, user.LastName));
+                    }
+                    
+                    if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+                    {
+                        claims.Add(new Claim("ProfileImageUrl", user.ProfileImageUrl));
+                    }
+                    
+                    // Add a Name claim if FirstName or LastName is present so that @context.User.Identity?.Name works
+                    if (!string.IsNullOrEmpty(user.FirstName) || !string.IsNullOrEmpty(user.LastName))
+                    {
+                        claims.Add(new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}".Trim()));
+                    }
+
                     _cachedUser = new ClaimsPrincipal(new ClaimsIdentity(claims, "BFF"));
                 }
             }
@@ -68,5 +89,8 @@ public class BffAuthenticationStateProvider(HttpClient httpClient) : Authenticat
         public string Id { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? ProfileImageUrl { get; set; }
     }
 }

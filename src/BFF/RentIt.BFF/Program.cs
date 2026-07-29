@@ -15,7 +15,7 @@ builder.Services.AddControllers();
 // HTTP client points directly to the Host (bypassing Ocelot Gateway for lower latency)
 builder.Services.AddHttpClient("Host", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7183"); 
+    client.BaseAddress = new Uri("https://localhost:7262"); 
     client.DefaultRequestHeaders.Add("X-Client-Id", "BFF");
 });
 
@@ -99,8 +99,13 @@ builder.Services.AddReverseProxy()
             var accessToken = await transformContext.HttpContext.GetTokenAsync("access-token");
             if (!string.IsNullOrEmpty(accessToken))
             {
+                Serilog.Log.Information("BFF: Found access-token in context, adding to ProxyRequest");
                 transformContext.ProxyRequest.Headers.Remove("Authorization");
                 transformContext.ProxyRequest.Headers.Add("Authorization", $"Bearer {accessToken}");
+            }
+            else 
+            {
+                Serilog.Log.Warning("BFF: access-token NOT FOUND in context. Is the user authenticated? {IsAuthenticated}", transformContext.HttpContext.User.Identity?.IsAuthenticated);
             }
         });
     });
@@ -140,7 +145,7 @@ static ClusterConfig[] GetClusters()
             ClusterId = "HostCluster",
             Destinations = new Dictionary<string, DestinationConfig>
             {
-                { "Host", new DestinationConfig { Address = "https://localhost:7183" } }
+                { "Host", new DestinationConfig { Address = "https://localhost:7262" } }
             }
         }
     ];

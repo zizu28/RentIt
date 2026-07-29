@@ -8,7 +8,7 @@ namespace RentIt.Modules.Identity.Infrastructure.Services.SocialAuth;
 
 public class MicrosoftAuthService : ISocialAuthService
 {
-    private const string MicrosoftApiUrl = "https://graph.microsoft.com/v1.0/me?$select=id,displayName,mail,userPrincipalName";
+    private const string MicrosoftApiUrl = "https://graph.microsoft.com/v1.0/me?$select=id,displayName,mail,userPrincipalName,streetAddress,city,state,countryOrRegion";
     
     private readonly HttpClient _httpClient;
 
@@ -50,12 +50,19 @@ public class MicrosoftAuthService : ISocialAuthService
             var firstName = parts.Length > 0 ? parts[0] : "Unknown";
             var lastName = parts.Length > 1 ? string.Join(' ', parts.Skip(1)) : string.Empty;
 
+            // Combine address fields
+            var addressParts = new[] { userInfo.StreetAddress, userInfo.City, userInfo.State, userInfo.CountryOrRegion }
+                .Where(p => !string.IsNullOrWhiteSpace(p));
+            var address = addressParts.Any() ? string.Join(", ", addressParts) : null;
+
             var profile = new SocialUserProfile(
                 Provider: "Microsoft",
                 ProviderId: userInfo.Id,
                 Email: email,
                 FirstName: firstName,
-                LastName: lastName
+                LastName: lastName,
+                ProfileImageUrl: null, // Microsoft Graph requires a separate /me/photo/$value binary call
+                Address: address
             );
 
             return Result.Success(profile);
@@ -72,5 +79,9 @@ public class MicrosoftAuthService : ISocialAuthService
         public string DisplayName { get; set; } = string.Empty;
         public string Mail { get; set; } = string.Empty;
         public string UserPrincipalName { get; set; } = string.Empty;
+        public string? StreetAddress { get; set; }
+        public string? City { get; set; }
+        public string? State { get; set; }
+        public string? CountryOrRegion { get; set; }
     }
 }

@@ -39,6 +39,15 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory, ILogger
             new Claim(ClaimTypes.Role, loginResponse.User.Role)
         };
 
+        if (!string.IsNullOrEmpty(loginResponse.User.FirstName))
+            claims.Add(new Claim(ClaimTypes.GivenName, loginResponse.User.FirstName));
+            
+        if (!string.IsNullOrEmpty(loginResponse.User.LastName))
+            claims.Add(new Claim(ClaimTypes.Surname, loginResponse.User.LastName));
+            
+        if (!string.IsNullOrEmpty(loginResponse.User.ProfileImageUrl))
+            claims.Add(new Claim("ProfileImageUrl", loginResponse.User.ProfileImageUrl));
+
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var authProperties = new AuthenticationProperties
         {
@@ -121,6 +130,15 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory, ILogger
             new Claim(ClaimTypes.Role, loginResponse.User.Role)
         };
 
+        if (!string.IsNullOrEmpty(loginResponse.User.FirstName))
+            claims.Add(new Claim(ClaimTypes.GivenName, loginResponse.User.FirstName));
+            
+        if (!string.IsNullOrEmpty(loginResponse.User.LastName))
+            claims.Add(new Claim(ClaimTypes.Surname, loginResponse.User.LastName));
+            
+        if (!string.IsNullOrEmpty(loginResponse.User.ProfileImageUrl))
+            claims.Add(new Claim("ProfileImageUrl", loginResponse.User.ProfileImageUrl));
+
         var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var authProperties = new AuthenticationProperties
         {
@@ -150,8 +168,11 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory, ILogger
         {
             Id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
             Email = User.FindFirst(ClaimTypes.Email)?.Value,
-            Role = User.FindFirst(ClaimTypes.Role)?.Value
+            Role = User.FindFirst(ClaimTypes.Role)?.Value,
+            FirstName = User.FindFirst(ClaimTypes.GivenName)?.Value,
+            LastName = User.FindFirst(ClaimTypes.Surname)?.Value,
+            ProfileImageUrl = User.FindFirst("ProfileImageUrl")?.Value
         };
-        return Ok(new { user = returnedUser });
+        return Ok(returnedUser);
     }
 }

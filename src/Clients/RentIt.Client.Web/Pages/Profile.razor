@@ -2,7 +2,6 @@
 @attribute [Authorize]
 @using Microsoft.AspNetCore.Components.Authorization
 @using RentIt.Client.Web.Auth
-@using System.Security.Claims
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IAuthService AuthService
@@ -19,7 +18,7 @@
         <!-- Sidebar / User Overview -->
         <aside class="profile-sidebar">
             <div class="profile-card">
-                <div class="avatar-container">
+                <div class="avatar-container" style="position: relative; display: inline-block;">
                     @if (!string.IsNullOrEmpty(_profileImageUrl))
                     {
                         <img src="@_profileImageUrl" alt="Profile avatar" class="avatar-img" />
@@ -31,10 +30,24 @@
                     <div class="verification-badge" title="Identity Verified">
                         <i class="bi bi-patch-check-fill"></i>
                     </div>
+                    
+                    @if (_isUploadingImage)
+                    {
+                        <div class="upload-overlay">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <label for="profile-image-upload" class="upload-btn">
+                            <i class="bi bi-camera-fill" style="color: var(--text-secondary);"></i>
+                        </label>
+                        <InputFile id="profile-image-upload" OnChange="HandleImageUpload" accept="image/*" style="display: none;" />
+                    }
                 </div>
                 <h2 class="profile-name">@_userName</h2>
                 <p class="profile-email">@_userEmail</p>
-                <div class="profile-joined">Joined in 2026</div>
+                <div class="profile-joined">Joined in @_joinedDate.Year</div>
 
                 <hr class="divider my-4" />
                 
@@ -133,6 +146,8 @@
     private string _userEmail = "";
     private string _initials = "U";
     private string? _profileImageUrl;
+    private bool _isUploadingImage = false;
+    private DateTime _joinedDate;
 
     protected override async Task OnInitializedAsync()
     {
@@ -144,6 +159,7 @@
             var lastName = userProfile.LastName ?? "";
             _userEmail = userProfile.Email;
             _profileImageUrl = userProfile.ProfileImageUrl;
+            _joinedDate = userProfile.CreatedAt;
 
             if (!string.IsNullOrWhiteSpace(firstName) || !string.IsNullOrWhiteSpace(lastName))
             {
@@ -179,6 +195,27 @@
     private void GoTo(string path)
     {
         Navigation.NavigateTo(path);
+    }
+
+    private async Task HandleImageUpload(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file == null) return;
+
+        _isUploadingImage = true;
+        StateHasChanged();
+
+        var updatedUser = await AuthService.UploadProfileImageAsync(file);
+        
+        if (updatedUser != null)
+        {
+            _profileImageUrl = updatedUser.ProfileImageUrl;
+            // Optionally notify authentication state provider to update the cookie/claims if needed
+            // AuthStateProvider.NotifyUserAuthenticationStateChanged(); 
+        }
+
+        _isUploadingImage = false;
+        StateHasChanged();
     }
 }
 

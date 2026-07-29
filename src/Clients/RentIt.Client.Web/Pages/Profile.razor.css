@@ -61,7 +61,7 @@
 .verification-badge {
     position: absolute;
     bottom: 5px;
-    right: 5px;
+    left: 5px;
     background: var(--bg-elevated);
     border-radius: 50%;
     padding: 2px;
@@ -69,6 +69,42 @@
     font-size: 1.5rem;
     line-height: 1;
 }
+
+.upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.upload-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: var(--bg-surface);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s, background 0.2s;
+}
+
+.upload-btn:hover {
+    transform: scale(1.1);
+    background: var(--bg-elevated);
+}
+
 .profile-name {
     font-size: 1.5rem;
     font-weight: 700;

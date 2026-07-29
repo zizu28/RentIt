@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Abstractions\RentIt.Shared.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Kernel\RentIt.Shared.Kernel.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

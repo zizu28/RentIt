@@ -80,7 +80,8 @@ public sealed class LoginUserCommandHandler(
                 IsEmailVerified = user.IsEmailVerified,
                 IsPhoneVerified = user.IsPhoneVerified,
                 CreatedAt = user.CreatedAt,
-                LastLoginAt = user.LastLoginAt
+                LastLoginAt = user.LastLoginAt,
+                ProfileImageUrl = user.ProfileImageUrl
             };
 
             var response = new LoginResponse

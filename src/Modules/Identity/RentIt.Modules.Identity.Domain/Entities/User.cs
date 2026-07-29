@@ -29,13 +29,10 @@ public sealed class User : AggregateRoot<Guid>
     public DateTime CreatedAt { get; private set; }
     public DateTime? LastLoginAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
-
     public string? VerificationToken { get; private set; }
     public string? PasswordResetToken { get; private set; }
     public DateTime? PasswordResetTokenExpiresAt { get; private set; }
-
     public IReadOnlyCollection<RefreshToken> RefreshTokens => _refreshTokens.AsReadOnly();
-
     public string FullName => $"{FirstName} {LastName}".Trim();
 
     private User() { } // EF Core
@@ -66,11 +63,12 @@ public sealed class User : AggregateRoot<Guid>
         return user;
     }
 
-    public void UpdateProfile(string? firstName, string? lastName, string? address)
+    public void UpdateProfile(string? firstName, string? lastName, string? address, string? phone)
     {
         FirstName = firstName?.Trim();
         LastName = lastName?.Trim();
         Address = address?.Trim();
+        PhoneNumber = PhoneNumber.Create(phone);
         UpdatedAt = DateTime.UtcNow;
     }
 
