@@ -129,6 +129,7 @@ app.UseCors("wasm");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<RentIt.BFF.Middleware.TokenRefreshMiddleware>();
 
 app.MapControllers();
 app.MapReverseProxy();

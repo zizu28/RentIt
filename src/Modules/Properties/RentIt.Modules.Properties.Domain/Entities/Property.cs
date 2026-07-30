@@ -144,6 +144,16 @@ public class Property : AggregateRoot<Guid>
         _amenities.Remove(amenity);
     }
     
+    public void ClearAmenities()
+    {
+        _amenities.Clear();
+    }
+    
+    public void UpdateAddress(Address address)
+    {
+        Address = address;
+    }
+    
     public void AddAmenities(IEnumerable<string> amenities)
     {
         foreach (var amenity in amenities)

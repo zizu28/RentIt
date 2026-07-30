@@ -42,8 +42,8 @@
                         <label for="profile-image-upload" class="upload-btn">
                             <i class="bi bi-camera-fill" style="color: var(--text-secondary);"></i>
                         </label>
-                        <InputFile id="profile-image-upload" OnChange="HandleImageUpload" accept="image/*" style="display: none;" />
                     }
+                    <InputFile id="profile-image-upload" OnChange="HandleImageUpload" accept="image/*" style="display: none;" />
                 </div>
                 <h2 class="profile-name">@_userName</h2>
                 <p class="profile-email">@_userEmail</p>
@@ -197,7 +197,7 @@
         Navigation.NavigateTo(path);
     }
 
-    private async Task HandleImageUpload(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs e)
+    private async Task HandleImageUpload(InputFileChangeEventArgs e)
     {
         var file = e.File;
         if (file == null) return;

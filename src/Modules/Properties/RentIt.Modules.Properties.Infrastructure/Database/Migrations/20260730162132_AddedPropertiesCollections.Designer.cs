@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RentIt.Modules.Properties.Infrastructure.Database;
 
@@ -11,9 +12,11 @@ using RentIt.Modules.Properties.Infrastructure.Database;
 namespace RentIt.Modules.Properties.Infrastructure.Database.Migrations
 {
     [DbContext(typeof(PropertiesDbContext))]
-    partial class PropertiesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260730162132_AddedPropertiesCollections")]
+    partial class AddedPropertiesCollections
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

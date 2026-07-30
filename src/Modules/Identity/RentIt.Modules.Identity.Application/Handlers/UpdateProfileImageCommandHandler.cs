@@ -3,16 +3,19 @@ using RentIt.Modules.Identity.Application.Commands;
 using RentIt.Modules.Identity.Domain.Repositories;
 using RentIt.Shared.Abstractions.Persistence;
 using RentIt.Shared.Abstractions.Results;
+using RentIt.Shared.Abstractions.Storage;
 using RentIt.Shared.DTOs.Identity;
 
 namespace RentIt.Modules.Identity.Application.Handlers;
 
 public sealed class UpdateProfileImageCommandHandler(
     IUserRepository userRepository,
-    IUnitOfWork unitOfWork) : IRequestHandler<UpdateProfileImageCommand, Result<UserDto>>
+    IUnitOfWork unitOfWork,
+    IStorageService storageService) : IRequestHandler<UpdateProfileImageCommand, Result<UserDto>>
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IStorageService _storageService = storageService;
 
     public async Task<Result<UserDto>> Handle(UpdateProfileImageCommand request, CancellationToken cancellationToken)
     {
@@ -31,7 +34,10 @@ public sealed class UpdateProfileImageCommandHandler(
                 return Result.Failure<UserDto>(Error.NotFound("User.NotFound", "User not found"));
             }
 
-            user.UpdateProfileImage(request.ImageUrl);
+            var imageUrl = await _storageService.UploadImageAsync(request.content, request.filename, cancellationToken);
+
+            user.UpdateProfileImage(imageUrl);
+            _userRepository.Update(user, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);

@@ -97,7 +97,7 @@
                             <div class="property-price">
                                 <strong class="text-primary" style="font-size: 1.25rem;">$@property.PricePerNight</strong> <span class="text-muted">/ night</span>
                             </div>
-                            <button class="btn-cc-secondary btn-sm" @onclick:stopPropagation="true">
+                            <button class="btn-cc-secondary btn-sm" @onclick:stopPropagation="true" @onclick="@(() => Navigation.NavigateTo($"/host/properties/edit/{property.Id}"))">
                                 Edit <i class="bi bi-pencil ml-1"></i>
                             </button>
                         </div>
@@ -108,7 +108,7 @@
     }
     else
     {
-        <div class="hero-section text-center py-5 mt-4 card-glass animated-fade-in mx-auto" style="max-width: 800px;">
+        <div class="hero-section text-center py-5 mt-4 mb-4 card-glass animated-fade-in mx-auto" style="max-width: 800px;">
             <div class="hero-icon-container mb-4">
                 <i class="bi bi-house-heart display-1 text-gradient"></i>
             </div>
@@ -126,12 +126,12 @@
             <div class="feature-card card-solid animate-fade-in-up text-center p-5">
                 <div class="feature-icon mb-4"><i class="bi bi-wallet2 text-success display-4"></i></div>
                 <h3 class="mb-3">Maximize Earnings</h3>
-                <p class="text-secondary">Hosts on RentIt earn an average of $850 per month just by sharing their spare space on weekends.</p>
+                <p class="text-secondary">Hosts on RentIt earn an average of GHS 2,000 per month just by sharing their spare space on weekends.</p>
             </div>
             <div class="feature-card card-solid animate-fade-in-up text-center p-5">
                 <div class="feature-icon mb-4"><i class="bi bi-shield-check text-info display-4"></i></div>
                 <h3 class="mb-3">Host with Confidence</h3>
-                <p class="text-secondary">Every booking includes up to $1M in property damage protection and verified guest screening.</p>
+                <p class="text-secondary">Every booking includes up to GHS 1M in property damage protection and verified guest screening.</p>
             </div>
             <div class="feature-card card-solid animate-fade-in-up text-center p-5">
                 <div class="feature-icon mb-4"><i class="bi bi-globe-americas text-primary display-4"></i></div>

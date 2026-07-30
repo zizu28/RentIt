@@ -70,7 +70,6 @@ public sealed class UsersController(ISender sender) : ControllerBase
     [HttpPost("me/profile-image")]
     public async Task<IActionResult> UploadProfileImage(
         [FromForm] IFormFile file,
-        [FromServices] IStorageService storageService,
         CancellationToken cancellationToken)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst(JwtRegisteredClaimNames.Sub);
@@ -93,9 +92,7 @@ public sealed class UsersController(ISender sender) : ControllerBase
         try
         {
             await using var stream = file.OpenReadStream();
-            var imageUrl = await storageService.UploadImageAsync(stream, file.FileName, cancellationToken);
-
-            var command = new UpdateProfileImageCommand(userIdClaim.Value, imageUrl);
+            var command = new UpdateProfileImageCommand(userIdClaim.Value, stream, file.FileName);
             var result = await _sender.Send(command, cancellationToken);
 
             return result.IsSuccess

@@ -26,7 +26,7 @@
 
         <form @onsubmit="HandleSubmitAsync">
             
-            <div class="card mb-6">
+            <div class="card mb-6" style="margin-bottom: 10px;">
                 <div class="card-body">
                     <h3 class="section-title mb-4">Basic Details</h3>
                     
@@ -42,7 +42,7 @@
                 </div>
             </div>
 
-            <div class="card mb-6">
+            <div class="card mb-6" style="margin-bottom: 10px;">
                 <div class="card-body">
                     <h3 class="section-title mb-4">Location</h3>
                     
@@ -53,12 +53,27 @@
 
                     <div class="row">
                         <div class="col-md-6 form-group mb-4">
-                            <label>City</label>
-                            <input type="text" class="form-control" @bind="_request.City" required />
+                            <label>Region/State</label>
+                            <select class="form-select form-control" @bind="_request.Region" @bind:after="OnRegionChanged" required>
+                                <option value="" disabled selected>Select Region...</option>
+                                @foreach (var region in _ghanaRegions.Keys)
+                                {
+                                    <option value="@region">@region</option>
+                                }
+                            </select>
                         </div>
                         <div class="col-md-6 form-group mb-4">
-                            <label>Region/State</label>
-                            <input type="text" class="form-control" @bind="_request.Region" required />
+                            <label>City</label>
+                            <select class="form-select form-control" @bind="_request.City" disabled="@string.IsNullOrEmpty(_request.Region)" required>
+                                <option value="" disabled selected>Select City...</option>
+                                @if (!string.IsNullOrEmpty(_request.Region) && _ghanaRegions.ContainsKey(_request.Region))
+                                {
+                                    @foreach (var city in _ghanaRegions[_request.Region])
+                                    {
+                                        <option value="@city">@city</option>
+                                    }
+                                }
+                            </select>
                         </div>
                     </div>
 
@@ -75,7 +90,7 @@
                 </div>
             </div>
 
-            <div class="card mb-6">
+            <div class="card mb-6" style="margin-bottom: 10px;">
                 <div class="card-body">
                     <h3 class="section-title mb-4">Features & Pricing</h3>
                     
@@ -89,7 +104,7 @@
                             <input type="number" class="form-control" min="1" @bind="_request.Bathrooms" required />
                         </div>
                         <div class="col-md-4 form-group mb-4">
-                            <label>Price per night ($)</label>
+                            <label>Price per night (GHS)</label>
                             <input type="number" step="0.01" min="1" class="form-control" @bind="_request.PricePerPeriod" required />
                         </div>
                     </div>
@@ -103,8 +118,12 @@
                         <label>Images</label>
                         <div class="image-upload-area p-5 text-center border rounded bg-light">
                             <i class="bi bi-cloud-arrow-up display-4 text-secondary mb-3"></i>
-                            <p class="mb-0 text-secondary">Image upload functionality via Cloudinary will be implemented soon.</p>
-                            <small class="text-muted">For now, placeholder images will be used automatically.</small>
+                            <p class="mb-0 text-secondary">Upload images for your property.</p>
+                            <InputFile class="form-control mt-3" multiple OnChange="HandleFileSelection" accept="image/png, image/jpeg" />
+                            @if (_selectedFiles.Count > 0)
+                            {
+                                <small class="text-success mt-2 d-block">@_selectedFiles.Count files selected</small>
+                            }
                         </div>
                     </div>
                 </div>
@@ -132,8 +151,43 @@
     private string _errorMessage = string.Empty;
     private string _amenitiesInput = string.Empty;
     
+    private readonly Dictionary<string, List<string>> _ghanaRegions = new()
+    {
+        { "Ahafo", new List<string> { "Goaso", "Hwidiem", "Kenyasi", "Kukuom" } },
+        { "Ashanti", new List<string> { "Kumasi", "Obuasi", "Ejura", "Mampong" } },
+        { "Bono", new List<string> { "Sunyani", "Berekum", "Dormaa Ahenkro", "Wenchi" } },
+        { "Bono East", new List<string> { "Techiman", "Kintampo", "Nkoranza", "Atebubu" } },
+        { "Central", new List<string> { "Cape Coast", "Winneba", "Kasoa", "Elmina" } },
+        { "Eastern", new List<string> { "Koforidua", "Nkawkaw", "Nsawam", "Suhum" } },
+        { "Greater Accra", new List<string> { "Accra", "Tema", "Madina", "Ashaiman", "Osu", "Legon" } },
+        { "North East", new List<string> { "Nalerigu", "Walewale", "Gambaga", "Bunkpurugu" } },
+        { "Northern", new List<string> { "Tamale", "Yendi", "Savelugu", "Bimbilla" } },
+        { "Oti", new List<string> { "Dambai", "Jasikan", "Kadjebi", "Nkwanta" } },
+        { "Savannah", new List<string> { "Damongo", "Bole", "Salaga", "Sawla" } },
+        { "Upper East", new List<string> { "Bolgatanga", "Navrongo", "Bawku", "Paga" } },
+        { "Upper West", new List<string> { "Wa", "Tumu", "Lawra", "Nandom" } },
+        { "Volta", new List<string> { "Ho", "Hohoe", "Keta", "Aflao" } },
+        { "Western", new List<string> { "Sekondi-Takoradi", "Tarkwa", "Axim", "Elubo" } },
+        { "Western North", new List<string> { "Sefwi Wiawso", "Bibiani", "Enchi", "Bodi" } }
+    };
+
     // Using a simple model to back the form before mapping to CreatePropertyRequest
     private FormModel _request = new();
+    private List<Microsoft.AspNetCore.Components.Forms.IBrowserFile> _selectedFiles = new();
+
+    private void OnRegionChanged()
+    {
+        _request.City = string.Empty;
+    }
+
+    private void HandleFileSelection(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs e)
+    {
+        _selectedFiles.Clear();
+        foreach (var file in e.GetMultipleFiles())
+        {
+            _selectedFiles.Add(file);
+        }
+    }
 
     private class FormModel
     {
@@ -161,11 +215,6 @@
                                            .Where(a => !string.IsNullOrEmpty(a))
                                            .ToList();
                                            
-            var placeholderImages = new List<string> 
-            { 
-                "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800" 
-            };
-
             var request = new CreatePropertyRequest(
                 _request.Name,
                 _request.Description,
@@ -180,10 +229,10 @@
                 _request.Bedrooms,
                 _request.Bathrooms,
                 amenities,
-                placeholderImages
+                Enumerable.Empty<string>()
             );
 
-            await PropertyService.CreatePropertyAsync(request);
+            await PropertyService.CreatePropertyAsync(request, _selectedFiles);
             
             Navigation.NavigateTo("/host/dashboard");
         }

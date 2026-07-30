@@ -15,20 +15,23 @@ namespace RentIt.Modules.Properties.Application.Handlers;
 internal sealed class CreatePropertyCommandHandler : IRequestHandler<Commands.CreatePropertyCommand, Result<Guid>>
 {
     private readonly IPropertyRepository _propertyRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IPropertiesUnitOfWork _unitOfWork;
     private readonly Serilog.ILogger _logger;
     private readonly IBackgroundJob _backgroundJob;
+    private readonly RentIt.Shared.Abstractions.Storage.IStorageService _storageService;
 
     public CreatePropertyCommandHandler(
         IPropertyRepository propertyRepository,
-        IUnitOfWork unitOfWork,
+        IPropertiesUnitOfWork unitOfWork,
         Serilog.ILogger logger,
-        IBackgroundJob backgroundJob)
+        IBackgroundJob backgroundJob,
+        RentIt.Shared.Abstractions.Storage.IStorageService storageService)
     {
         _propertyRepository = propertyRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
         _backgroundJob = backgroundJob;
+        _storageService = storageService;
     }
 
     public async Task<Result<Guid>> Handle(Commands.CreatePropertyCommand request, CancellationToken cancellationToken)
@@ -71,7 +74,8 @@ internal sealed class CreatePropertyCommandHandler : IRequestHandler<Commands.Cr
         {
             foreach (var img in request.Images)
             {
-                property.AddImage(img);
+                var url = await _storageService.UploadImageAsync(img.Content, img.FileName, cancellationToken);
+                property.AddImage(url);
             }
         }
 

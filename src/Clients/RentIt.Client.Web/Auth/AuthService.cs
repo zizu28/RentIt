@@ -1,5 +1,7 @@
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using RentIt.Shared.DTOs.Identity;
 
 namespace RentIt.Client.Web.Auth;
@@ -103,15 +105,15 @@ public class AuthService(
         }
     }
 
-    public async Task<UserDto?> UploadProfileImageAsync(Microsoft.AspNetCore.Components.Forms.IBrowserFile file)
+    public async Task<UserDto?> UploadProfileImageAsync(IBrowserFile file)
     {
         try
         {
             using var content = new MultipartFormDataContent();
-            // Maximum of 5MB
-            var stream = file.OpenReadStream(5 * 1024 * 1024);
+            // Maximum of 10MB
+            var stream = file.OpenReadStream(10 * 1024 * 1024);
             var fileContent = new StreamContent(stream);
-            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
             
             content.Add(fileContent, "file", file.Name);
 
@@ -124,8 +126,9 @@ public class AuthService(
             
             return null;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Console.WriteLine($"Upload failed: {ex.Message}");
             return null;
         }
     }

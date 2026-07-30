@@ -3,7 +3,8 @@ using RentIt.Shared.Abstractions.Results;
 
 namespace RentIt.Modules.Properties.Application.Commands;
 
-public sealed record CreatePropertyCommand(
+public sealed record UpdatePropertyCommand(
+    Guid PropertyId,
     Guid HostId,
     string Name,
     string Description,
@@ -12,14 +13,10 @@ public sealed record CreatePropertyCommand(
     string Region,
     string Country,
     string PostalCode,
-    int Type, // PropertyType enum
-    int RentalPeriod, // RentalPeriod enum
+    int Type,
+    int RentalPeriod,
     decimal PricePerPeriod,
     int Bedrooms,
     int Bathrooms,
-    IEnumerable<string> Amenities,
-    IEnumerable<CreatePropertyCommand.FileRecord> Images
-) : IRequest<Result<Guid>>
-{
-    public record FileRecord(Stream Content, string FileName);
-}
+    IEnumerable<string> Amenities
+) : IRequest<Result<Guid>>;

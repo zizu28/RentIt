@@ -17,8 +17,6 @@
     <ProjectReference Include="..\..\Modules\Reviews\RentIt.Modules.Reviews.Api\RentIt.Modules.Reviews.Api.csproj" />
     <ProjectReference Include="..\..\Modules\Verification\RentIt.Modules.Verification.Api\RentIt.Modules.Verification.Api.csproj" />
     <ProjectReference Include="..\..\Shared\RentIt.Shared.Infrastructure\RentIt.Shared.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\Modules\Properties\RentIt.Modules.Properties.Application\RentIt.Modules.Properties.Application.csproj" />
-    <ProjectReference Include="..\..\Modules\Properties\RentIt.Modules.Properties.Infrastructure\RentIt.Modules.Properties.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

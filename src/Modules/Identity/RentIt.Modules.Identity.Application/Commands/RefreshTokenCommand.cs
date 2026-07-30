@@ -4,8 +4,4 @@ using RentIt.Shared.DTOs.Identity;
 
 namespace RentIt.Modules.Identity.Application.Commands;
 
-public sealed record UpdateProfileImageCommand(
-    string UserId,
-    Stream content,
-    string filename
-) : IRequest<Result<UserDto>>;
+public sealed record RefreshTokenCommand(string RefreshToken) : IRequest<Result<LoginResponse>>;

@@ -1,0 +1,293 @@
+@page "/host/properties/edit/{Id:guid}"
+@using RentIt.Shared.DTOs.Properties
+@using RentIt.Client.Web.Services
+@inject IPropertyService PropertyService
+@inject NavigationManager Navigation
+@attribute [Authorize]
+
+<PageTitle>Edit Property - RentIt</PageTitle>
+
+<div class="page-container">
+    <div class="breadcrumbs mb-6">
+        <a href="/">Home</a> <span>/</span> 
+        <a href="/host/dashboard">Host Dashboard</a> <span>/</span> 
+        <span class="active">Edit Property</span>
+    </div>
+
+    <div class="add-property-form-container mx-auto" style="max-width: 800px;">
+        <h1 class="page-title mb-8 text-center">Edit your space</h1>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="alert alert-danger mb-6">
+                <i class="bi bi-exclamation-triangle-fill mr-2"></i> @_errorMessage
+            </div>
+        }
+
+        @if (_isLoading)
+        {
+            <div class="d-flex justify-content-center p-5">
+                <span class="spinner-border text-primary" role="status"></span>
+            </div>
+        }
+        else if (_property == null)
+        {
+            <div class="alert alert-warning mb-6">
+                <i class="bi bi-exclamation-circle-fill mr-2"></i> Property not found or you don't have permission to edit it.
+            </div>
+        }
+        else
+        {
+            <form @onsubmit="HandleSubmitAsync">
+                
+                <div class="card mb-6" style="margin-bottom: 10px;">
+                    <div class="card-body">
+                        <h3 class="section-title mb-4">Basic Details</h3>
+                        
+                        <div class="form-group mb-4">
+                            <label>Property Name</label>
+                            <input type="text" class="form-control" @bind="_request.Name" placeholder="e.g. Cozy Downtown Loft" required />
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label>Description</label>
+                            <textarea class="form-control" rows="4" @bind="_request.Description" placeholder="Describe your property..." required></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-6" style="margin-bottom: 10px;">
+                    <div class="card-body">
+                        <h3 class="section-title mb-4">Location</h3>
+                        
+                        <div class="form-group mb-4">
+                            <label>Street Address</label>
+                            <input type="text" class="form-control" @bind="_request.Street" required />
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 form-group mb-4">
+                                <label>Region/State</label>
+                                <select class="form-select form-control" @bind="_request.Region" @bind:after="OnRegionChanged" required>
+                                    <option value="" disabled selected>Select Region...</option>
+                                    @foreach (var region in _ghanaRegions.Keys)
+                                    {
+                                        <option value="@region">@region</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group mb-4">
+                                <label>City</label>
+                                <select class="form-select form-control" @bind="_request.City" disabled="@string.IsNullOrEmpty(_request.Region)" required>
+                                    <option value="" disabled selected>Select City...</option>
+                                    @if (!string.IsNullOrEmpty(_request.Region) && _ghanaRegions.ContainsKey(_request.Region))
+                                    {
+                                        @foreach (var city in _ghanaRegions[_request.Region])
+                                        {
+                                            <option value="@city">@city</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 form-group mb-4">
+                                <label>Country</label>
+                                <input type="text" class="form-control" @bind="_request.Country" required />
+                            </div>
+                            <div class="col-md-6 form-group mb-4">
+                                <label>Postal Code</label>
+                                <input type="text" class="form-control" @bind="_request.PostalCode" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-6" style="margin-bottom: 10px;">
+                    <div class="card-body">
+                        <h3 class="section-title mb-4">Features & Pricing</h3>
+                        
+                        <div class="row">
+                            <div class="col-md-4 form-group mb-4">
+                                <label>Bedrooms</label>
+                                <input type="number" class="form-control" min="1" @bind="_request.Bedrooms" required />
+                            </div>
+                            <div class="col-md-4 form-group mb-4">
+                                <label>Bathrooms</label>
+                                <input type="number" class="form-control" min="1" @bind="_request.Bathrooms" required />
+                            </div>
+                            <div class="col-md-4 form-group mb-4">
+                                <label>Price per night (GHS)</label>
+                                <input type="number" step="0.01" min="1" class="form-control" @bind="_request.PricePerPeriod" required />
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label>Amenities (comma separated)</label>
+                            <input type="text" class="form-control" @bind="_amenitiesInput" placeholder="Wifi, Pool, Kitchen..." />
+                        </div>
+                        
+                        <div class="alert alert-info mt-4">
+                            <i class="bi bi-info-circle mr-2"></i> Note: Image editing is not currently supported from this page.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mb-8">
+                    <button type="button" class="btn btn-outline mr-4" @onclick='() => Navigation.NavigateTo("/host/dashboard")'>Cancel</button>
+                    <button type="submit" class="btn btn-primary px-5" disabled="@_isSubmitting">
+                        @if (_isSubmitting)
+                        {
+                            <span class="spinner mr-2"></span> <span>Saving...</span>
+                        }
+                        else
+                        {
+                            <span>Update Property</span>
+                        }
+                    </button>
+                </div>
+            </form>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private bool _isLoading = true;
+    private bool _isSubmitting = false;
+    private string _errorMessage = string.Empty;
+    private string _amenitiesInput = string.Empty;
+    private PropertyDto? _property;
+    
+    private readonly Dictionary<string, List<string>> _ghanaRegions = new()
+    {
+        { "Ahafo", new List<string> { "Goaso", "Hwidiem", "Kenyasi", "Kukuom" } },
+        { "Ashanti", new List<string> { "Kumasi", "Obuasi", "Ejura", "Mampong" } },
+        { "Bono", new List<string> { "Sunyani", "Berekum", "Dormaa Ahenkro", "Wenchi" } },
+        { "Bono East", new List<string> { "Techiman", "Kintampo", "Nkoranza", "Atebubu" } },
+        { "Central", new List<string> { "Cape Coast", "Winneba", "Kasoa", "Elmina" } },
+        { "Eastern", new List<string> { "Koforidua", "Nkawkaw", "Nsawam", "Suhum" } },
+        { "Greater Accra", new List<string> { "Accra", "Tema", "Madina", "Ashaiman", "Osu", "Legon" } },
+        { "North East", new List<string> { "Nalerigu", "Walewale", "Gambaga", "Bunkpurugu" } },
+        { "Northern", new List<string> { "Tamale", "Yendi", "Savelugu", "Bimbilla" } },
+        { "Oti", new List<string> { "Dambai", "Jasikan", "Kadjebi", "Nkwanta" } },
+        { "Savannah", new List<string> { "Damongo", "Bole", "Salaga", "Sawla" } },
+        { "Upper East", new List<string> { "Bolgatanga", "Navrongo", "Bawku", "Paga" } },
+        { "Upper West", new List<string> { "Wa", "Tumu", "Lawra", "Nandom" } },
+        { "Volta", new List<string> { "Ho", "Hohoe", "Keta", "Aflao" } },
+        { "Western", new List<string> { "Sekondi-Takoradi", "Tarkwa", "Axim", "Elubo" } },
+        { "Western North", new List<string> { "Sefwi Wiawso", "Bibiani", "Enchi", "Bodi" } }
+    };
+
+    // Using a simple model to back the form before mapping to UpdatePropertyRequest
+    private FormModel _request = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _property = await PropertyService.GetPropertyByIdAsync(Id);
+            
+            if (_property != null)
+            {
+                var addressParts = _property.Location.Split(',')
+                    .Select(p => p.Trim())
+                    .ToArray();
+                    
+                _request.Name = _property.Name;
+                _request.Description = _property.Description;
+                
+                // Extremely basic parsing of location - it's better to return the full address object in the DTO
+                // but working with what we have
+                _request.City = addressParts.Length > 0 ? addressParts[0] : "";
+                _request.Region = addressParts.Length > 1 ? addressParts[1] : "";
+                _request.Country = addressParts.Length > 2 ? addressParts[2] : "Ghana";
+                
+                // Assuming we default these or they would come from a proper address DTO
+                _request.Street = "Main Street";
+                _request.PostalCode = "";
+                
+                _request.Bedrooms = _property.Bedrooms;
+                _request.Bathrooms = _property.Bathrooms;
+                _request.PricePerPeriod = _property.PricePerNight;
+                
+                if (_property.Amenities != null && _property.Amenities.Any())
+                {
+                    _amenitiesInput = string.Join(", ", _property.Amenities);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Failed to load property details: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void OnRegionChanged()
+    {
+        _request.City = string.Empty;
+    }
+
+    private class FormModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Street { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string Region { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;
+        public string PostalCode { get; set; } = string.Empty;
+        public int Bedrooms { get; set; } = 1;
+        public int Bathrooms { get; set; } = 1;
+        public decimal PricePerPeriod { get; set; } = 50.00m;
+    }
+
+    private async Task HandleSubmitAsync()
+    {
+        _errorMessage = string.Empty;
+        _isSubmitting = true;
+
+        try
+        {
+            var amenities = _amenitiesInput.Split(',')
+                                           .Select(a => a.Trim())
+                                           .Where(a => !string.IsNullOrEmpty(a))
+                                           .ToList();
+                                           
+            var request = new UpdatePropertyRequest(
+                _request.Name,
+                _request.Description,
+                _request.Street,
+                _request.City,
+                _request.Region,
+                _request.Country,
+                _request.PostalCode,
+                0, // Type
+                0, // RentalPeriod
+                _request.PricePerPeriod,
+                _request.Bedrooms,
+                _request.Bathrooms,
+                amenities
+            );
+
+            await PropertyService.UpdatePropertyAsync(Id, request);
+            
+            Navigation.NavigateTo("/host/dashboard");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Failed to update property: {ex.Message}";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

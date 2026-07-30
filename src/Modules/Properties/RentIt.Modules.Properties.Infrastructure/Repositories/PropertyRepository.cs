@@ -16,6 +16,13 @@ internal class PropertyRepository(PropertiesDbContext dbContext) : IPropertyRepo
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
+    public async Task<IEnumerable<Property>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Properties
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<Property>> GetByHostIdAsync(Guid hostId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Properties

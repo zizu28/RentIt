@@ -73,6 +73,8 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Ignore(u => u.DomainEvents);
         builder.Ignore(u => u.FullName);
-        builder.Ignore(u => u.RefreshTokens);
+        
+        builder.Metadata.FindNavigation(nameof(User.RefreshTokens))?
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

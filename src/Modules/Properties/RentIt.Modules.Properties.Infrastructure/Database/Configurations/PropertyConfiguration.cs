@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RentIt.Modules.Properties.Domain.Entities;
 using RentIt.Modules.Properties.Domain.Enums;
 using RentIt.Shared.Kernel.Enums;
+using System.Text.Json;
 
 namespace RentIt.Modules.Properties.Infrastructure.Database.Configurations;
 
@@ -53,5 +54,21 @@ internal class PropertyConfiguration : IEntityTypeConfiguration<Property>
         });
 
         builder.Ignore(x => x.DomainEvents);
+
+        builder.Property(x => x.Amenities)
+            .HasField("_amenities")
+            .UsePropertyAccessMode(PropertyAccessMode.Field)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>())
+            .HasColumnType("nvarchar(max)");
+
+        builder.Property(x => x.Images)
+            .HasField("_images")
+            .UsePropertyAccessMode(PropertyAccessMode.Field)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>())
+            .HasColumnType("nvarchar(max)");
     }
 }

@@ -46,7 +46,9 @@ public sealed class RegisterUserCommandHandler(
             {
                 await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 return Result.Failure<UserDto>(
-                    Error.Conflict("User.PhoneExists", "A user with this phone number already exists")
+                    Error.Conflict(
+                        "User.PhoneExists", "A user with this phone number already exists"
+                    )
                 );
             }
 
@@ -73,7 +75,7 @@ public sealed class RegisterUserCommandHandler(
             // Update profile if name provided
             if (!string.IsNullOrWhiteSpace(request.FirstName) || !string.IsNullOrWhiteSpace(request.LastName))
             {
-                user.UpdateProfile(request.FirstName, request.LastName, null, null);
+                user.UpdateProfile(request.FirstName, request.LastName, null, phoneNumber.Value);
             }
 
             // Generate a random token for verification (stub)

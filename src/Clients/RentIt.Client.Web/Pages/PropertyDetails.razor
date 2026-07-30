@@ -4,11 +4,15 @@
 @inject IPropertyService PropertyService
 @inject IBookingService BookingService
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
 @* Removing Snackbar dependency as we don't have MudBlazor anymore, we will use a simple status message *@
 
 <div class="page-container">
     <div class="breadcrumbs">
-        <a href="/">Home</a> <span>/</span> 
+        <a href="/">Home</a> <span>/</span>
+        <a href="/host/dashboard">Host Dashboard</a> <span>/</span>
         <span class="active">@(_property?.Title ?? "Property Details")</span>
     </div>
 
@@ -29,8 +33,32 @@
             <span class="text-underline">@_property.Location</span>
         </div>
 
-        <div class="property-gallery mb-8">
-            <img src="@GetImageUrl()" alt="Property Image" class="gallery-main-img" />
+        <div class="property-gallery mb-8 relative">
+            @if (_property.ImageUrls.Any())
+            {
+                <img src="@_property.ImageUrls[_currentImageIndex]" alt="Property Image" class="gallery-main-img" />
+                
+                @if (_property.ImageUrls.Count > 1)
+                {
+                    <button class="carousel-btn prev-btn" @onclick="PrevImage">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button class="carousel-btn next-btn" @onclick="NextImage">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                    <div class="carousel-indicators">
+                        @for (int i = 0; i < _property.ImageUrls.Count; i++)
+                        {
+                            var index = i;
+                            <span class="indicator @(index == _currentImageIndex ? "active" : "")" @onclick="() => _currentImageIndex = index"></span>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800" alt="Placeholder Image" class="gallery-main-img" />
+            }
         </div>
 
         <div class="property-layout">
@@ -45,15 +73,22 @@
                 <hr class="divider mb-6" />
 
                 <h2 class="section-subtitle mb-4">What this place offers</h2>
-                <div class="amenities-grid">
-                    @foreach (var amenity in _property.Amenities)
-                    {
-                        <div class="amenity-item">
-                            <i class="bi bi-check-circle amenity-icon"></i>
-                            <span>@amenity</span>
-                        </div>
-                    }
-                </div>
+                @if (_property.Amenities != null && _property.Amenities.Any())
+                {
+                    <div class="amenities-grid">
+                        @foreach (var amenity in _property.Amenities)
+                        {
+                            <div class="amenity-item">
+                                <i class="bi bi-check-circle amenity-icon"></i>
+                                <span>@amenity</span>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-secondary">No amenities listed.</p>
+                }
             </div>
 
             <div class="property-booking">
@@ -90,17 +125,29 @@
 
                     <AuthorizeView>
                         <Authorized>
-                            <button class="btn btn-primary full-width rounded-lg py-3 mb-4" @onclick="ReserveAsync" disabled="@_isBooking">
-                                @if (_isBooking)
-                                {
-                                    <span class="spinner"></span>
-                                    <span>Processing...</span>
-                                }
-                                else
-                                {
-                                    <span>Reserve</span>
-                                }
-                            </button>
+                            @if (_isHost)
+                            {
+                                <div class="alert alert-info mb-4">
+                                    <i class="bi bi-info-circle mr-2"></i> You cannot reserve your own property.
+                                </div>
+                                <button class="btn btn-secondary full-width rounded-lg py-3 mb-4" disabled>
+                                    Reserve
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-primary full-width rounded-lg py-3 mb-4" @onclick="ReserveAsync" disabled="@_isBooking">
+                                    @if (_isBooking)
+                                    {
+                                        <span class="spinner"></span>
+                                        <span>Processing...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Reserve</span>
+                                    }
+                                </button>
+                            }
                         </Authorized>
                         <NotAuthorized>
                             <a href="/login?returnUrl=/properties/@Id" class="btn btn-primary full-width rounded-lg py-3 mb-4 text-center d-inline-block" style="text-decoration: none;">
@@ -139,6 +186,8 @@
     private DateTime? CheckOutDate;
     private int _guests = 1;
     private bool _isBooking;
+    private bool _isHost = false;
+    private int _currentImageIndex = 0;
     
     private string _statusMessage = string.Empty;
     private bool _isError = false;
@@ -146,9 +195,32 @@
     protected override async Task OnInitializedAsync()
     {
         _property = await PropertyService.GetPropertyByIdAsync(Id);
+        
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        if (Guid.TryParse(userIdString, out var currentUserId) && _property != null)
+        {
+            _isHost = currentUserId == _property.HostId;
+        }
     }
 
-    private string GetImageUrl() => _property?.ImageUrls.FirstOrDefault() ?? string.Empty;
+    private void NextImage()
+    {
+        if (_property != null && _property.ImageUrls.Count > 0)
+        {
+            _currentImageIndex = (_currentImageIndex + 1) % _property.ImageUrls.Count;
+        }
+    }
+
+    private void PrevImage()
+    {
+        if (_property != null && _property.ImageUrls.Count > 0)
+        {
+            _currentImageIndex = (_currentImageIndex - 1 + _property.ImageUrls.Count) % _property.ImageUrls.Count;
+        }
+    }
 
     private async Task ReserveAsync()
     {

@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RentIt.Modules.Properties.Application\RentIt.Modules.Properties.Application.csproj" />
-    <ProjectReference Include="..\RentIt.Modules.Properties.Domain\RentIt.Modules.Properties.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

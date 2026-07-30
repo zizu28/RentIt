@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RentIt.Modules.Properties.Domain\RentIt.Modules.Properties.Domain.csproj" />
-    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Abstractions\RentIt.Shared.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\Shared\RentIt.Shared.DTOs\RentIt.Shared.DTOs.csproj" />
     <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Contracts\RentIt.Shared.Contracts.csproj" />
   </ItemGroup>

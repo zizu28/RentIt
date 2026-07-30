@@ -17,6 +17,7 @@ public static class Extensions
         });
 
         services.AddScoped<IPropertyRepository, PropertyRepository>();
+        services.AddScoped<IPropertiesUnitOfWork, PropertiesUnitOfWork>();
         services.AddScoped<RentIt.Modules.Properties.Application.Services.IPropertyEmailService, RentIt.Modules.Properties.Infrastructure.Services.PropertyEmailService>();
 
         return services;

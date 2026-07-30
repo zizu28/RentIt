@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Forms;
 using RentIt.Shared.DTOs.Properties;
 
 namespace RentIt.Client.Web.Services;
@@ -73,7 +74,7 @@ public class MockPropertyService : IPropertyService
         return _properties; // For mock, just return all as host properties
     }
 
-    public async Task<Guid> CreatePropertyAsync(CreatePropertyRequest request)
+    public async Task<Guid> CreatePropertyAsync(CreatePropertyRequest request, IEnumerable<IBrowserFile> images)
     {
         await Task.Delay(600);
         var id = Guid.NewGuid();
@@ -92,5 +93,10 @@ public class MockPropertyService : IPropertyService
             Amenities = request.Amenities.ToList()
         });
         return id;
+    }
+
+    public Task UpdatePropertyAsync(Guid id, UpdatePropertyRequest request)
+    {
+        throw new NotImplementedException();
     }
 }
