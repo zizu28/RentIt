@@ -7,21 +7,17 @@ namespace RentIt.Modules.Payments.Application.Commands;
 
 internal sealed class ProcessPaymentWebhookCommandHandler(
     IPaymentRepository paymentRepository,
-    IEventBus eventBus,
     IPaymentsUnitOfWork unitOfWork) : IRequestHandler<ProcessPaymentWebhookCommand>
 {
     private readonly IPaymentRepository _paymentRepository = paymentRepository;
-    private readonly IEventBus _eventBus = eventBus;
     private readonly IPaymentsUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task Handle(ProcessPaymentWebhookCommand request, CancellationToken cancellationToken)
     {
-        if (request.Payload.Event != "charge.success")
-        {
-            return; // We only care about successful charges for now
-        }
-
+        var eventType = request.Payload.Event;
         var reference = request.Payload.Data.Reference;
+        var amount = request.Payload.Data.Amount / 100m; // Paystack sends amount in kobo
+
         if (string.IsNullOrEmpty(reference))
             return;
 
@@ -29,27 +25,41 @@ internal sealed class ProcessPaymentWebhookCommandHandler(
         if (payment == null)
             return;
 
-        if (payment.Status == Domain.Enums.PaymentStatus.Successful)
-            return; // Already processed
+        switch (eventType)
+        {
+            case "charge.success":
+                if (payment.Status == Domain.Enums.PaymentStatus.Successful)
+                    return; // Already processed
 
-        // Update local state
-        payment.MarkAsSuccessful();
+                if (amount < payment.Amount)
+                {
+                    payment.MarkAsPartiallyPaid(amount);
+                }
+                else
+                {
+                    payment.MarkAsSuccessful();
+                }
+                break;
+
+            case "charge.failed":
+                if (payment.Status == Domain.Enums.PaymentStatus.Failed)
+                    return;
+                payment.MarkAsFailed();
+                break;
+
+            case "refund.processed":
+                if (payment.Status == Domain.Enums.PaymentStatus.Refunded)
+                    return;
+                payment.MarkAsRefunded();
+                break;
+                
+            default:
+                return; // Ignored events
+        }
+
         await _paymentRepository.UpdateAsync(payment, cancellationToken);
+        
+        // This will save changes AND dispatch domain events
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        // Publish integration event to notify Bookings module
-        // RenterId is not stored in Payment currently, but we can pass Guid.Empty or store it in Payment. 
-        // Ideally, Payment should store RenterId if required by the event.
-        // Let's publish it with Guid.Empty for RenterId since the Bookings module mainly needs BookingId.
-        var integrationEvent = new PaymentCompletedIntegrationEvent(
-            payment.Id,
-            payment.BookingId,
-            Guid.Empty, // RenterId not tracked in Payment module directly
-            payment.Amount,
-            payment.Currency,
-            "Paystack"
-        );
-
-        await _eventBus.PublishAsync(integrationEvent, cancellationToken);
     }
 }

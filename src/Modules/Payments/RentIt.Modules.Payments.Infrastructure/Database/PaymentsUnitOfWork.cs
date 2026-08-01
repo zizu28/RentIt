@@ -3,14 +3,20 @@ using RentIt.Modules.Payments.Domain.Repositories;
 
 namespace RentIt.Modules.Payments.Infrastructure.Database;
 
-internal sealed class PaymentsUnitOfWork(PaymentsDbContext dbContext) : IPaymentsUnitOfWork
+internal sealed class PaymentsUnitOfWork(PaymentsDbContext dbContext, DomainEventDispatcher domainEventDispatcher) : IPaymentsUnitOfWork
 {
     private readonly PaymentsDbContext _dbContext = dbContext;
+    private readonly DomainEventDispatcher _domainEventDispatcher = domainEventDispatcher;
     private IDbContextTransaction? _transaction;
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return await _dbContext.SaveChangesAsync(cancellationToken);
+        var result = await _dbContext.SaveChangesAsync(cancellationToken);
+
+        // Dispatch domain events AFTER successful save
+        await _domainEventDispatcher.DispatchDomainEventsAsync(cancellationToken);
+
+        return result;
     }
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)

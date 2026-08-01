@@ -19,6 +19,9 @@ public class PaystackWebhookData
 
     [JsonPropertyName("status")]
     public string Status { get; set; } = string.Empty;
+
+    [JsonPropertyName("amount")]
+    public decimal Amount { get; set; }
 }
 
 public record ProcessPaymentWebhookCommand(PaystackWebhookPayload Payload) : IRequest;

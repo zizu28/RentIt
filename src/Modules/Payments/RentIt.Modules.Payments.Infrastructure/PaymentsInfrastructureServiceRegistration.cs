@@ -17,6 +17,7 @@ public static class PaymentsInfrastructureServiceRegistration
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<DomainEventDispatcher>();
         services.AddScoped<IPaymentsUnitOfWork, PaymentsUnitOfWork>();
         
         services.AddHttpClient<IPaystackService, PaystackService>();
