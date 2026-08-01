@@ -5,22 +5,16 @@ using RentIt.Shared.DTOs.Bookings;
 
 namespace RentIt.Modules.Bookings.Application.Queries;
 
-public class GetPropertyBookedPeriodsQueryHandler : IRequestHandler<GetPropertyBookedPeriodsQuery, IReadOnlyList<BookedPeriodDto>>
+public class GetPropertyBookedPeriodsQueryHandler(IBookingRepository bookingRepository) : IRequestHandler<GetPropertyBookedPeriodsQuery, IReadOnlyList<BookedPeriodDto>>
 {
-    private readonly IBookingRepository _bookingRepository;
-
-    public GetPropertyBookedPeriodsQueryHandler(IBookingRepository bookingRepository)
-    {
-        _bookingRepository = bookingRepository;
-    }
+    private readonly IBookingRepository _bookingRepository = bookingRepository;
 
     public async Task<IReadOnlyList<BookedPeriodDto>> Handle(GetPropertyBookedPeriodsQuery request, CancellationToken cancellationToken)
     {
         var bookings = await _bookingRepository.GetByPropertyIdAsync(request.PropertyId, cancellationToken);
-        
-        return bookings
+
+        return [.. bookings
             .Where(b => b.Status != BookingStatus.Cancelled)
-            .Select(b => new BookedPeriodDto(b.StartDate, b.EndDate))
-            .ToList();
+            .Select(b => new BookedPeriodDto(b.StartDate, b.EndDate))];
     }
 }

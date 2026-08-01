@@ -1,17 +1,18 @@
 using RentIt.Modules.Bookings.Domain.Enums;
-using RentIt.Shared.Abstractions.Domain;
-using RentIt.Shared.Kernel.ValueObjects;
 using RentIt.Modules.Bookings.Domain.Exceptions;
+using RentIt.Shared.Abstractions.Domain;
+using RentIt.Shared.Kernel.Enums;
+using RentIt.Shared.Kernel.ValueObjects;
 
 namespace RentIt.Modules.Bookings.Domain.Entities;
 
-public class Booking : AggregateRoot<Guid>
+public sealed class Booking : AggregateRoot<Guid>
 {
-    public Guid PropertyId { get; private set; }
-    public Guid GuestId { get; private set; }
-    public DateOnly StartDate { get; private set; }
-    public DateOnly EndDate { get; private set; }
-    public Money TotalPrice { get; private set; }
+    public Guid PropertyId { get; init; }
+    public Guid GuestId { get; init; }
+    public DateOnly StartDate { get; init; }
+    public DateOnly EndDate { get; init; }
+    public Money TotalPrice { get; init; }
     public BookingStatus Status { get; private set; }
 
 #pragma warning disable CS8618
@@ -19,12 +20,12 @@ public class Booking : AggregateRoot<Guid>
 #pragma warning restore CS8618
 
     private Booking(
-        Guid id, 
-        Guid propertyId, 
-        Guid guestId, 
-        DateOnly startDate, 
-        DateOnly endDate, 
-        Money totalPrice, 
+        Guid id,
+        Guid propertyId,
+        Guid guestId,
+        DateOnly startDate,
+        DateOnly endDate,
+        Money totalPrice,
         BookingStatus status)
     {
         Id = id;
@@ -56,9 +57,9 @@ public class Booking : AggregateRoot<Guid>
 
         var totalDays = endDate.DayNumber - startDate.DayNumber;
         var totalPriceAmount = pricePerNight * totalDays;
-        if (!Enum.TryParse<RentIt.Shared.Kernel.Enums.Currency>(currency, true, out var parsedCurrency))
+        if (!Enum.TryParse<Currency>(currency, true, out var parsedCurrency))
         {
-            parsedCurrency = RentIt.Shared.Kernel.Enums.Currency.USD; // Default or throw
+            parsedCurrency = Currency.GHS; // Default or throw
         }
 
         var totalPrice = Money.Create(totalPriceAmount, parsedCurrency);
@@ -82,7 +83,7 @@ public class Booking : AggregateRoot<Guid>
         {
             throw new BookingDomainException($"Booking is {Status} and cannot be confirmed.");
         }
-        
+
         Status = BookingStatus.Confirmed;
     }
 
@@ -109,5 +110,35 @@ public class Booking : AggregateRoot<Guid>
         }
 
         Status = BookingStatus.Completed;
+    }
+
+    public void MarkAsRefunded()
+    {
+        if (Status == BookingStatus.Completed)
+        {
+            throw new BookingDomainException($"Booking is {Status} and cannot be refunded.");
+        }
+
+        Status = BookingStatus.Refunded;
+    }
+
+    public void MarkAsPartiallyPaid()
+    {
+        if (Status != BookingStatus.Pending)
+        {
+            throw new BookingDomainException($"Booking is {Status} and cannot be marked as partially paid.");
+        }
+
+        Status = BookingStatus.PartiallyPaid;
+    }
+
+    public void MarkAsFailed()
+    {
+        if (Status != BookingStatus.Pending && Status != BookingStatus.PartiallyPaid)
+        {
+            throw new BookingDomainException($"Booking is {Status} and cannot be marked as failed.");
+        }
+
+        Status = BookingStatus.Failed;
     }
 }

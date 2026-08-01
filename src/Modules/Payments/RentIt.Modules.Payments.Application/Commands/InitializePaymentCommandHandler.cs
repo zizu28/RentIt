@@ -9,7 +9,7 @@ namespace RentIt.Modules.Payments.Application.Commands;
 internal sealed class InitializePaymentCommandHandler(
     IPaymentRepository paymentRepository,
     IPaystackService paystackService,
-    IPaymentsUnitOfWork unitOfWork) 
+    IPaymentsUnitOfWork unitOfWork)
     : IRequestHandler<InitializePaymentCommand, string>
 {
     private readonly IPaymentRepository _paymentRepository = paymentRepository;

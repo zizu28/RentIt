@@ -6,7 +6,7 @@ using RentIt.Shared.Abstractions.Domain;
 
 namespace RentIt.Modules.Payments.Domain.Entities;
 
-public class Payment : AggregateRoot<Guid>
+public sealed class Payment : AggregateRoot<Guid>
 {
 #pragma warning disable
     public Guid BookingId { get; private set; }

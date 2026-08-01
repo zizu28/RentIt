@@ -6,37 +6,34 @@ using RentIt.Modules.Bookings.Infrastructure.Database;
 
 namespace RentIt.Modules.Bookings.Infrastructure.Repositories;
 
-internal sealed class BookingRepository : IBookingRepository
+internal sealed class BookingRepository(BookingsDbContext context) : IBookingRepository
 {
-    private readonly BookingsDbContext _context;
+    private readonly BookingsDbContext _context = context;
 
-    public BookingRepository(BookingsDbContext context)
+    public Task<Booking?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        _context = context;
+        return _context.Bookings.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
     }
 
-    public async Task<Booking?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<Booking>> GetByGuestIdAsync(Guid guestId, CancellationToken cancellationToken = default)
     {
-        return await _context.Bookings.FirstOrDefaultAsync(b => b.Id == id, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<Booking>> GetByGuestIdAsync(Guid guestId, CancellationToken cancellationToken = default)
-    {
-        return await _context.Bookings
+        return _context.Bookings
             .Where(b => b.GuestId == guestId)
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken)
+            .ContinueWith(t => (IReadOnlyList<Booking>)t.Result, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Booking>> GetByPropertyIdAsync(Guid propertyId, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<Booking>> GetByPropertyIdAsync(Guid propertyId, CancellationToken cancellationToken = default)
     {
-        return await _context.Bookings
+        return _context.Bookings
             .Where(b => b.PropertyId == propertyId)
-            .ToListAsync(cancellationToken);
+            .ToListAsync(cancellationToken)
+            .ContinueWith(t => (IReadOnlyList<Booking>)t.Result, cancellationToken);
     }
 
-    public async Task<bool> HasOverlappingBookingsAsync(Guid propertyId, DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken = default)
+    public Task<bool> HasOverlappingBookingsAsync(Guid propertyId, DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken = default)
     {
-        return await _context.Bookings.AnyAsync(
+        return _context.Bookings.AnyAsync(
             b => b.PropertyId == propertyId &&
                  b.Status != BookingStatus.Cancelled &&
                  b.StartDate < endDate &&

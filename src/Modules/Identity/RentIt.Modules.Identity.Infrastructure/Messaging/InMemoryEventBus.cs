@@ -14,13 +14,17 @@ internal sealed class InMemoryEventBus(IServiceProvider serviceProvider, ILogger
     private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly ILogger<InMemoryEventBus> _logger = logger;
 
-    public async Task PublishAsync<T>(T @event, CancellationToken cancellationToken = default) 
+    public async Task PublishAsync<T>(T @event, CancellationToken cancellationToken = default)
         where T : IIntegrationEvent
     {
         var eventType = @event.GetType().Name;
-        _logger.LogInformation(
-            "[EventBus] Publishing integration event {EventType} with Id {EventId}",
-            eventType, @event.EventId);
+
+        if (_logger.IsEnabled(LogLevel.Information))
+        {
+            _logger.LogInformation(
+                "[EventBus] Publishing integration event {EventType} with Id {EventId}",
+                eventType, @event.EventId);
+        }
 
         // Resolve all handlers for this integration event type
         var handlers = _serviceProvider.GetServices<IIntegrationEventHandler<T>>();
@@ -29,9 +33,12 @@ internal sealed class InMemoryEventBus(IServiceProvider serviceProvider, ILogger
         {
             try
             {
-                _logger.LogInformation(
-                    "[EventBus] Dispatching {EventType} to {HandlerType}",
-                    eventType, handler.GetType().Name);
+                if (_logger.IsEnabled(LogLevel.Information))
+                {
+                    _logger.LogInformation(
+                        "[EventBus] Dispatching {EventType} to {HandlerType}",
+                        eventType, handler.GetType().Name);
+                }
 
                 await handler.HandleAsync(@event, cancellationToken);
             }

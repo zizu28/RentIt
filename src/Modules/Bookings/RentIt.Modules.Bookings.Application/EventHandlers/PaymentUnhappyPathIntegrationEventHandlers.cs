@@ -18,22 +18,25 @@ internal sealed class PaymentUnhappyPathIntegrationEventHandlers(
     public async Task Handle(PaymentFailedIntegrationEvent notification, CancellationToken cancellationToken)
     {
         var booking = await _bookingRepository.GetByIdAsync(notification.BookingId, cancellationToken);
-        if (booking == null) return;
+        if (booking == null)
+        {
+            return;
+        }
 
-        // We leave the booking in Pending state on failure, but log it.
-        // A full implementation might track retry attempts or cancel it if max retries exceeded.
+        booking.MarkAsFailed();
+        _bookingRepository.Update(booking);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
     public async Task Handle(PaymentRefundedIntegrationEvent notification, CancellationToken cancellationToken)
     {
         var booking = await _bookingRepository.GetByIdAsync(notification.BookingId, cancellationToken);
-        if (booking == null) return;
+        if (booking == null)
+        {
+            return;
+        }
 
-        // Using reflection or a dedicated method in Booking aggregate to set status
-        // Since we don't have MarkAsRefunded in Booking yet, we will just update status manually
-        // In true DDD, Booking should have a MarkAsRefunded() method.
-        booking.Cancel(); // Simplest approach for now: cancel the booking to free dates
-
+        booking.MarkAsRefunded();
         _bookingRepository.Update(booking);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
@@ -41,8 +44,13 @@ internal sealed class PaymentUnhappyPathIntegrationEventHandlers(
     public async Task Handle(PaymentPartiallyPaidIntegrationEvent notification, CancellationToken cancellationToken)
     {
         var booking = await _bookingRepository.GetByIdAsync(notification.BookingId, cancellationToken);
-        if (booking == null) return;
+        if (booking == null)
+        {
+            return;
+        }
 
-        // Leave it pending, wait for full payment. Or add a MarkAsPartiallyPaid if business needs it.
+        booking.MarkAsPartiallyPaid();
+        _bookingRepository.Update(booking);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

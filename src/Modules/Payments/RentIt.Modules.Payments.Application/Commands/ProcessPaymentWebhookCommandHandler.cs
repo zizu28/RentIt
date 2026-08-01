@@ -1,7 +1,6 @@
 using MediatR;
+using RentIt.Modules.Payments.Domain.Enums;
 using RentIt.Modules.Payments.Domain.Repositories;
-using RentIt.Shared.Abstractions.Messaging;
-using RentIt.Shared.Contracts.Payments.IntegrationEvents;
 
 namespace RentIt.Modules.Payments.Application.Commands;
 
@@ -19,17 +18,23 @@ internal sealed class ProcessPaymentWebhookCommandHandler(
         var amount = request.Payload.Data.Amount / 100m; // Paystack sends amount in kobo
 
         if (string.IsNullOrEmpty(reference))
+        {
             return;
+        }
 
         var payment = await _paymentRepository.GetByReferenceAsync(reference, cancellationToken);
         if (payment == null)
+        {
             return;
+        }
 
         switch (eventType)
         {
             case "charge.success":
-                if (payment.Status == Domain.Enums.PaymentStatus.Successful)
+                if (payment.Status == PaymentStatus.Successful)
+                {
                     return; // Already processed
+                }
 
                 if (amount < payment.Amount)
                 {
@@ -42,23 +47,25 @@ internal sealed class ProcessPaymentWebhookCommandHandler(
                 break;
 
             case "charge.failed":
-                if (payment.Status == Domain.Enums.PaymentStatus.Failed)
+                if (payment.Status == PaymentStatus.Failed)
+                {
                     return;
+                }
                 payment.MarkAsFailed();
                 break;
 
             case "refund.processed":
-                if (payment.Status == Domain.Enums.PaymentStatus.Refunded)
+                if (payment.Status == PaymentStatus.Refunded)
+                {
                     return;
+                }
                 payment.MarkAsRefunded();
                 break;
-                
             default:
                 return; // Ignored events
         }
 
         await _paymentRepository.UpdateAsync(payment, cancellationToken);
-        
         // This will save changes AND dispatch domain events
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }

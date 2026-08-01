@@ -7,5 +7,6 @@ public enum BookingStatus
     Cancelled,
     Completed,
     Refunded,
-    PartiallyPaid
+    PartiallyPaid,
+    Failed
 }
