@@ -18,6 +18,8 @@ public sealed record Error
     }
 
     public static Error Failure(string code, string message) => new(code, message);
+
+    public static Error Unauthorized(string code, string message) => new(code, message);
     
     public static Error NotFound(string code, string message) => new(code, message);
     

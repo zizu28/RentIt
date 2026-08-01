@@ -91,13 +91,6 @@ internal sealed class UserRepository(IdentityDbContext dbContext) : IUserReposit
         }
     }
 
-    public async Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
-    {
-        return await _dbContext.Users
-            .Include(u => u.RefreshTokens)
-            .FirstOrDefaultAsync(u => u.RefreshTokens.Any(rt => rt.Token == refreshToken), cancellationToken);
-    }
-
     public async Task AddAsync(User entity, CancellationToken cancellationToken = default)
     {
         await _dbContext.Users.AddAsync(entity, cancellationToken);

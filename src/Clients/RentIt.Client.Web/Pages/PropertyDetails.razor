@@ -1,5 +1,6 @@
 @page "/properties/{Id:guid}"
 @using RentIt.Shared.DTOs.Properties
+@using RentIt.Shared.DTOs.Bookings
 @using RentIt.Client.Web.Services
 @inject IPropertyService PropertyService
 @inject IBookingService BookingService
@@ -13,7 +14,7 @@
     <div class="breadcrumbs">
         <a href="/">Home</a> <span>/</span>
         <a href="/host/dashboard">Host Dashboard</a> <span>/</span>
-        <span class="active">@(_property?.Title ?? "Property Details")</span>
+        <span class="active">@(_property?.Name ?? "Property Details")</span>
     </div>
 
     @if (_property == null)
@@ -24,21 +25,21 @@
     }
     else
     {
-        <h1 class="page-title mb-2">@_property.Title</h1>
+        <h1 class="page-title mb-2">@_property.Name</h1>
         <div class="property-meta mb-6">
             <i class="bi bi-star-fill text-warning"></i>
-            <span class="font-weight-600">@_property.Rating</span>
+            <span class="font-weight-600">5.0</span>
             <span class="text-secondary mx-2">·</span>
             <i class="bi bi-geo-alt"></i>
-            <span class="text-underline">@_property.Location</span>
+            <span class="text-underline">@_property.City, @_property.Country</span>
         </div>
 
         <div class="property-gallery mb-8 relative">
-            @if (_property.ImageUrls.Any())
+            @if (_property.Images != null && _property.Images.Any())
             {
-                <img src="@_property.ImageUrls[_currentImageIndex]" alt="Property Image" class="gallery-main-img" />
+                <img src="@_property.Images[_currentImageIndex]" alt="Property Image" class="gallery-main-img" />
                 
-                @if (_property.ImageUrls.Count > 1)
+                @if (_property.Images.Count > 1)
                 {
                     <button class="carousel-btn prev-btn" @onclick="PrevImage">
                         <i class="bi bi-chevron-left"></i>
@@ -47,7 +48,7 @@
                         <i class="bi bi-chevron-right"></i>
                     </button>
                     <div class="carousel-indicators">
-                        @for (int i = 0; i < _property.ImageUrls.Count; i++)
+                        @for (int i = 0; i < _property.Images.Count; i++)
                         {
                             var index = i;
                             <span class="indicator @(index == _currentImageIndex ? "active" : "")" @onclick="() => _currentImageIndex = index"></span>
@@ -93,17 +94,28 @@
 
             <div class="property-booking">
                 <div class="booking-widget">
-                    <div class="booking-price mb-6">
-                        <span class="price-amount">$@_property.PricePerNight</span>
-                        <span class="price-label">night</span>
+                    <div class="booking-price mb-2">
+                        <span class="price-amount">GHS @_property.PricePerPeriod</span>
+                        <span class="price-label">@GetPriceSuffix(_property.RentalPeriod)</span>
                     </div>
+
+                    @if (_property.SecurityDeposit > 0)
+                    {
+                        <div class="security-deposit mb-6" style="color: var(--text-secondary); font-size: 0.9rem;">
+                            Security Deposit: GHS @_property.SecurityDeposit
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-6"></div>
+                    }
 
                     <div class="form-group">
                         <label>Check-in</label>
-                        <input type="date" class="form-control mb-3" @bind="CheckInDate" />
+                        <input type="date" class="form-control mb-3" @bind="CheckInDate" min="@_minCheckInDate" />
                         
                         <label>Check-out</label>
-                        <input type="date" class="form-control mb-4" @bind="CheckOutDate" />
+                        <input type="date" class="form-control mb-4" @bind="CheckOutDate" min="@(CheckInDate?.AddDays(1).ToString("yyyy-MM-dd") ?? _minCheckInDate)" max="@_maxCheckOutDate" />
                     </div>
                     
                     <div class="form-group mb-6">
@@ -160,15 +172,30 @@
                     {
                         var nights = (CheckOutDate.Value - CheckInDate.Value).Days;
                         <div class="price-breakdown">
-                            <div class="price-row mb-2">
-                                <span>$@_property.PricePerNight x @nights nights</span>
-                                <span>$@(_property.PricePerNight * nights)</span>
-                            </div>
-                            <hr class="divider my-4" />
-                            <div class="price-row total-row">
-                                <span>Total</span>
-                                <span>$@(_property.PricePerNight * nights)</span>
-                            </div>
+                            @if (_property.RentalPeriod == 1)
+                            {
+                                <div class="price-row mb-2">
+                                    <span>GHS @_property.PricePerPeriod x @nights nights</span>
+                                    <span>GHS @(_property.PricePerPeriod * nights)</span>
+                                </div>
+                                <hr class="divider my-4" />
+                                <div class="price-row total-row">
+                                    <span>Total</span>
+                                    <span>GHS @((_property.PricePerPeriod * nights) + _property.SecurityDeposit)</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="price-row mb-2">
+                                    <span>Rental Duration</span>
+                                    <span>@nights days</span>
+                                </div>
+                                <hr class="divider my-4" />
+                                <div class="price-row total-row">
+                                    <span>Subtotal</span>
+                                    <span>To be calculated</span>
+                                </div>
+                            }
                         </div>
                     }
                 </div>
@@ -182,8 +209,29 @@
 @code {
     [Parameter] public Guid Id { get; set; }
     private PropertyDto? _property;
-    private DateTime? CheckInDate;
-    private DateTime? CheckOutDate;
+    
+    private DateTime? _checkInDate;
+    private DateTime? CheckInDate
+    {
+        get => _checkInDate;
+        set
+        {
+            _checkInDate = value;
+            ValidateDates();
+        }
+    }
+
+    private DateTime? _checkOutDate;
+    private DateTime? CheckOutDate
+    {
+        get => _checkOutDate;
+        set
+        {
+            _checkOutDate = value;
+            ValidateDates();
+        }
+    }
+
     private int _guests = 1;
     private bool _isBooking;
     private bool _isHost = false;
@@ -192,9 +240,14 @@
     private string _statusMessage = string.Empty;
     private bool _isError = false;
 
+    private List<BookedPeriodDto> _bookedPeriods = new();
+    private string _minCheckInDate = DateTime.Today.ToString("yyyy-MM-dd");
+    private string? _maxCheckOutDate;
+
     protected override async Task OnInitializedAsync()
     {
         _property = await PropertyService.GetPropertyByIdAsync(Id);
+        _bookedPeriods = (await BookingService.GetPropertyBookedPeriodsAsync(Id)).ToList();
         
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
@@ -208,17 +261,82 @@
 
     private void NextImage()
     {
-        if (_property != null && _property.ImageUrls.Count > 0)
+        if (_property?.Images != null && _property.Images.Count > 0)
         {
-            _currentImageIndex = (_currentImageIndex + 1) % _property.ImageUrls.Count;
+            _currentImageIndex = (_currentImageIndex + 1) % _property.Images.Count;
         }
     }
 
     private void PrevImage()
     {
-        if (_property != null && _property.ImageUrls.Count > 0)
+        if (_property?.Images != null && _property.Images.Count > 0)
         {
-            _currentImageIndex = (_currentImageIndex - 1 + _property.ImageUrls.Count) % _property.ImageUrls.Count;
+            _currentImageIndex = (_currentImageIndex - 1 + _property.Images.Count) % _property.Images.Count;
+        }
+    }
+
+    private string GetPriceSuffix(int period) => period switch
+    {
+        1 => "/ night",
+        2 => "/ month",
+        3 => "/ year",
+        _ => ""
+    };
+
+    private void ValidateDates()
+    {
+        _statusMessage = string.Empty;
+        _isError = false;
+        _maxCheckOutDate = null; // Reset max checkout date
+
+        if (_checkInDate.HasValue)
+        {
+            // Ensure CheckInDate is not inside a booked period
+            var checkInDateOnly = DateOnly.FromDateTime(_checkInDate.Value);
+            var isConflict = _bookedPeriods.Any(b => checkInDateOnly >= b.StartDate && checkInDateOnly < b.EndDate);
+            
+            if (isConflict)
+            {
+                _statusMessage = "The selected check-in date is already booked.";
+                _isError = true;
+                _checkInDate = null; // Clear it
+                return;
+            }
+
+            // Find the next booked period after CheckInDate to restrict CheckOutDate max
+            var nextBooking = _bookedPeriods
+                .Where(b => b.StartDate > checkInDateOnly)
+                .OrderBy(b => b.StartDate)
+                .FirstOrDefault();
+
+            if (nextBooking != null)
+            {
+                _maxCheckOutDate = nextBooking.StartDate.ToString("yyyy-MM-dd");
+            }
+        }
+
+        if (_checkInDate.HasValue && _checkOutDate.HasValue)
+        {
+            var checkInDateOnly = DateOnly.FromDateTime(_checkInDate.Value);
+            var checkOutDateOnly = DateOnly.FromDateTime(_checkOutDate.Value);
+
+            if (checkOutDateOnly <= checkInDateOnly)
+            {
+                _statusMessage = "Check-out date must be after check-in date.";
+                _isError = true;
+                _checkOutDate = null;
+                return;
+            }
+
+            var overlap = _bookedPeriods.Any(b => 
+                (checkInDateOnly < b.EndDate && checkOutDateOnly > b.StartDate));
+                
+            if (overlap)
+            {
+                _statusMessage = "The selected dates overlap with an existing reservation.";
+                _isError = true;
+                _checkOutDate = null;
+            }
         }
     }
 
@@ -228,14 +346,7 @@
 
         if (CheckInDate == null || CheckOutDate == null)
         {
-            _statusMessage = "Please select check-in and check-out dates.";
-            _isError = true;
-            return;
-        }
-
-        if ((CheckOutDate.Value - CheckInDate.Value).Days <= 0)
-        {
-            _statusMessage = "Check-out date must be after check-in date.";
+            _statusMessage = "Please select valid check-in and check-out dates.";
             _isError = true;
             return;
         }

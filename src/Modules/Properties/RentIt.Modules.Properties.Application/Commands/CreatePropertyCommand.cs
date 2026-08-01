@@ -15,6 +15,7 @@ public sealed record CreatePropertyCommand(
     int Type, // PropertyType enum
     int RentalPeriod, // RentalPeriod enum
     decimal PricePerPeriod,
+    decimal SecurityDeposit,
     int Bedrooms,
     int Bathrooms,
     IEnumerable<string> Amenities,

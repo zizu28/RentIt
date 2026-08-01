@@ -54,6 +54,9 @@ public sealed class AuthController(ISender sender) : ControllerBase
             : BadRequest(new { error = result.Error.Message });
     }
 
+
+
+    /*
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
     {
@@ -64,6 +67,7 @@ public sealed class AuthController(ISender sender) : ControllerBase
             ? Ok(result.Value)
             : BadRequest(new { error = result.Error.Message });
     }
+    */
 
     [HttpPost("verify-email")]
     public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request, CancellationToken cancellationToken)

@@ -18,6 +18,7 @@ public sealed record PropertyDto
     public int Status { get; init; } // PropertyStatus enum
     public int RentalPeriod { get; init; } // RentalPeriod enum
     public decimal PricePerPeriod { get; init; }
+    public decimal SecurityDeposit { get; init; }
     public string Currency { get; init; } = string.Empty;
     public int Bedrooms { get; init; }
     public int Bathrooms { get; init; }

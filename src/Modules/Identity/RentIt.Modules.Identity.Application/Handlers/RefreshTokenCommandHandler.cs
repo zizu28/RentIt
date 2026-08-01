@@ -10,10 +10,12 @@ using RentIt.Shared.DTOs.Identity;
 namespace RentIt.Modules.Identity.Application.Handlers;
 
 public sealed class RefreshTokenCommandHandler(
+    IRefreshTokenRepository refreshTokenRepository,
     IUserRepository userRepository,
     IJwtTokenGenerator jwtTokenGenerator,
     IUnitOfWork unitOfWork) : IRequestHandler<RefreshTokenCommand, Result<LoginResponse>>
 {
+    private readonly IRefreshTokenRepository _refreshTokenRepository = refreshTokenRepository;
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IJwtTokenGenerator _jwtTokenGenerator = jwtTokenGenerator;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -23,41 +25,30 @@ public sealed class RefreshTokenCommandHandler(
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
         try
         {
-            var user = await _userRepository.GetByRefreshTokenAsync(request.RefreshToken, cancellationToken);
-            if (user == null)
+            var oldToken = await _refreshTokenRepository.GetByTokenAsync(request.RefreshToken, cancellationToken);
+            if (oldToken == null || !oldToken.IsActive)
             {
                 await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                return Result.Failure<LoginResponse>(Error.Unauthorized(
-                    "Token.Invalid",
-                    "Invalid refresh token"));
+                return Result.Failure<LoginResponse>(Error.Unauthorized("Token.Invalid", "Refresh token is invalid or expired."));
             }
 
-            var refreshTokenEntity = user.RefreshTokens.FirstOrDefault(rt => rt.Token == request.RefreshToken);
-            if (refreshTokenEntity == null || !refreshTokenEntity.IsActive)
+            var user = await _userRepository.GetByIdAsync(oldToken.UserId, cancellationToken);
+            if (user == null || user.Status != UserStatus.Active)
             {
                 await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                return Result.Failure<LoginResponse>(Error.Unauthorized(
-                    "Token.Invalid",
-                    "Invalid or expired refresh token"));
+                return Result.Failure<LoginResponse>(Error.Unauthorized("User.Invalid", "User is invalid or inactive."));
             }
 
-            if (user.Status != UserStatus.Active)
-            {
-                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                return Result.Failure<LoginResponse>(Error.Validation(
-                    "User.NotActive",
-                    $"User account is {user.Status.ToString().ToLower()}"));
-            }
-
-            // Revoke old refresh token
-            user.RevokeRefreshToken(request.RefreshToken);
+            // Revoke old token
+            oldToken.Revoke();
+            _refreshTokenRepository.Update(oldToken);
 
             // Generate new tokens
-            var accessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email.Value, user.Role.ToString());
+            var newAccessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email.Value, user.Role.ToString());
             var newRefreshTokenString = _jwtTokenGenerator.GenerateRefreshToken();
 
-            // Add new refresh token to user
-            var newRefreshToken = user.AddRefreshToken(newRefreshTokenString, TimeSpan.FromDays(7));
+            var newRefreshToken = RentIt.Modules.Identity.Domain.Entities.RefreshToken.Create(user.Id, newRefreshTokenString, TimeSpan.FromDays(7));
+            await _refreshTokenRepository.AddAsync(newRefreshToken, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
@@ -78,15 +69,13 @@ public sealed class RefreshTokenCommandHandler(
                 ProfileImageUrl = user.ProfileImageUrl
             };
 
-            var response = new LoginResponse
+            return Result.Success(new LoginResponse
             {
-                AccessToken = accessToken,
+                AccessToken = newAccessToken,
                 RefreshToken = newRefreshTokenString,
                 ExpiresAt = newRefreshToken.ExpiresAt,
                 User = userDto
-            };
-
-            return Result.Success(response);
+            });
         }
         catch
         {

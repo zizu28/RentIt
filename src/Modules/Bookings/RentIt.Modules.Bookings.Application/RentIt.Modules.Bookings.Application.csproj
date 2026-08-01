@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Contracts\RentIt.Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.DTOs\RentIt.Shared.DTOs.csproj" />
     <ProjectReference Include="..\RentIt.Modules.Bookings.Domain\RentIt.Modules.Bookings.Domain.csproj" />
   </ItemGroup>
 

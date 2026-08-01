@@ -1,78 +1,84 @@
+using System.Net.Http.Headers;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using RentIt.Shared.DTOs.Identity;
 
 namespace RentIt.BFF.Middleware;
 
-public class TokenRefreshMiddleware(RequestDelegate next, IHttpClientFactory httpClientFactory, ILogger<TokenRefreshMiddleware> logger)
+public sealed class TokenRefreshMiddleware
 {
-    private readonly RequestDelegate _next = next;
-    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-    private readonly ILogger<TokenRefreshMiddleware> _logger = logger;
+    private readonly RequestDelegate _next;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<TokenRefreshMiddleware> _logger;
+
+    public TokenRefreshMiddleware(RequestDelegate next, IHttpClientFactory httpClientFactory, ILogger<TokenRefreshMiddleware> logger)
+    {
+        _next = next;
+        _httpClientFactory = httpClientFactory;
+        _logger = logger;
+    }
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // Check if the user is authenticated
-        if (context.User.Identity?.IsAuthenticated == true)
+        // Don't intercept auth-related calls or static files
+        var path = context.Request.Path.Value ?? string.Empty;
+        if (path.StartsWith("/bff/auth") || path.StartsWith("/api/identity/auth"))
         {
-            var authResult = await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await _next(context);
+            return;
+        }
 
-            if (authResult.Succeeded && authResult.Properties != null)
+        var authenticateResult = await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        if (authenticateResult.Succeeded && authenticateResult.Principal != null)
+        {
+            var expiresAtToken = authenticateResult.Properties.GetTokenValue("expires_at");
+            
+            if (DateTimeOffset.TryParse(expiresAtToken, out var expiresAt))
             {
-                var expiresAtStr = authResult.Properties.GetTokenValue("expires_at");
-                var accessToken = authResult.Properties.GetTokenValue("access-token");
-                var refreshToken = authResult.Properties.GetTokenValue("refresh-token");
-
-                if (!string.IsNullOrEmpty(expiresAtStr) && DateTimeOffset.TryParse(expiresAtStr, out var expiresAt))
+                // Refresh if token expires in less than 30 seconds
+                if (expiresAt.UtcDateTime < DateTime.UtcNow.AddSeconds(30))
                 {
-                    // Refresh if expired or expiring within 10 seconds
-                    if (expiresAt <= DateTimeOffset.UtcNow.AddSeconds(10))
+                    var refreshToken = authenticateResult.Properties.GetTokenValue("refresh-token");
+                    
+                    if (!string.IsNullOrEmpty(refreshToken))
                     {
-                        if (!string.IsNullOrEmpty(accessToken) && !string.IsNullOrEmpty(refreshToken))
+                        try
                         {
-                            _logger.LogInformation("Access token is expired or expiring soon. Attempting to refresh.");
-
                             var client = _httpClientFactory.CreateClient("Host");
-                            var refreshRequest = new RefreshTokenRequest
+                            var request = new RefreshTokenRequest { RefreshToken = refreshToken };
+                            
+                            var response = await client.PostAsJsonAsync("/api/identity/auth/refresh", request);
+                            
+                            if (response.IsSuccessStatusCode)
                             {
-                                AccessToken = accessToken,
-                                RefreshToken = refreshToken
-                            };
-
-                            try
-                            {
-                                var response = await client.PostAsJsonAsync("/api/identity/auth/refresh", refreshRequest);
-
-                                if (response.IsSuccessStatusCode)
+                                var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                                
+                                if (loginResponse != null)
                                 {
-                                    var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
-                                    if (loginResponse != null)
-                                    {
-                                        _logger.LogInformation("Token refreshed successfully.");
-
-                                        authResult.Properties.StoreTokens([
-                                            new AuthenticationToken { Name = "access-token", Value = loginResponse.AccessToken },
-                                            new AuthenticationToken { Name = "refresh-token", Value = loginResponse.RefreshToken },
-                                            new AuthenticationToken { Name = "expires_at", Value = DateTimeOffset.UtcNow.AddMinutes(1).ToString("o") }
-                                        ]);
-
-                                        // Update the cookie securely
-                                        await context.SignInAsync(
-                                            CookieAuthenticationDefaults.AuthenticationScheme,
-                                            authResult.Principal,
-                                            authResult.Properties);
-                                    }
-                                }
-                                else
-                                {
-                                    _logger.LogWarning("Refresh token failed with status code {StatusCode}. Signing out user.", response.StatusCode);
-                                    await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                                    authenticateResult.Properties.UpdateTokenValue("access-token", loginResponse.AccessToken);
+                                    authenticateResult.Properties.UpdateTokenValue("refresh-token", loginResponse.RefreshToken);
+                                    authenticateResult.Properties.UpdateTokenValue("expires_at", loginResponse.ExpiresAt.ToString("o"));
+                                    
+                                    await context.SignInAsync(
+                                        CookieAuthenticationDefaults.AuthenticationScheme,
+                                        authenticateResult.Principal,
+                                        authenticateResult.Properties);
+                                        
+                                    _logger.LogInformation("Successfully refreshed access token for user {UserId}", 
+                                        authenticateResult.Principal.FindFirstValue(ClaimTypes.NameIdentifier));
                                 }
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                _logger.LogError(ex, "An error occurred while refreshing the token.");
+                                _logger.LogWarning("Failed to refresh token. Status: {StatusCode}", response.StatusCode);
+                                await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                             }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error refreshing token");
                         }
                     }
                 }

@@ -56,10 +56,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.HasMany<RefreshToken>()
-            .WithOne()
-            .HasForeignKey(rt => rt.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.Ignore(u => u.RefreshTokens);
 
         builder.HasIndex(u => u.Email).IsUnique();
         builder.HasIndex(u => u.PhoneNumber).IsUnique();
@@ -73,8 +70,5 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Ignore(u => u.DomainEvents);
         builder.Ignore(u => u.FullName);
-        
-        builder.Metadata.FindNavigation(nameof(User.RefreshTokens))?
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

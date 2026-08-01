@@ -9,7 +9,10 @@
   <ItemGroup>
     <PackageReference Include="CloudinaryDotNet" />
     <PackageReference Include="Fluid.Core" />
+    <PackageReference Include="Hangfire.SqlServer" />
+    <PackageReference Include="MediatR" />
     <PackageReference Include="MailKit" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>

@@ -33,6 +33,7 @@ public static class IdentityInfrastructureServiceRegistration
 
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
         // Services
         services.AddSingleton<IPasswordHasher, PasswordHasher>();

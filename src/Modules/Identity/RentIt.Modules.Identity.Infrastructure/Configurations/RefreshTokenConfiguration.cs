@@ -20,5 +20,10 @@ internal sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refre
 
         builder.Ignore(rt => rt.IsActive);
         builder.Ignore(rt => rt.IsExpired);
+
+        builder.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

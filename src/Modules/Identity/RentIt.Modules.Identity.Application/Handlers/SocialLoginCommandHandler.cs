@@ -91,10 +91,10 @@ public sealed class SocialLoginCommandHandler(
 
             // Generate tokens
             var accessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email.Value, user.Role.ToString());
-            var refreshTokenString = _jwtTokenGenerator.GenerateRefreshToken();
+            var refreshTokenString = string.Empty; //_jwtTokenGenerator.GenerateRefreshToken();
 
             // Add refresh token to user
-            var refreshToken = user.AddRefreshToken(refreshTokenString, TimeSpan.FromDays(7));
+            //var refreshToken = user.AddRefreshToken(refreshTokenString, TimeSpan.FromDays(7));
 
             // Record login
             user.RecordLogin();
@@ -124,7 +124,7 @@ public sealed class SocialLoginCommandHandler(
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshTokenString,
-                ExpiresAt = refreshToken.ExpiresAt,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(30), //refreshToken.ExpiresAt,
                 User = userDto
             };
 

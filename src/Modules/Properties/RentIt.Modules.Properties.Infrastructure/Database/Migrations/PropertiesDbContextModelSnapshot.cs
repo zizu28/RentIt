@@ -80,6 +80,52 @@ namespace RentIt.Modules.Properties.Infrastructure.Database.Migrations
 
             modelBuilder.Entity("RentIt.Modules.Properties.Domain.Entities.Property", b =>
                 {
+                    b.OwnsOne("RentIt.Shared.Kernel.ValueObjects.Money", "PricePerPeriod", b1 =>
+                        {
+                            b1.Property<Guid>("PropertyId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Amount")
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Price_Amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("Price_Currency");
+
+                            b1.HasKey("PropertyId");
+
+                            b1.ToTable("Properties", "properties");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PropertyId");
+                        });
+
+                    b.OwnsOne("RentIt.Shared.Kernel.ValueObjects.Money", "SecurityDeposit", b1 =>
+                        {
+                            b1.Property<Guid>("PropertyId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("Amount")
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("SecurityDeposit_Amount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("SecurityDeposit_Currency");
+
+                            b1.HasKey("PropertyId");
+
+                            b1.ToTable("Properties", "properties");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PropertyId");
+                        });
+
                     b.OwnsOne("RentIt.Shared.Kernel.ValueObjects.Address", "Address", b1 =>
                         {
                             b1.Property<Guid>("PropertyId")
@@ -123,33 +169,13 @@ namespace RentIt.Modules.Properties.Infrastructure.Database.Migrations
                                 .HasForeignKey("PropertyId");
                         });
 
-                    b.OwnsOne("RentIt.Shared.Kernel.ValueObjects.Money", "PricePerPeriod", b1 =>
-                        {
-                            b1.Property<Guid>("PropertyId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<decimal>("Amount")
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("Price_Amount");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
-                                .HasColumnName("Price_Currency");
-
-                            b1.HasKey("PropertyId");
-
-                            b1.ToTable("Properties", "properties");
-
-                            b1.WithOwner()
-                                .HasForeignKey("PropertyId");
-                        });
-
                     b.Navigation("Address")
                         .IsRequired();
 
                     b.Navigation("PricePerPeriod")
+                        .IsRequired();
+
+                    b.Navigation("SecurityDeposit")
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

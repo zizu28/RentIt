@@ -53,6 +53,20 @@ internal class PropertyConfiguration : IEntityTypeConfiguration<Property>
                 .IsRequired();
         });
 
+        builder.OwnsOne(x => x.SecurityDeposit, deposit =>
+        {
+            deposit.Property(p => p.Amount)
+            .HasColumnName("SecurityDeposit_Amount")
+            .HasColumnType("decimal(18,2)").IsRequired();
+            deposit.Property(p => p.Currency)
+                .HasColumnName("SecurityDeposit_Currency")
+                .HasConversion(
+                    v => v.ToString(),
+                    v => Enum.Parse<Currency>(v, true))
+                .HasMaxLength(3)
+                .IsRequired();
+        });
+
         builder.Ignore(x => x.DomainEvents);
 
         builder.Property(x => x.Amenities)

@@ -36,6 +36,7 @@ internal sealed class GetPropertyByIdQueryHandler(IPropertyRepository propertyRe
             Status = (int)property.Status,
             RentalPeriod = (int)property.RentalPeriod,
             PricePerPeriod = property.PricePerPeriod.Amount,
+            SecurityDeposit = property.SecurityDeposit.Amount,
             Currency = property.PricePerPeriod.Currency.ToString(),
             Bedrooms = property.Bedrooms,
             Bathrooms = property.Bathrooms,

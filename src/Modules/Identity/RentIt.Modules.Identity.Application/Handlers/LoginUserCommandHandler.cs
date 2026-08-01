@@ -11,11 +11,13 @@ namespace RentIt.Modules.Identity.Application.Handlers;
 
 public sealed class LoginUserCommandHandler(
     IUserRepository userRepository,
+    IRefreshTokenRepository refreshTokenRepository,
     IPasswordHasher passwordHasher,
     IJwtTokenGenerator jwtTokenGenerator,
     IUnitOfWork unitOfWork) : IRequestHandler<LoginUserCommand, Result<LoginResponse>>
 {
     private readonly IUserRepository _userRepository = userRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository = refreshTokenRepository;
     private readonly IPasswordHasher _passwordHasher = passwordHasher;
     private readonly IJwtTokenGenerator _jwtTokenGenerator = jwtTokenGenerator;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -39,7 +41,7 @@ public sealed class LoginUserCommandHandler(
             if (!_passwordHasher.VerifyPassword(request.Password, user.PasswordHash.Value))
             {
                 await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                return Result.Failure<LoginResponse>(Error.Validation(
+                return Result.Failure<LoginResponse>(Error.Unauthorized(
                     "User.InvalidCredentials",
                     "Invalid email or password"));
             }
@@ -55,10 +57,10 @@ public sealed class LoginUserCommandHandler(
 
             // Generate tokens
             var accessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email.Value, user.Role.ToString());
-            var refreshTokenString = _jwtTokenGenerator.GenerateRefreshToken();
+            var refreshTokenString = string.Empty; //_jwtTokenGenerator.GenerateRefreshToken();
 
-            // Add refresh token to user
-            var refreshToken = user.AddRefreshToken(refreshTokenString, TimeSpan.FromDays(7));
+            //var refreshToken = RentIt.Modules.Identity.Domain.Entities.RefreshToken.Create(user.Id, refreshTokenString, TimeSpan.FromDays(7));
+            //await _refreshTokenRepository.AddAsync(refreshToken, cancellationToken);
 
             // Record login
             user.RecordLogin();
@@ -88,7 +90,7 @@ public sealed class LoginUserCommandHandler(
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshTokenString,
-                ExpiresAt = refreshToken.ExpiresAt,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(30), //refreshToken.ExpiresAt,
                 User = userDto
             };
 

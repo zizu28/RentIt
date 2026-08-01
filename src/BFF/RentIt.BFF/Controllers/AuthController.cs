@@ -58,7 +58,7 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory, ILogger
         authProperties.StoreTokens([
             new AuthenticationToken { Name = "access-token", Value = loginResponse.AccessToken },
             new AuthenticationToken { Name = "refresh-token", Value = loginResponse.RefreshToken },
-            new AuthenticationToken { Name = "expires_at", Value = DateTimeOffset.UtcNow.AddMinutes(1).ToString("o") } // Expiration logic can be adjusted later if needed
+            new AuthenticationToken { Name = "expires_at", Value = loginResponse.ExpiresAt.ToString("o") }
         ]);
 
         await HttpContext.SignInAsync(
@@ -151,7 +151,7 @@ public sealed class AuthController(IHttpClientFactory httpClientFactory, ILogger
         authProperties.StoreTokens([
             new AuthenticationToken { Name = "access-token", Value = loginResponse.AccessToken },
             new AuthenticationToken { Name = "refresh-token", Value = loginResponse.RefreshToken },
-            new AuthenticationToken { Name = "expires_at", Value = DateTimeOffset.UtcNow.AddMinutes(1).ToString("o") }
+            new AuthenticationToken { Name = "expires_at", Value = loginResponse.ExpiresAt.ToString("o") }
         ]);
 
         await HttpContext.SignInAsync(

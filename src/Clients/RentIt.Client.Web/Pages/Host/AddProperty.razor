@@ -96,6 +96,36 @@
                     
                     <div class="row">
                         <div class="col-md-4 form-group mb-4">
+                            <label>Property Type</label>
+                            <select class="form-select form-control" @bind="_request.Type" @bind:after="OnPropertyTypeChanged" required>
+                                @foreach (var type in _propertyTypes)
+                                {
+                                    <option value="@type.Key">@type.Value</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4 form-group mb-4">
+                            <label>Rental Duration</label>
+                            @if (_request.Type == 1 || _request.Type == 2)
+                            {
+                                <select class="form-select form-control" @bind="_request.RentalPeriod" required>
+                                    <option value="2">Monthly</option>
+                                    <option value="3">Yearly</option>
+                                </select>
+                            }
+                            else
+                            {
+                                <input type="text" class="form-control" value="@GetRentalPeriodText(_request.RentalPeriod)" disabled />
+                            }
+                        </div>
+                        <div class="col-md-4 form-group mb-4">
+                            <label>Price (@GetPriceSuffix(_request.RentalPeriod))</label>
+                            <input type="number" step="0.01" min="1" class="form-control" @bind="_request.PricePerPeriod" required />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 form-group mb-4">
                             <label>Bedrooms</label>
                             <input type="number" class="form-control" min="1" @bind="_request.Bedrooms" required />
                         </div>
@@ -104,8 +134,8 @@
                             <input type="number" class="form-control" min="1" @bind="_request.Bathrooms" required />
                         </div>
                         <div class="col-md-4 form-group mb-4">
-                            <label>Price per night (GHS)</label>
-                            <input type="number" step="0.01" min="1" class="form-control" @bind="_request.PricePerPeriod" required />
+                            <label>Security Deposit (GHS)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" @bind="_request.SecurityDeposit" required />
                         </div>
                     </div>
                     
@@ -171,6 +201,17 @@
         { "Western North", new List<string> { "Sefwi Wiawso", "Bibiani", "Enchi", "Bodi" } }
     };
 
+    private readonly Dictionary<int, string> _propertyTypes = new()
+    {
+        { 1, "Apartment" },
+        { 2, "House" },
+        { 3, "Villa" },
+        { 4, "Guesthouse" },
+        { 5, "Commercial" },
+        { 6, "Single Room" },
+        { 7, "Compound House" }
+    };
+
     // Using a simple model to back the form before mapping to CreatePropertyRequest
     private FormModel _request = new();
     private List<Microsoft.AspNetCore.Components.Forms.IBrowserFile> _selectedFiles = new();
@@ -179,6 +220,39 @@
     {
         _request.City = string.Empty;
     }
+
+    private void OnPropertyTypeChanged()
+    {
+        // 1 = Nightly, 2 = Monthly, 3 = Yearly
+        if (_request.Type == 4 || _request.Type == 3) // Guesthouse or Villa
+        {
+            _request.RentalPeriod = 1; // Nightly
+        }
+        else if (_request.Type == 1 || _request.Type == 2) // Apartment or House
+        {
+            _request.RentalPeriod = 2; // Default to Monthly
+        }
+        else // Commercial, SingleRoom, CompoundHouse
+        {
+            _request.RentalPeriod = 3; // Yearly
+        }
+    }
+
+    private string GetRentalPeriodText(int period) => period switch
+    {
+        1 => "Nightly",
+        2 => "Monthly",
+        3 => "Yearly",
+        _ => ""
+    };
+
+    private string GetPriceSuffix(int period) => period switch
+    {
+        1 => "per night",
+        2 => "per month",
+        3 => "per year",
+        _ => "GHS"
+    };
 
     private void HandleFileSelection(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs e)
     {
@@ -198,9 +272,12 @@
         public string Region { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
         public string PostalCode { get; set; } = string.Empty;
+        public int Type { get; set; } = 1;
+        public int RentalPeriod { get; set; } = 2;
         public int Bedrooms { get; set; } = 1;
         public int Bathrooms { get; set; } = 1;
         public decimal PricePerPeriod { get; set; } = 50.00m;
+        public decimal SecurityDeposit { get; set; } = 0.00m;
     }
 
     private async Task HandleSubmitAsync()
@@ -223,9 +300,10 @@
                 _request.Region,
                 _request.Country,
                 _request.PostalCode,
-                0, // Type
-                0, // RentalPeriod
+                _request.Type,
+                _request.RentalPeriod,
                 _request.PricePerPeriod,
+                _request.SecurityDeposit,
                 _request.Bedrooms,
                 _request.Bathrooms,
                 amenities,

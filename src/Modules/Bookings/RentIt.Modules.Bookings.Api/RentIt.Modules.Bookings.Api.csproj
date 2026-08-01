@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RentIt.Modules.Bookings.Application\RentIt.Modules.Bookings.Application.csproj" />
     <ProjectReference Include="..\RentIt.Modules.Bookings.Infrastructure\RentIt.Modules.Bookings.Infrastructure.csproj" />
   </ItemGroup>
 

@@ -3,6 +3,7 @@
 @using RentIt.Client.Web.Services
 @inject IPropertyService PropertyService
 @inject IBookingService BookingService
+@inject IPaymentService PaymentService
 @inject NavigationManager Navigation
 @attribute [Authorize]
 
@@ -216,12 +217,22 @@
         {
             _isProcessing = true;
             
-            // Simulate payment processing delay
-            await Task.Delay(1500);
+            var booking = await BookingService.CreateBookingAsync(Id, DateOnly.FromDateTime(CheckInDate.Value), DateOnly.FromDateTime(CheckOutDate.Value));
             
-            await BookingService.CreateBookingAsync(Id, DateOnly.FromDateTime(CheckInDate.Value), DateOnly.FromDateTime(CheckOutDate.Value));
+            // Initialize Payment with Paystack
+            var paymentRequest = new RentIt.Client.Web.Services.InitializePaymentRequestDto
+            {
+                BookingId = booking.Id,
+                Amount = GetTotalPrice(),
+                Currency = "GHS", // Default currency for Ghana
+                Email = "customer@rentit.com", // TODO: Get user email from claims
+                CallbackUrl = Navigation.BaseUri + "bookings" // Redirect to bookings page after successful payment
+            };
+
+            var paymentResult = await PaymentService.InitializePaymentAsync(paymentRequest);
             
-            Navigation.NavigateTo("/bookings");
+            // Redirect to Paystack
+            Navigation.NavigateTo(paymentResult.AuthorizationUrl);
         }
         catch (Exception ex)
         {

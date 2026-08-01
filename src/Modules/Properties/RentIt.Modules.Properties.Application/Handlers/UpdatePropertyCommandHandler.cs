@@ -35,6 +35,7 @@ internal sealed class UpdatePropertyCommandHandler(
 
         var address = Address.Create(request.Street, request.City, request.Region, request.PostalCode, request.Country);
         var price = Money.Create(request.PricePerPeriod, Currency.GHS); // Currently hardcoded to USD like create
+        var deposit = Money.Create(request.SecurityDeposit, Currency.GHS);
 
         property.UpdateDetails(
             request.Name, 
@@ -46,7 +47,7 @@ internal sealed class UpdatePropertyCommandHandler(
 
         property.UpdateAddress(address);
         
-        property.UpdatePricing(price, (RentalPeriod)request.RentalPeriod);
+        property.UpdatePricing(price, deposit, (RentalPeriod)request.RentalPeriod);
         
         property.ClearAmenities();
         if (request.Amenities != null)

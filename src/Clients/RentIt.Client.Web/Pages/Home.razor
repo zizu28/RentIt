@@ -45,22 +45,25 @@
                 @foreach (var property in _properties)
                 {
                     <div class="property-card" @onclick="() => NavigateToProperty(property.Id)">
-                        <div class="property-img-wrapper">
-                            <img src="@GetImageUrl(property)" alt="@property.Title" class="property-img" />
+                        <div class="property-img-wrapper" style="position: relative;">
+                            <div class="property-banner property-type-@property.Type">
+                                @GetPropertyTypeName(property.Type)
+                            </div>
+                            <img src="@GetImageUrl(property)" alt="@property.Name" class="property-img" />
                         </div>
                         <div class="property-content">
                             <div class="property-header">
-                                <h3 class="property-title">@property.Title</h3>
+                                <h3 class="property-title">@property.Name</h3>
                                 <div class="property-rating">
                                     <i class="bi bi-star-fill text-warning"></i>
-                                    <span>@property.Rating</span>
+                                    <span>5.0</span>
                                 </div>
                             </div>
                             <div class="property-location">
-                                <i class="bi bi-geo-alt"></i> @property.Location
+                                <i class="bi bi-geo-alt"></i> @property.City, @property.Country
                             </div>
                             <div class="property-price">
-                                <strong>$@property.PricePerNight</strong> <span class="text-muted">/ night</span>
+                                <strong>GHS @property.PricePerPeriod</strong> <span class="text-muted">@GetPriceSuffix(property.RentalPeriod)</span>
                             </div>
                         </div>
                     </div>
@@ -77,16 +80,40 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _properties = await PropertyService.GetAllPropertiesAsync();
+        var allProperties = await PropertyService.GetAllPropertiesAsync();
+        if (allProperties != null)
+        {
+            _properties = allProperties.Where(p => p.Status == 1).ToList();
+        }
     }
 
     private string GetImageUrl(PropertyDto property)
     {
-        var url = property.ImageUrls.FirstOrDefault();
+        var url = property.Images?.FirstOrDefault();
         return string.IsNullOrWhiteSpace(url) 
             ? "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800" 
             : url;
     }
+
+    private string GetPropertyTypeName(int typeId) => typeId switch
+    {
+        1 => "Apartment",
+        2 => "House",
+        3 => "Villa",
+        4 => "Guesthouse",
+        5 => "Commercial",
+        6 => "Single Room",
+        7 => "Compound House",
+        _ => "Property"
+    };
+
+    private string GetPriceSuffix(int period) => period switch
+    {
+        1 => "/ night",
+        2 => "/ month",
+        3 => "/ year",
+        _ => ""
+    };
 
     private void NavigateToProperty(Guid id)
     {

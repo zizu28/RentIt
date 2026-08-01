@@ -4,10 +4,14 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>df60593f-0d8f-41df-8b24-bfd48d77707f</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\RentIt.Modules.Payments.Infrastructure\RentIt.Modules.Payments.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RentIt.Modules.Payments.Application\RentIt.Modules.Payments.Application.csproj" />
   </ItemGroup>
 
 </Project>

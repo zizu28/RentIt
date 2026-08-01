@@ -25,6 +25,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <ProjectReference Include="..\..\Modules\Payments\RentIt.Modules.Payments.Api\RentIt.Modules.Payments.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Payments\RentIt.Modules.Payments.Application\RentIt.Modules.Payments.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Payments\RentIt.Modules.Payments.Infrastructure\RentIt.Modules.Payments.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

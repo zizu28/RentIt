@@ -114,6 +114,25 @@
         object-fit: cover;
         transition: transform 0.5s ease;
     }
+    .property-banner {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        color: white;
+        font-weight: 600;
+        font-size: 0.8rem;
+        z-index: 10;
+        box-shadow: var(--shadow-sm);
+    }
+    .property-type-1 { background-color: #3b82f6; }
+    .property-type-2 { background-color: #10b981; }
+    .property-type-3 { background-color: #8b5cf6; }
+    .property-type-4 { background-color: #f59e0b; }
+    .property-type-5 { background-color: #64748b; }
+    .property-type-6 { background-color: #ec4899; }
+    .property-type-7 { background-color: #06b6d4; }
     .property-card:hover .property-img {
         transform: scale(1.05);
     }

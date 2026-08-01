@@ -13,7 +13,7 @@ public sealed class JwtTokenGenerator(IConfiguration config) : IJwtTokenGenerato
     private readonly string SecretKey = config["JWT:Key"] ?? "super_secret_key_that_is_at_least_32_characters_long_for_hmac_sha256!";
     private readonly string Issuer = config["JWT:Issuer"] ?? "RentIt";
     private readonly string Audience = config["JWT:Audience"] ?? "RentIt";
-    private const int AccessTokenExpirationMinutes = 1;
+    private const int AccessTokenExpirationMinutes = 30;
 
     public string GenerateAccessToken(Guid userId, string email, string role)
     {

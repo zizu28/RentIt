@@ -36,6 +36,7 @@ internal sealed class GetPropertiesByHostIdQueryHandler : IRequestHandler<Querie
             Status = (int)p.Status,
             RentalPeriod = (int)p.RentalPeriod,
             PricePerPeriod = p.PricePerPeriod.Amount,
+            SecurityDeposit = p.SecurityDeposit.Amount,
             Currency = p.PricePerPeriod.Currency.ToString(),
             Bedrooms = p.Bedrooms,
             Bathrooms = p.Bathrooms,

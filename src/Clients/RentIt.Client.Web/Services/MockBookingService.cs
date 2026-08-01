@@ -43,4 +43,13 @@ public class MockBookingService : IBookingService
         _bookings.Add(booking);
         return booking;
     }
+
+    public async Task<IEnumerable<BookedPeriodDto>> GetPropertyBookedPeriodsAsync(Guid propertyId)
+    {
+        await Task.Delay(200); // Simulate network
+        return _bookings
+            .Where(b => b.PropertyId == propertyId && b.Status != "Cancelled")
+            .Select(b => new BookedPeriodDto(b.StartDate, b.EndDate))
+            .ToList();
+    }
 }

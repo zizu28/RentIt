@@ -19,6 +19,7 @@ public class Property : AggregateRoot<Guid>
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public RentalPeriod RentalPeriod { get; private set; }
     public Money PricePerPeriod { get; private set; }
+    public Money SecurityDeposit { get; private set; }
     public int Bedrooms { get; private set; }
     public int Bathrooms { get; private set; }
     
@@ -41,6 +42,7 @@ public class Property : AggregateRoot<Guid>
         PropertyType type, 
         RentalPeriod rentalPeriod,
         Money pricePerPeriod,
+        Money securityDeposit,
         int bedrooms,
         int bathrooms) : base(id)
     {
@@ -51,6 +53,7 @@ public class Property : AggregateRoot<Guid>
         Type = type;
         RentalPeriod = rentalPeriod;
         PricePerPeriod = pricePerPeriod;
+        SecurityDeposit = securityDeposit;
         Bedrooms = bedrooms;
         Bathrooms = bathrooms;
         Status = PropertyStatus.Draft;
@@ -64,6 +67,7 @@ public class Property : AggregateRoot<Guid>
         PropertyType type, 
         RentalPeriod rentalPeriod,
         Money pricePerPeriod,
+        Money securityDeposit,
         int bedrooms,
         int bathrooms)
     {
@@ -76,6 +80,7 @@ public class Property : AggregateRoot<Guid>
             type, 
             rentalPeriod,
             pricePerPeriod,
+            securityDeposit,
             bedrooms,
             bathrooms);
             
@@ -104,12 +109,13 @@ public class Property : AggregateRoot<Guid>
         Bathrooms = bathrooms;
     }
 
-    public void UpdatePricing(Money pricePerPeriod, RentalPeriod rentalPeriod)
+    public void UpdatePricing(Money pricePerPeriod, Money securityDeposit, RentalPeriod rentalPeriod)
     {
         var oldPrice = PricePerPeriod;
         var oldPeriod = RentalPeriod;
         
         PricePerPeriod = pricePerPeriod;
+        SecurityDeposit = securityDeposit;
         RentalPeriod = rentalPeriod;
         
         AddDomainEvent(new PropertyPricingUpdatedDomainEvent(

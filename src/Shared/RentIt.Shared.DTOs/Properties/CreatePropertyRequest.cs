@@ -11,6 +11,7 @@ public sealed record CreatePropertyRequest(
     int Type,
     int RentalPeriod,
     decimal PricePerPeriod,
+    decimal SecurityDeposit,
     int Bedrooms,
     int Bathrooms,
     IEnumerable<string> Amenities,

@@ -28,7 +28,8 @@ builder.Services.AddScoped<AuthenticationStateProvider, BffAuthenticationStatePr
 builder.Services.AddScoped(sp => (BffAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// Register Mock UI Services
+// Register UI Services
 builder.Services.AddScoped<RentIt.Client.Web.Services.IPropertyService, RentIt.Client.Web.Services.PropertyService>();
-builder.Services.AddScoped<RentIt.Client.Web.Services.IBookingService, RentIt.Client.Web.Services.MockBookingService>();
+builder.Services.AddScoped<RentIt.Client.Web.Services.IBookingService, RentIt.Client.Web.Services.BookingService>();
+builder.Services.AddScoped<RentIt.Client.Web.Services.IPaymentService, RentIt.Client.Web.Services.PaymentService>();
 await builder.Build().RunAsync();

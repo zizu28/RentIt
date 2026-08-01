@@ -8,9 +8,12 @@ using RentIt.Modules.Identity.Application;
 using RentIt.Modules.Identity.Infrastructure;
 using RentIt.Modules.Properties.Application;
 using RentIt.Modules.Properties.Infrastructure;
+using RentIt.Modules.Bookings.Api;
+using RentIt.Modules.Payments.Application;
+using RentIt.Modules.Payments.Infrastructure;
 using RentIt.Shared.Abstractions.BackgroundJobs;
-
 using RentIt.Shared.Infrastructure.Email;
+using RentIt.Shared.Infrastructure.Messaging;
 using RentIt.Shared.Infrastructure.Logging;
 using RentIt.Shared.Infrastructure.Pdf;
 using RentIt.Shared.Infrastructure.Storage;
@@ -36,6 +39,7 @@ if (assembliesPath != null)
 }
 builder.Services.AddBackgroundJobs(builder.Configuration);
 builder.Services.AddSharedEmailServices();
+builder.Services.AddSharedMessaging();
 builder.Services.AddSharedPdfServices();
 builder.Services.AddStorage(builder.Configuration);
 builder.Services.AddIdentityApplication();
@@ -44,6 +48,10 @@ builder.Services.AddIdentityInfrastructure(builder.Configuration);
 builder.Services.AddPropertiesApplication();
 builder.Services.AddPropertiesInfrastructure(builder.Configuration);
 
+builder.Services.AddBookingsModule(builder.Configuration);
+
+builder.Services.AddPaymentsApplication();
+builder.Services.AddPaymentsInfrastructure(builder.Configuration);
 // Add Authentication for the monolith to validate JWTs forwarded by the BFF
 var secretKey = builder.Configuration["JWT:Key"] ?? "super_secret_key_that_is_at_least_32_characters_long_for_hmac_sha256!";
 var issuer = builder.Configuration["JWT:Issuer"] ?? "RentIt";

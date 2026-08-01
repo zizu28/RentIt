@@ -52,6 +52,7 @@ internal sealed class CreatePropertyCommandHandler : IRequestHandler<Commands.Cr
 
         // Assuming GHS as default for now, could be passed in command
         var price = Money.Cedis(request.PricePerPeriod); 
+        var securityDeposit = Money.Cedis(request.SecurityDeposit);
 
         var property = Property.Create(
             request.HostId,
@@ -61,6 +62,7 @@ internal sealed class CreatePropertyCommandHandler : IRequestHandler<Commands.Cr
             (PropertyType)request.Type,
             (RentalPeriod)request.RentalPeriod,
             price,
+            securityDeposit,
             request.Bedrooms,
             request.Bathrooms
         );
