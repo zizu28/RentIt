@@ -15,6 +15,9 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .HasColumnType("decimal(18,2)")
             .IsRequired();
 
+        builder.Property(x => x.AmountPaid)
+            .HasColumnType("decimal(18,2)");
+
         builder.Property(x => x.Currency)
             .HasMaxLength(3)
             .IsRequired();

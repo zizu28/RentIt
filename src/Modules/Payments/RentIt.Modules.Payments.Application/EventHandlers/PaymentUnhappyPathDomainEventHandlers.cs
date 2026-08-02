@@ -1,18 +1,18 @@
 using MediatR;
+using RentIt.Modules.Payments.Application.Services;
 using RentIt.Modules.Payments.Domain.Events;
-using RentIt.Shared.Abstractions.Messaging;
 using RentIt.Shared.Contracts.Payments.IntegrationEvents;
 
 namespace RentIt.Modules.Payments.Application.EventHandlers;
 
-internal sealed class PaymentUnhappyPathDomainEventHandlers(IEventBus eventBus) :
+internal sealed class PaymentUnhappyPathDomainEventHandlers(IPaymentsOutboxService outboxService) :
     INotificationHandler<PaymentFailedDomainEvent>,
     INotificationHandler<PaymentRefundedDomainEvent>,
     INotificationHandler<PaymentPartiallyPaidDomainEvent>
 {
-    private readonly IEventBus _eventBus = eventBus;
+    private readonly IPaymentsOutboxService _outboxService = outboxService;
 
-    public async Task Handle(PaymentFailedDomainEvent notification, CancellationToken cancellationToken)
+    public Task Handle(PaymentFailedDomainEvent notification, CancellationToken cancellationToken)
     {
         var integrationEvent = new PaymentFailedIntegrationEvent(
             notification.PaymentId,
@@ -21,10 +21,11 @@ internal sealed class PaymentUnhappyPathDomainEventHandlers(IEventBus eventBus) 
             "Payment failed",
             "FAILED"
         );
-        await _eventBus.PublishAsync(integrationEvent, cancellationToken);
+        _outboxService.Add(integrationEvent);
+        return Task.CompletedTask;
     }
 
-    public async Task Handle(PaymentRefundedDomainEvent notification, CancellationToken cancellationToken)
+    public Task Handle(PaymentRefundedDomainEvent notification, CancellationToken cancellationToken)
     {
         var integrationEvent = new PaymentRefundedIntegrationEvent(
             notification.PaymentId,
@@ -34,10 +35,11 @@ internal sealed class PaymentUnhappyPathDomainEventHandlers(IEventBus eventBus) 
             notification.Currency,
             notification.Provider
         );
-        await _eventBus.PublishAsync(integrationEvent, cancellationToken);
+        _outboxService.Add(integrationEvent);
+        return Task.CompletedTask;
     }
 
-    public async Task Handle(PaymentPartiallyPaidDomainEvent notification, CancellationToken cancellationToken)
+    public Task Handle(PaymentPartiallyPaidDomainEvent notification, CancellationToken cancellationToken)
     {
         var integrationEvent = new PaymentPartiallyPaidIntegrationEvent(
             notification.PaymentId,
@@ -48,6 +50,7 @@ internal sealed class PaymentUnhappyPathDomainEventHandlers(IEventBus eventBus) 
             notification.Currency,
             notification.Provider
         );
-        await _eventBus.PublishAsync(integrationEvent, cancellationToken);
+        _outboxService.Add(integrationEvent);
+        return Task.CompletedTask;
     }
 }

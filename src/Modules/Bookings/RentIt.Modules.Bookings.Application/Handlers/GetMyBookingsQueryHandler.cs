@@ -1,21 +1,16 @@
 using MediatR;
+using RentIt.Modules.Bookings.Application.Queries;
 using RentIt.Modules.Bookings.Domain.Repositories;
 using RentIt.Shared.DTOs.Bookings;
 
-namespace RentIt.Modules.Bookings.Application.Queries;
+namespace RentIt.Modules.Bookings.Application.Handlers;
 
-public class GetMyBookingsQueryHandler : IRequestHandler<GetMyBookingsQuery, IEnumerable<BookingDto>>
+public class GetMyBookingsQueryHandler(
+    IBookingRepository bookingRepository,
+    IBookablePropertyRepository propertyRepository) : IRequestHandler<GetMyBookingsQuery, IEnumerable<BookingDto>>
 {
-    private readonly IBookingRepository _bookingRepository;
-    private readonly IBookablePropertyRepository _propertyRepository;
-
-    public GetMyBookingsQueryHandler(
-        IBookingRepository bookingRepository,
-        IBookablePropertyRepository propertyRepository)
-    {
-        _bookingRepository = bookingRepository;
-        _propertyRepository = propertyRepository;
-    }
+    private readonly IBookingRepository _bookingRepository = bookingRepository;
+    private readonly IBookablePropertyRepository _propertyRepository = propertyRepository;
 
     public async Task<IEnumerable<BookingDto>> Handle(GetMyBookingsQuery request, CancellationToken cancellationToken)
     {

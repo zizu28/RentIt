@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RentIt.Modules.Bookings.Application.Services;
 using RentIt.Modules.Bookings.Domain.Repositories;
 using RentIt.Modules.Bookings.Infrastructure.Database;
 using RentIt.Modules.Bookings.Infrastructure.Repositories;
+using RentIt.Modules.Bookings.Infrastructure.Services;
+using RentIt.Shared.Abstractions.Persistence;
 
 
 namespace RentIt.Modules.Bookings.Infrastructure;
@@ -18,6 +21,11 @@ public static class BookingsInfrastructureServiceRegistration
             
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IBookablePropertyRepository, BookablePropertyRepository>();
+        
+        services.AddScoped<DomainEventDispatcher>();
+        services.AddScoped<IUnitOfWork, BookingsUnitOfWork>();
+        services.AddScoped<IBookingsOutboxService, BookingsOutboxService>();
+        services.AddScoped<IBookingsInboxService, BookingsInboxService>();
 
         return services;
     }

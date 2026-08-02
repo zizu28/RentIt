@@ -1,24 +1,24 @@
 using Microsoft.EntityFrameworkCore.Storage;
-using RentIt.Modules.Payments.Domain.Repositories;
+using RentIt.Shared.Abstractions.Persistence;
 using RentIt.Shared.Infrastructure.Messaging;
 
-namespace RentIt.Modules.Payments.Infrastructure.Database;
+namespace RentIt.Modules.Bookings.Infrastructure.Database;
 
-internal sealed class PaymentsUnitOfWork(PaymentsDbContext dbContext, DomainEventDispatcher domainEventDispatcher) : IPaymentsUnitOfWork
+internal sealed class BookingsUnitOfWork(
+    BookingsDbContext dbContext,
+    DomainEventDispatcher domainEventDispatcher) : IUnitOfWork
 {
-    private readonly PaymentsDbContext _dbContext = dbContext;
+    private readonly BookingsDbContext _dbContext = dbContext;
     private readonly DomainEventDispatcher _domainEventDispatcher = domainEventDispatcher;
     private IDbContextTransaction? _transaction;
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        // Dispatch domain events BEFORE successful save so outbox messages are added to the SAME transaction.
         await _domainEventDispatcher.DispatchDomainEventsAsync(cancellationToken);
 
         var result = await _dbContext.SaveChangesAsync(cancellationToken);
 
-        // Enqueue the hangfire job to process outbox messages immediately
-        Hangfire.BackgroundJob.Enqueue<IProcessOutboxMessagesJob<PaymentsDbContext>>(x => x.ProcessAsync(CancellationToken.None));
+        Hangfire.BackgroundJob.Enqueue<IProcessOutboxMessagesJob<BookingsDbContext>>(x => x.ProcessAsync(CancellationToken.None));
 
         return result;
     }

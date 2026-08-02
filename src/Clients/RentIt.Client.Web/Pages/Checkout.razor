@@ -1,6 +1,6 @@
 @page "/checkout/{Id:guid}"
-@using RentIt.Shared.DTOs.Properties
-@using RentIt.Client.Web.Services
+@using global::RentIt.Client.Web.Services
+@using global::RentIt.Shared.DTOs.Properties
 @inject IPropertyService PropertyService
 @inject IBookingService BookingService
 @inject IPaymentService PaymentService
@@ -127,23 +127,23 @@
                     <h3 class="price-details-title">Price details</h3>
                     
                     <div class="price-row mb-2">
-                        <span>$@_property.PricePerNight.ToString("0.00") x @GetNights() nights</span>
-                        <span>$@GetBasePrice().ToString("0.00")</span>
+                        <span>GHS @_property.PricePerNight.ToString("0.00") x @GetNights() nights</span>
+                        <span>GHS @GetBasePrice().ToString("0.00")</span>
                     </div>
                     <div class="price-row mb-2">
                         <span>Cleaning fee</span>
-                        <span>$@_cleaningFee.ToString("0.00")</span>
+                        <span>GHS @_cleaningFee.ToString("0.00")</span>
                     </div>
                     <div class="price-row mb-2">
                         <span>Service fee</span>
-                        <span>$@_serviceFee.ToString("0.00")</span>
+                        <span>GHS @_serviceFee.ToString("0.00")</span>
                     </div>
 
                     <hr class="divider my-4" />
 
                     <div class="price-row total-row">
                         <span>Total (USD)</span>
-                        <span>$@GetTotalPrice().ToString("0.00")</span>
+                        <span>GHS @GetTotalPrice().ToString("0.00")</span>
                     </div>
                 </div>
             </div>
@@ -220,7 +220,7 @@
             var booking = await BookingService.CreateBookingAsync(Id, DateOnly.FromDateTime(CheckInDate.Value), DateOnly.FromDateTime(CheckOutDate.Value));
             
             // Initialize Payment with Paystack
-            var paymentRequest = new RentIt.Client.Web.Services.InitializePaymentRequestDto
+            var paymentRequest = new InitializePaymentRequestDto
             {
                 BookingId = booking.Id,
                 Amount = GetTotalPrice(),

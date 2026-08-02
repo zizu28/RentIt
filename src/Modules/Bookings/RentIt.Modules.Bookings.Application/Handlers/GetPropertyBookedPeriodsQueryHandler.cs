@@ -1,9 +1,10 @@
 using MediatR;
+using RentIt.Modules.Bookings.Application.Queries;
 using RentIt.Modules.Bookings.Domain.Enums;
 using RentIt.Modules.Bookings.Domain.Repositories;
 using RentIt.Shared.DTOs.Bookings;
 
-namespace RentIt.Modules.Bookings.Application.Queries;
+namespace RentIt.Modules.Bookings.Application.Handlers;
 
 public class GetPropertyBookedPeriodsQueryHandler(IBookingRepository bookingRepository) : IRequestHandler<GetPropertyBookedPeriodsQuery, IReadOnlyList<BookedPeriodDto>>
 {

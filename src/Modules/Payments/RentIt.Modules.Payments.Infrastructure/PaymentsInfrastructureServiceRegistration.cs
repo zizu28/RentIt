@@ -14,11 +14,13 @@ public static class PaymentsInfrastructureServiceRegistration
     public static IServiceCollection AddPaymentsInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<PaymentsDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlServer(configuration.GetConnectionString("PaymentsDatabase")));
 
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<DomainEventDispatcher>();
         services.AddScoped<IPaymentsUnitOfWork, PaymentsUnitOfWork>();
+        services.AddScoped<IPaymentsOutboxService, PaymentsOutboxService>();
+        services.AddScoped<IPaymentsInboxService, PaymentsInboxService>();
         
         services.AddHttpClient<IPaystackService, PaystackService>();
 

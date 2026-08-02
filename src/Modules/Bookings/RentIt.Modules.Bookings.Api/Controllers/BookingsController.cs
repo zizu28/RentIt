@@ -11,14 +11,9 @@ namespace RentIt.Modules.Bookings.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class BookingsController : ControllerBase
+public class BookingsController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public BookingsController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
+    private readonly IMediator _mediator = mediator;
 
     [HttpPost]
     public async Task<IActionResult> CreateBooking([FromBody] CreateBookingRequest request)
@@ -64,6 +59,48 @@ public class BookingsController : ControllerBase
         var query = new GetPropertyBookedPeriodsQuery(propertyId);
         var result = await _mediator.Send(query);
         return Ok(result);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetBookingById(Guid id)
+    {
+        var guestIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(guestIdString) || !Guid.TryParse(guestIdString, out var guestId))
+        {
+            return Unauthorized("User is not authenticated properly.");
+        }
+
+        var query = new GetBookingByIdQuery(id, guestId);
+        try
+        {
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+    }
+
+    [HttpPost("{id}/cancel")]
+    public async Task<IActionResult> CancelBooking(Guid id)
+    {
+        var guestIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(guestIdString) || !Guid.TryParse(guestIdString, out var guestId))
+        {
+            return Unauthorized("User is not authenticated properly.");
+        }
+
+        var command = new CancelBookingCommand(id, guestId);
+        try
+        {
+            await _mediator.Send(command);
+            return Ok(new { Message = "Booking cancelled successfully." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
     }
 }
 

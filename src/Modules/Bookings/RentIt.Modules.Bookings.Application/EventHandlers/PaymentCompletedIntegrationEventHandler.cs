@@ -1,5 +1,6 @@
 using MediatR;
-using RentIt.Modules.Bookings.Domain.Enums;
+using RentIt.Modules.Bookings.Application.Services;
+using RentIt.Modules.Bookings.Domain.Exceptions;
 using RentIt.Modules.Bookings.Domain.Repositories;
 using RentIt.Shared.Abstractions.Persistence;
 using RentIt.Shared.Contracts.Payments.IntegrationEvents;
@@ -8,23 +9,27 @@ namespace RentIt.Modules.Bookings.Application.EventHandlers;
 
 internal sealed class PaymentCompletedIntegrationEventHandler(
     IBookingRepository bookingRepository,
-    IUnitOfWork unitOfWork) : INotificationHandler<PaymentCompletedIntegrationEvent>
+    IUnitOfWork unitOfWork,
+    IBookingsInboxService inboxService) : INotificationHandler<PaymentCompletedIntegrationEvent>
 {
     private readonly IBookingRepository _bookingRepository = bookingRepository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IBookingsInboxService _inboxService = inboxService;
 
     public async Task Handle(PaymentCompletedIntegrationEvent notification, CancellationToken cancellationToken)
     {
-        var booking = await _bookingRepository.GetByIdAsync(notification.BookingId, cancellationToken);
-
-        if (booking == null)
-            return;
-
-        if (booking.Status == BookingStatus.Pending)
+        if (await _inboxService.HasProcessedAsync(notification.EventId, cancellationToken))
         {
-            booking.Confirm();
-            _bookingRepository.Update(booking);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return;
         }
+
+        var booking = await _bookingRepository.GetByIdAsync(notification.BookingId, cancellationToken)
+            ?? throw new BookingDomainException($"Booking {notification.BookingId} not found");
+
+        booking.Confirm();
+        _bookingRepository.Update(booking);
+        
+        await _inboxService.InsertAsync(notification, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

@@ -3,77 +3,69 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using RentIt.Modules.Bookings.Infrastructure.Database;
+using RentIt.Modules.Payments.Infrastructure.Database;
 
 #nullable disable
 
-namespace RentIt.Modules.Bookings.Infrastructure.Database.Migrations
+namespace RentIt.Modules.Payments.Infrastructure.Database.Migrations
 {
-    [DbContext(typeof(BookingsDbContext))]
-    partial class BookingsDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(PaymentsDbContext))]
+    [Migration("20260801144614_FixAmountPaidPrecision")]
+    partial class FixAmountPaidPrecision
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("bookings")
+                .HasDefaultSchema("payments")
                 .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("RentIt.Modules.Bookings.Domain.Entities.BookableProperty", b =>
+            modelBuilder.Entity("RentIt.Modules.Payments.Domain.Entities.Payment", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("AmountPaid")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("AuthorizationUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasMaxLength(3)
                         .HasColumnType("nvarchar(3)");
 
-                    b.Property<string>("ImageUrl")
+                    b.Property<string>("Reference")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<decimal>("PricePerNight")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("BookableProperties", "bookings");
-                });
-
-            modelBuilder.Entity("RentIt.Modules.Bookings.Domain.Entities.Booking", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date");
-
-                    b.Property<Guid>("GuestId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("PropertyId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
-
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -82,7 +74,12 @@ namespace RentIt.Modules.Bookings.Infrastructure.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Bookings", "bookings");
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("Reference")
+                        .IsUnique();
+
+                    b.ToTable("Payments", "payments");
                 });
 
             modelBuilder.Entity("RentIt.Shared.Abstractions.Messaging.InboxMessage", b =>
@@ -110,7 +107,7 @@ namespace RentIt.Modules.Bookings.Infrastructure.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("InboxMessages", "bookings");
+                    b.ToTable("InboxMessages", "payments");
                 });
 
             modelBuilder.Entity("RentIt.Shared.Abstractions.Messaging.OutboxMessage", b =>
@@ -138,36 +135,7 @@ namespace RentIt.Modules.Bookings.Infrastructure.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("OutboxMessages", "bookings");
-                });
-
-            modelBuilder.Entity("RentIt.Modules.Bookings.Domain.Entities.Booking", b =>
-                {
-                    b.OwnsOne("RentIt.Shared.Kernel.ValueObjects.Money", "TotalPrice", b1 =>
-                        {
-                            b1.Property<Guid>("BookingId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<decimal>("Amount")
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("TotalPrice");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
-                                .HasColumnName("Currency");
-
-                            b1.HasKey("BookingId");
-
-                            b1.ToTable("Bookings", "bookings");
-
-                            b1.WithOwner()
-                                .HasForeignKey("BookingId");
-                        });
-
-                    b.Navigation("TotalPrice")
-                        .IsRequired();
+                    b.ToTable("OutboxMessages", "payments");
                 });
 #pragma warning restore 612, 618
         }
