@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="MediatR" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Serilog" />
     <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Contracts\RentIt.Shared.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Shared\RentIt.Shared.DTOs\RentIt.Shared.DTOs.csproj" />
     <ProjectReference Include="..\RentIt.Modules.Bookings.Domain\RentIt.Modules.Bookings.Domain.csproj" />

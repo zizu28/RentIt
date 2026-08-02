@@ -119,12 +119,20 @@
                             }
                         </div>
                         <div class="col-md-4 form-group mb-4">
-                            <label>Price (@GetPriceSuffix(_request.RentalPeriod))</label>
-                            <input type="number" step="0.01" min="1" class="form-control" @bind="_request.PricePerPeriod" required />
+                            <label>Status</label>
+                            <select class="form-select form-control" @bind="_request.Status" required>
+                                <option value="1">Draft</option>
+                                <option value="2">Available</option>
+                                <option value="5">Unlisted</option>
+                            </select>
                         </div>
                     </div>
 
                     <div class="row">
+                        <div class="col-md-4 form-group mb-4">
+                            <label>Price (@GetPriceSuffix(_request.RentalPeriod))</label>
+                            <input type="number" step="0.01" min="1" class="form-control" @bind="_request.PricePerPeriod" required />
+                        </div>
                         <div class="col-md-4 form-group mb-4">
                             <label>Bedrooms</label>
                             <input type="number" class="form-control" min="1" @bind="_request.Bedrooms" required />
@@ -254,7 +262,7 @@
         _ => "GHS"
     };
 
-    private void HandleFileSelection(Microsoft.AspNetCore.Components.Forms.InputFileChangeEventArgs e)
+    private void HandleFileSelection(InputFileChangeEventArgs e)
     {
         _selectedFiles.Clear();
         foreach (var file in e.GetMultipleFiles())
@@ -273,6 +281,7 @@
         public string Country { get; set; } = string.Empty;
         public string PostalCode { get; set; } = string.Empty;
         public int Type { get; set; } = 1;
+        public int Status { get; set; }
         public int RentalPeriod { get; set; } = 2;
         public int Bedrooms { get; set; } = 1;
         public int Bathrooms { get; set; } = 1;
@@ -307,7 +316,8 @@
                 _request.Bedrooms,
                 _request.Bathrooms,
                 amenities,
-                Enumerable.Empty<string>()
+                Enumerable.Empty<string>(),
+                _request.Status
             );
 
             await PropertyService.CreatePropertyAsync(request, _selectedFiles);

@@ -22,6 +22,7 @@ public class PropertyService(HttpClient httpClient) : IPropertyService
         content.Add(new StringContent(request.Country ?? string.Empty), "Country");
         content.Add(new StringContent(request.PostalCode ?? string.Empty), "PostalCode");
         content.Add(new StringContent(request.Type.ToString()), "Type");
+        content.Add(new StringContent(request.Status.ToString()), "Status");
         content.Add(new StringContent(request.RentalPeriod.ToString()), "RentalPeriod");
         content.Add(new StringContent(request.PricePerPeriod.ToString()), "PricePerPeriod");
         content.Add(new StringContent(request.Bedrooms.ToString()), "Bedrooms");

@@ -1,30 +1,32 @@
+using MediatR;
+using RentIt.Modules.Bookings.Application.Services;
 using RentIt.Modules.Bookings.Domain.Entities;
 using RentIt.Modules.Bookings.Domain.Repositories;
-using RentIt.Shared.Contracts.Properties.IntegrationEvents;
 using RentIt.Shared.Abstractions.Messaging;
-using Microsoft.Extensions.Logging;
+using RentIt.Shared.Abstractions.Persistence;
+using RentIt.Shared.Contracts.Properties.IntegrationEvents;
 
 namespace RentIt.Modules.Bookings.Application.EventHandlers;
 
-public class PropertyPublishedIntegrationEventHandler : IIntegrationEventHandler<PropertyPublishedIntegrationEvent>
+public class PropertyPublishedIntegrationEventHandler(
+    IBookablePropertyRepository propertyRepository,
+    IUnitOfWork unitOfWork,
+    IBookingsInboxService inboxService,
+    Serilog.ILogger logger) : INotificationHandler<PropertyPublishedIntegrationEvent>
 {
-    private readonly IBookablePropertyRepository _propertyRepository;
-    private readonly ILogger<PropertyPublishedIntegrationEventHandler> _logger;
+    private readonly IBookablePropertyRepository _propertyRepository = propertyRepository;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IBookingsInboxService _inboxService = inboxService;
+    private readonly Serilog.ILogger _logger = logger;
 
-    public PropertyPublishedIntegrationEventHandler(
-        IBookablePropertyRepository propertyRepository,
-        ILogger<PropertyPublishedIntegrationEventHandler> logger)
+    public async Task Handle(PropertyPublishedIntegrationEvent @event, CancellationToken cancellationToken = default)
     {
-        _propertyRepository = propertyRepository;
-        _logger = logger;
-    }
+        if (await _inboxService.HasProcessedAsync(@event.EventId, cancellationToken)) return;
 
-    public async Task HandleAsync(PropertyPublishedIntegrationEvent @event, CancellationToken cancellationToken = default)
-    {
-        _logger.LogInformation("Handling PropertyPublishedIntegrationEvent for property {PropertyId}", @event.PropertyId);
+        _logger.Information("Handling PropertyPublishedIntegrationEvent for property {PropertyId}", @event.PropertyId);
 
         var existingProperty = await _propertyRepository.GetByIdAsync(@event.PropertyId, cancellationToken);
-        
+
         if (existingProperty == null)
         {
             var property = new BookableProperty(
@@ -33,7 +35,7 @@ public class PropertyPublishedIntegrationEventHandler : IIntegrationEventHandler
                 "", // Default image url
                 @event.PricePerNight,
                 @event.Currency);
-            
+
             _propertyRepository.Add(property);
         }
         else
@@ -41,5 +43,8 @@ public class PropertyPublishedIntegrationEventHandler : IIntegrationEventHandler
             existingProperty.Update(@event.Title, @event.PricePerNight, @event.Currency);
             _propertyRepository.Update(existingProperty);
         }
+
+        await _inboxService.InsertAsync(@event, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }

@@ -35,7 +35,7 @@
                 <div class="booking-card">
                     <div class="booking-img-wrapper">
                         <img src="@booking.PropertyImageUrl" alt="@booking.PropertyTitle" class="booking-img" />
-                        <span class="booking-status badge-success">@booking.Status</span>
+                        <span class="booking-status @GetStatusBadgeClass(booking.Status)">@booking.Status</span>
                     </div>
                     <div class="booking-content">
                         <h3 class="booking-title">@booking.PropertyTitle</h3>
@@ -74,4 +74,16 @@
     {
         Navigation.NavigateTo($"/properties/{id}");
     }
+
+    private string GetStatusBadgeClass(string status) => status switch
+    {
+        "Pending" => "badge-warning",
+        "Confirmed" => "badge-success",
+        "Cancelled" => "badge-secondary",
+        "Completed" => "badge-primary",
+        "Refunded" => "badge-info",
+        "PartiallyPaid" => "badge-warning",
+        "Failed" => "badge-danger",
+        _ => "badge-secondary"
+    };
 }

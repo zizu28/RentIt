@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using RentIt.Modules.Identity.Infrastructure.Messaging;
+
 using RentIt.Modules.Identity.Infrastructure.Persistence;
 using RentIt.Shared.Abstractions.Messaging;
 using RentIt.Shared.Abstractions.Persistence;
@@ -39,8 +39,7 @@ public static class IdentityInfrastructureServiceRegistration
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 
-        // Event bus — dispatches integration events to handlers (in-memory for modular monolith)
-        services.AddScoped<IEventBus, InMemoryEventBus>();
+
 
         // Social Authentication Services
         services.AddHttpClient<FacebookAuthService>();

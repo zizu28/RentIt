@@ -1,8 +1,8 @@
 using MediatR;
 using RentIt.Modules.Payments.Application.Services;
 using RentIt.Modules.Payments.Domain.Entities;
+using RentIt.Modules.Payments.Domain.Enums;
 using RentIt.Modules.Payments.Domain.Repositories;
-using System.Text.Json;
 
 namespace RentIt.Modules.Payments.Application.Commands;
 
@@ -20,7 +20,7 @@ internal sealed class InitializePaymentCommandHandler(
     {
         // 1. Check if a payment already exists for this booking and is pending
         var existingPayment = await _paymentRepository.GetByBookingIdAsync(request.BookingId, cancellationToken);
-        if (existingPayment != null && existingPayment.Status == Domain.Enums.PaymentStatus.Pending && !string.IsNullOrEmpty(existingPayment.AuthorizationUrl))
+        if (existingPayment != null && existingPayment.Status == PaymentStatus.Pending && !string.IsNullOrEmpty(existingPayment.AuthorizationUrl))
         {
             return existingPayment.AuthorizationUrl; // Return existing URL
         }

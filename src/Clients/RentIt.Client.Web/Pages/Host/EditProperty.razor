@@ -110,6 +110,15 @@
                         
                         <div class="row">
                             <div class="col-md-4 form-group mb-4">
+                                <label>Status</label>
+                                <select class="form-select form-control" @bind="_request.Status" required>
+                                    <option value="1">Draft</option>
+                                    <option value="2">Available</option>
+                                    <option value="4">Maintenance</option>
+                                    <option value="5">Unlisted</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 form-group mb-4">
                                 <label>Bedrooms</label>
                                 <input type="number" class="form-control" min="1" @bind="_request.Bedrooms" required />
                             </div>
@@ -208,7 +217,9 @@
                 
                 // Assuming we default these or they would come from a proper address DTO
                 _request.Street = "Main Street";
-                _request.PostalCode = "";
+                _request.PostalCode = _property.PostalCode;
+                _request.Type = _property.Type;
+                _request.Status = _property.Status;
                 
                 _request.Bedrooms = _property.Bedrooms;
                 _request.Bathrooms = _property.Bathrooms;
@@ -245,6 +256,7 @@
         public string Country { get; set; } = string.Empty;
         public string PostalCode { get; set; } = string.Empty;
         public int Type { get; set; } = 1;
+        public int Status { get; set; } = 1;
         public int RentalPeriod { get; set; } = 2;
         public int Bedrooms { get; set; } = 1;
         public int Bathrooms { get; set; } = 1;
@@ -278,7 +290,8 @@
                 _request.SecurityDeposit,
                 _request.Bedrooms,
                 _request.Bathrooms,
-                amenities
+                amenities,
+                _request.Status
             );
 
             await PropertyService.UpdatePropertyAsync(Id, request);

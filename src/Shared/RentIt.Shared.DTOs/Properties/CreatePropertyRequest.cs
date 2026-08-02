@@ -15,5 +15,6 @@ public sealed record CreatePropertyRequest(
     int Bedrooms,
     int Bathrooms,
     IEnumerable<string> Amenities,
-    IEnumerable<string> Images
+    IEnumerable<string> Images,
+    int Status = 1 // Default to Draft (PropertyStatus.Draft = 1)
 );

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentIt.Modules.Bookings.Application.Commands;
 using RentIt.Modules.Bookings.Application.Queries;
-using RentIt.Shared.DTOs.Bookings;
 using System.Security.Claims;
 
 namespace RentIt.Modules.Bookings.Api.Controllers;

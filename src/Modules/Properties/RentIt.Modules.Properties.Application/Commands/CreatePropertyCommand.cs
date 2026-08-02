@@ -19,7 +19,8 @@ public sealed record CreatePropertyCommand(
     int Bedrooms,
     int Bathrooms,
     IEnumerable<string> Amenities,
-    IEnumerable<CreatePropertyCommand.FileRecord> Images
+    IEnumerable<CreatePropertyCommand.FileRecord> Images,
+    int Status = 1 // Default to Draft
 ) : IRequest<Result<Guid>>
 {
     public record FileRecord(Stream Content, string FileName);

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.Authorization;
 using RentIt.Client.Web;
 using RentIt.Client.Web.Auth;
+using RentIt.Client.Web.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -29,7 +30,7 @@ builder.Services.AddScoped(sp => (BffAuthenticationStateProvider)sp.GetRequiredS
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Register UI Services
-builder.Services.AddScoped<RentIt.Client.Web.Services.IPropertyService, RentIt.Client.Web.Services.PropertyService>();
-builder.Services.AddScoped<RentIt.Client.Web.Services.IBookingService, RentIt.Client.Web.Services.BookingService>();
-builder.Services.AddScoped<RentIt.Client.Web.Services.IPaymentService, RentIt.Client.Web.Services.PaymentService>();
+builder.Services.AddScoped<IPropertyService, PropertyService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 await builder.Build().RunAsync();

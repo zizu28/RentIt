@@ -44,7 +44,8 @@ public class Property : AggregateRoot<Guid>
         Money pricePerPeriod,
         Money securityDeposit,
         int bedrooms,
-        int bathrooms) : base(id)
+        int bathrooms,
+        PropertyStatus status) : base(id)
     {
         HostId = hostId;
         Name = name;
@@ -56,7 +57,7 @@ public class Property : AggregateRoot<Guid>
         SecurityDeposit = securityDeposit;
         Bedrooms = bedrooms;
         Bathrooms = bathrooms;
-        Status = PropertyStatus.Draft;
+        Status = status;
     }
 
     public static Property Create(
@@ -69,7 +70,8 @@ public class Property : AggregateRoot<Guid>
         Money pricePerPeriod,
         Money securityDeposit,
         int bedrooms,
-        int bathrooms)
+        int bathrooms,
+        PropertyStatus status)
     {
         var property = new Property(
             Guid.NewGuid(), 
@@ -82,7 +84,8 @@ public class Property : AggregateRoot<Guid>
             pricePerPeriod,
             securityDeposit,
             bedrooms,
-            bathrooms);
+            bathrooms,
+            status);
             
         property.AddDomainEvent(new PropertyCreatedDomainEvent(
             property.Id,
@@ -98,7 +101,7 @@ public class Property : AggregateRoot<Guid>
     public void UpdateDetails(
         string name, 
         string description, 
-        PropertyType type, 
+        PropertyType type,
         int bedrooms, 
         int bathrooms)
     {

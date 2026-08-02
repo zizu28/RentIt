@@ -19,5 +19,6 @@ public sealed record UpdatePropertyCommand(
     decimal SecurityDeposit,
     int Bedrooms,
     int Bathrooms,
-    IEnumerable<string> Amenities
+    IEnumerable<string> Amenities,
+    int Status
 ) : IRequest<Result<Guid>>;

@@ -49,6 +49,9 @@
                             <div class="property-banner property-type-@property.Type">
                                 @GetPropertyTypeName(property.Type)
                             </div>
+                            <div class="property-banner" style="top: 10px; right: 10px; left: auto; background-color: @GetStatusColor(property.Status); color: white;">
+                                @GetStatusText(property.Status)
+                            </div>
                             <img src="@GetImageUrl(property)" alt="@property.Name" class="property-img" />
                         </div>
                         <div class="property-content">
@@ -83,7 +86,7 @@
         var allProperties = await PropertyService.GetAllPropertiesAsync();
         if (allProperties != null)
         {
-            _properties = allProperties.Where(p => p.Status == 1).ToList();
+            _properties = allProperties.ToList();
         }
     }
 
@@ -113,6 +116,26 @@
         2 => "/ month",
         3 => "/ year",
         _ => ""
+    };
+
+    private string GetStatusText(int status) => status switch
+    {
+        1 => "Draft",
+        2 => "Available",
+        3 => "Rented",
+        4 => "Maintenance",
+        5 => "Unlisted",
+        _ => "Unknown"
+    };
+
+    private string GetStatusColor(int status) => status switch
+    {
+        1 => "#6c757d", // secondary
+        2 => "#28a745", // success
+        3 => "#dc3545", // danger
+        4 => "#ffc107", // warning
+        5 => "#343a40", // dark
+        _ => "#6c757d"
     };
 
     private void NavigateToProperty(Guid id)

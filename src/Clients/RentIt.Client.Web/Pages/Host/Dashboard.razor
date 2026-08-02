@@ -68,7 +68,7 @@
                     </div>
                     <div class="stat-details-cc ml-4">
                         <p class="stat-title-cc">Est. Monthly Earnings</p>
-                        <h3 class="stat-value-cc">$@(_properties.Sum(p => p.PricePerNight) * 15)</h3>
+                        <h3 class="stat-value-cc">GHS @CalculateMonthlyEarnings(_properties).ToString("N2")</h3>
                     </div>
                 </div>
             </div>
@@ -81,7 +81,7 @@
                 <div class="card-glass property-card animate-fade-in-up" @onclick="@(() => Navigation.NavigateTo($"/properties/{property.Id}"))">
                     <div class="property-img-wrapper">
                         <img src="@(property.ImageUrls.FirstOrDefault() ?? "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800")" alt="@property.Title" class="property-img" />
-                        <div class="badge-cc badge-success property-badge">Active</div>
+                        <div class="badge-cc @GetStatusBadgeClass(property.Status) property-badge">@GetStatusText(property.Status)</div>
                     </div>
                     <div class="property-content p-4">
                         <div class="property-header d-flex justify-content-between align-items-start mb-2">
@@ -95,11 +95,19 @@
                         </div>
                         <div class="property-footer d-flex justify-content-between align-items-center mt-4 pt-3" style="border-top: 1px solid var(--border-default);">
                             <div class="property-price">
-                                <strong class="text-primary" style="font-size: 1.25rem;">$@property.PricePerNight</strong> <span class="text-muted">/ night</span>
+                                <strong class="text-primary" style="font-size: 1.25rem;">GHS @property.PricePerPeriod</strong> <span class="text-muted">/ @GetRentalPeriodText(property.RentalPeriod)</span>
                             </div>
-                            <button class="btn-cc-secondary btn-sm" @onclick:stopPropagation="true" @onclick="@(() => Navigation.NavigateTo($"/host/properties/edit/{property.Id}"))">
-                                Edit <i class="bi bi-pencil ml-1"></i>
-                            </button>
+                            <div class="d-flex align-items-center">
+                                <div class="form-check form-switch mr-3" style="cursor: pointer;" @onclick:stopPropagation="true">
+                                    <input class="form-check-input" type="checkbox" id="bookableSwitch-@property.Id" 
+                                           checked="@(property.Status == 2)" 
+                                           @onchange="@(async (e) => await ToggleBookableStatus(property, (bool)e.Value!))">
+                                    <label class="form-check-label" for="bookableSwitch-@property.Id">Bookable</label>
+                                </div>
+                                <button class="btn-cc-secondary btn-sm" @onclick:stopPropagation="true" @onclick="@(() => Navigation.NavigateTo($"/host/properties/edit/{property.Id}"))">
+                                    Edit <i class="bi bi-pencil ml-1"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -156,6 +164,77 @@
         finally
         {
             _isLoading = false;
+        }
+    }
+
+    private string GetStatusText(int status) => status switch
+    {
+        1 => "Draft",
+        2 => "Available",
+        3 => "Rented",
+        4 => "Maintenance",
+        5 => "Unlisted",
+        _ => "Unknown"
+    };
+
+    private string GetStatusBadgeClass(int status) => status switch
+    {
+        1 => "badge-secondary", // Draft
+        2 => "badge-success", // Available
+        3 => "badge-danger", // Rented
+        4 => "badge-warning", // Maintenance
+        5 => "badge-dark", // Unlisted
+        _ => "badge-secondary"
+    };
+
+    private string GetRentalPeriodText(int rentalPeriod) => rentalPeriod switch
+    {
+        1 => "night",
+        2 => "month",
+        3 => "year",
+        _ => "period"
+    };
+
+    private decimal CalculateMonthlyEarnings(IEnumerable<PropertyDto> properties)
+    {
+        return properties.Sum(p => 
+        {
+            if (p.RentalPeriod == 1) return p.PricePerPeriod * 15; // Assume 15 nights rented per month
+            if (p.RentalPeriod == 2) return p.PricePerPeriod;      // 1 month rented per month
+            if (p.RentalPeriod == 3) return p.PricePerPeriod / 12; // Yearly divided by 12
+            return p.PricePerPeriod * 15;
+        });
+    }
+
+    private async Task ToggleBookableStatus(PropertyDto property, bool isBookable)
+    {
+        try
+        {
+            var newStatus = isBookable ? 2 : 5; // 2 = Available, 5 = Unlisted
+            var updateRequest = new UpdatePropertyRequest(
+                property.Name,
+                property.Description,
+                property.AddressLine1,
+                property.City,
+                property.Region,
+                property.Country,
+                property.PostalCode,
+                property.Type,
+                property.RentalPeriod,
+                property.PricePerPeriod,
+                property.SecurityDeposit,
+                property.Bedrooms,
+                property.Bathrooms,
+                property.Amenities,
+                newStatus
+            );
+
+            await PropertyService.UpdatePropertyAsync(property.Id, updateRequest);
+            _properties = await PropertyService.GetHostPropertiesAsync();
+        }
+        catch (Exception)
+        {
+            // In a real application, you might want to show a toast notification here
         }
     }
 }

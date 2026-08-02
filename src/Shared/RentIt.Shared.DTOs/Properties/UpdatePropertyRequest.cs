@@ -14,5 +14,6 @@ public sealed record UpdatePropertyRequest(
     decimal SecurityDeposit,
     int Bedrooms,
     int Bathrooms,
-    IEnumerable<string> Amenities
+    IEnumerable<string> Amenities,
+    int Status
 );

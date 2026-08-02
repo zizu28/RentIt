@@ -26,6 +26,11 @@
     else
     {
         <h1 class="page-title mb-2">@_property.Name</h1>
+        
+        <div class="alert @GetStatusCssClass(_property.Status) mb-4 d-inline-block px-3 py-1 rounded-pill" style="font-size: 0.85rem; font-weight: 600;">
+            @GetStatusText(_property.Status)
+        </div>
+
         <div class="property-meta mb-6">
             <i class="bi bi-star-fill text-warning"></i>
             <span class="font-weight-600">5.0</span>
@@ -281,6 +286,26 @@
         2 => "/ month",
         3 => "/ year",
         _ => ""
+    };
+
+    private string GetStatusText(int status) => status switch
+    {
+        1 => "Draft",
+        2 => "Available",
+        3 => "Rented",
+        4 => "Maintenance",
+        5 => "Unlisted",
+        _ => "Unknown"
+    };
+
+    private string GetStatusCssClass(int status) => status switch
+    {
+        1 => "alert-secondary",
+        2 => "alert-success",
+        3 => "alert-danger",
+        4 => "alert-warning",
+        5 => "alert-dark",
+        _ => "alert-secondary"
     };
 
     private void ValidateDates()

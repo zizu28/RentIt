@@ -40,7 +40,7 @@ internal sealed class UpdatePropertyCommandHandler(
         property.UpdateDetails(
             request.Name, 
             request.Description, 
-            (PropertyType)request.Type, 
+            (PropertyType)request.Type,
             request.Bedrooms, 
             request.Bathrooms
         );
@@ -54,6 +54,8 @@ internal sealed class UpdatePropertyCommandHandler(
         {
             property.AddAmenities(request.Amenities);
         }
+
+        property.ChangeStatus((PropertyStatus)request.Status);
 
         await _propertyRepository.UpdateAsync(property, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

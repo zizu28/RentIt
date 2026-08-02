@@ -11,15 +11,16 @@ internal class PropertyRepository(PropertiesDbContext dbContext) : IPropertyRepo
 
     public async Task<Property?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Properties
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        var properties = await _dbContext.Properties
+            .FromSqlRaw("SELECT TOP(1) * FROM [properties].[Properties] WITH (UPDLOCK, ROWLOCK) WHERE Id = {0}", id)
+            .ToListAsync(cancellationToken);
+
+        return properties.FirstOrDefault();
     }
 
     public async Task<IEnumerable<Property>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _dbContext.Properties
-            .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
 

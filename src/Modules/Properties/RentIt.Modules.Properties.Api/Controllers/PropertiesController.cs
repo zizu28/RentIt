@@ -100,7 +100,7 @@ public class PropertiesController(
         var command = new CreatePropertyCommand(hostId, request.Name, request.Description,
             request.Street, request.City, request.Region, request.Country, request.PostalCode,
             request.Type, request.RentalPeriod, request.PricePerPeriod, request.SecurityDeposit, request.Bedrooms,
-            request.Bathrooms, request.Amenities ?? [], fileRecords);
+            request.Bathrooms, request.Amenities ?? [], fileRecords, request.Status == 0 ? 1 : request.Status);
 
         var result = await _mediator.Send(command);
 
@@ -138,7 +138,8 @@ public class PropertiesController(
             request.SecurityDeposit,
             request.Bedrooms,
             request.Bathrooms,
-            request.Amenities ?? Array.Empty<string>()
+            request.Amenities ?? Array.Empty<string>(),
+            request.Status
         );
 
         var result = await _mediator.Send(command);
@@ -167,6 +168,7 @@ public class CreatePropertyApiRequest
     public string Country { get; set; } = string.Empty;
     public string PostalCode { get; set; } = string.Empty;
     public int Type { get; set; }
+    public int Status { get; set; }
     public int RentalPeriod { get; set; }
     public decimal PricePerPeriod { get; set; }
     public decimal SecurityDeposit { get; set; }

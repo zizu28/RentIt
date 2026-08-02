@@ -5,14 +5,9 @@ using RentIt.Modules.Bookings.Infrastructure.Database;
 
 namespace RentIt.Modules.Bookings.Infrastructure.Repositories;
 
-internal sealed class BookablePropertyRepository : IBookablePropertyRepository
+internal sealed class BookablePropertyRepository(BookingsDbContext context) : IBookablePropertyRepository
 {
-    private readonly BookingsDbContext _context;
-
-    public BookablePropertyRepository(BookingsDbContext context)
-    {
-        _context = context;
-    }
+    private readonly BookingsDbContext _context = context;
 
     public async Task<BookableProperty?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -27,5 +22,10 @@ internal sealed class BookablePropertyRepository : IBookablePropertyRepository
     public void Update(BookableProperty property)
     {
         _context.BookableProperties.Update(property);
+    }
+
+    public void Remove(BookableProperty property)
+    {
+        _context.BookableProperties.Remove(property);
     }
 }
