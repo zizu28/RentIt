@@ -6,7 +6,7 @@ By leveraging **Clean Architecture**, **Domain-Driven Design (DDD)**, and a **Mo
 
 ---
 
-## âœ¨ Core Features
+## Core Features
 
 ### For Renters
 * **Smart Property Discovery:** Advanced search, filtering, and real-time availability checking.
@@ -21,7 +21,7 @@ By leveraging **Clean Architecture**, **Domain-Driven Design (DDD)**, and a **Mo
 
 ---
 
-## âš™ï¸  Architecture & Design Patterns
+## Architecture & Design Patterns
 
 RentIt avoids the "distributed monolith" anti-pattern by starting as a **Modular Monolith**. The codebase is strictly partitioned into bounded contexts (Modules), communicating solely through asynchronous events or strictly defined in-memory contracts.
 
@@ -34,7 +34,7 @@ RentIt avoids the "distributed monolith" anti-pattern by starting as a **Modular
 
 ---
 
-## ðŸ› ï¸  Technology Stack
+## Technology Stack
 
 ### Backend & Infrastructure
 * **Framework:** .NET 10.0 (C# 14)
@@ -57,38 +57,38 @@ RentIt avoids the "distributed monolith" anti-pattern by starting as a **Modular
 
 ---
 
-## ðŸ“‚ Solution Structure
+## Solution Structure
 
 ```text
 RentIt/
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ Shared/                    # Cross-cutting concerns (Security, Logging, Exceptions)
-â”‚   â”‚   â”œâ”€â”€ RentIt.Shared.Abstractions
-â”‚   â”‚   â”œâ”€â”€ RentIt.Shared.Contracts
-â”‚   â”‚   â”œâ”€â”€ RentIt.Shared.Kernel
-â”‚   â”‚   â””â”€â”€ RentIt.Shared.Infrastructure
-â”‚   â”‚
-â”‚   â”œâ”€â”€ Modules/                   # Bounded Contexts
-â”‚   â”‚   â”œâ”€â”€ Identity/              # Auth, Users, Roles, Profile Management
-â”‚   â”‚   â”œâ”€â”€ Properties/            # Listings, Availability, Maintenance
-â”‚   â”‚   â”œâ”€â”€ Payments/              # Webhooks, Invoices, Paystack Integration
-â”‚   â”‚   â”œâ”€â”€ Bookings/              # Reservation logic, State machines
-â”‚   â”‚   â”œâ”€â”€ Verification/          # KYC, Document Verification
-â”‚   â”‚   â”œâ”€â”€ Messaging/             # In-app chat, SMS, Email
-â”‚   â”‚   â”œâ”€â”€ Reviews/               # Ratings, Feedback loops
-â”‚   â”‚   â””â”€â”€ Analytics/             # Host dashboards, Platform metrics
-â”‚   â”‚
-â”‚   â”œâ”€â”€ Host/                      # The Modular Monolith runtime host
-â”‚   â”œâ”€â”€ ApiGateway/                # Ocelot Gateway routing
-â”‚   â””â”€â”€ BFF/                       # Backend for Frontend orchestration
-â”‚
-â”œâ”€â”€ tests/                         # Unit, Integration, and Architecture tests
-â””â”€â”€ docs/                          # Architecture Decision Records (ADRs) and API specs
+|-- src/
+|   |-- Shared/                    # Cross-cutting concerns (Security, Logging, Exceptions)
+|   |   |-- RentIt.Shared.Abstractions
+|   |   |-- RentIt.Shared.Contracts
+|   |   |-- RentIt.Shared.Kernel
+|   |   +-- RentIt.Shared.Infrastructure
+|   |
+|   |-- Modules/                   # Bounded Contexts
+|   |   |-- Identity/              # Auth, Users, Roles, Profile Management
+|   |   |-- Properties/            # Listings, Availability, Maintenance
+|   |   |-- Payments/              # Webhooks, Invoices, Paystack Integration
+|   |   |-- Bookings/              # Reservation logic, State machines
+|   |   |-- Verification/          # KYC, Document Verification
+|   |   |-- Messaging/             # In-app chat, SMS, Email
+|   |   |-- Reviews/               # Ratings, Feedback loops
+|   |   +-- Analytics/             # Host dashboards, Platform metrics
+|   |
+|   |-- Host/                      # The Modular Monolith runtime host
+|   |-- ApiGateway/                # Ocelot Gateway routing
+|   +-- BFF/                       # Backend for Frontend orchestration
+|
+|-- tests/                         # Unit, Integration, and Architecture tests
++-- docs/                          # Architecture Decision Records (ADRs) and API specs
 ```
 
 ---
 
-## ðŸš€ Getting Started
+## Getting Started
 
 ### Prerequisites
 - [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
@@ -121,7 +121,7 @@ RentIt/
 
 ---
 
-## ðŸ“ˆ Future Outlook & Roadmap
+## Future Outlook & Roadmap
 
 As the platform scales, the immediate roadmap includes:
 1. **Microservices Transition:** Leveraging the existing MassTransit message bus to break out the `Analytics` and `Payments` modules into standalone microservices when load dictates.
@@ -130,11 +130,11 @@ As the platform scales, the immediate roadmap includes:
 
 ---
 
-## ðŸ“„ License
+## License
 
 Proprietary Software - All rights reserved.
 
-## ðŸ“§ Contact
+## Contact
 
 For technical inquiries, support, or partnership opportunities, please contact the lead architect:
 **Email:** ziblimzulka.zz@gmail.com
