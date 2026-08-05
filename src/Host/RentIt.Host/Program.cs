@@ -16,6 +16,7 @@ using RentIt.Shared.Infrastructure.Email;
 using RentIt.Shared.Infrastructure.Messaging;
 using RentIt.Shared.Infrastructure.Logging;
 using RentIt.Shared.Infrastructure.Pdf;
+using RentIt.Shared.Infrastructure.Security;
 using RentIt.Shared.Infrastructure.Storage;
 using Serilog;
 
@@ -40,6 +41,7 @@ if (assembliesPath != null)
 builder.Services.AddBackgroundJobs(builder.Configuration);
 builder.Services.AddSharedEmailServices();
 builder.Services.AddSharedMessaging();
+builder.Services.AddSharedSecurity();
 builder.Services.AddSharedPdfServices();
 builder.Services.AddStorage(builder.Configuration);
 builder.Services.AddIdentityApplication();

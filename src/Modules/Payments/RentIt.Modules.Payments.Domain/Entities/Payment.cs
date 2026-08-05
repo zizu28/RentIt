@@ -19,6 +19,7 @@ public sealed class Payment : AggregateRoot<Guid>
     public PaymentStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
+    public string? EncryptedProviderToken { get; private set; }
 
     private Payment() { } // EF Core
 
@@ -43,6 +44,11 @@ public sealed class Payment : AggregateRoot<Guid>
     public void SetAuthorizationUrl(string authorizationUrl)
     {
         AuthorizationUrl = authorizationUrl;
+    }
+
+    public void SetProviderToken(string token)
+    {
+        EncryptedProviderToken = token;
     }
 
     public void MarkAsSuccessful()

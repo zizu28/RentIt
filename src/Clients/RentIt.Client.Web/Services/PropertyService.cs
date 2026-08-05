@@ -53,6 +53,10 @@ public class PropertyService(HttpClient httpClient) : IPropertyService
             }
 
             var response = await _httpClient.PostAsync("api/properties", content);
+            //if(request.Status == 2)
+            //{
+            //    var bookableResponse = await _httpClient.PostAsJsonAsync("", content);
+            //}
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadFromJsonAsync<Guid>();

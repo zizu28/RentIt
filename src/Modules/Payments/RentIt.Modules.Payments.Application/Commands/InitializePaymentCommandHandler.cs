@@ -9,19 +9,24 @@ namespace RentIt.Modules.Payments.Application.Commands;
 internal sealed class InitializePaymentCommandHandler(
     IPaymentRepository paymentRepository,
     IPaystackService paystackService,
-    IPaymentsUnitOfWork unitOfWork)
+    IPaymentsUnitOfWork unitOfWork,
+    Serilog.ILogger logger)
     : IRequestHandler<InitializePaymentCommand, string>
 {
     private readonly IPaymentRepository _paymentRepository = paymentRepository;
     private readonly IPaystackService _paystackService = paystackService;
     private readonly IPaymentsUnitOfWork _unitOfWork = unitOfWork;
+    private readonly Serilog.ILogger _logger = logger;
 
     public async Task<string> Handle(InitializePaymentCommand request, CancellationToken cancellationToken)
     {
+        _logger.Information("Initializing payment for Booking {BookingId}", request.BookingId);
+        
         // 1. Check if a payment already exists for this booking and is pending
         var existingPayment = await _paymentRepository.GetByBookingIdAsync(request.BookingId, cancellationToken);
         if (existingPayment != null && existingPayment.Status == PaymentStatus.Pending && !string.IsNullOrEmpty(existingPayment.AuthorizationUrl))
         {
+            _logger.Information("Found existing pending payment with Auth URL for Booking {BookingId}", request.BookingId);
             return existingPayment.AuthorizationUrl; // Return existing URL
         }
 
@@ -46,6 +51,7 @@ internal sealed class InitializePaymentCommandHandler(
         await _paymentRepository.UpdateAsync(payment, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        _logger.Information("Successfully initialized payment for Booking {BookingId} with Reference {Reference}", request.BookingId, payment.Reference);
         return response.Data.AuthorizationUrl;
     }
 }

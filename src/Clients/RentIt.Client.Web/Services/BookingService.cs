@@ -10,7 +10,7 @@ public class BookingService(HttpClient httpClient) : IBookingService
     public async Task<IEnumerable<BookingDto>> GetMyBookingsAsync()
     {
         return await _httpClient.GetFromJsonAsync<IEnumerable<BookingDto>>("api/bookings/my-bookings") 
-               ?? Enumerable.Empty<BookingDto>();
+               ?? [];
     }
 
     public async Task<BookingDto> CreateBookingAsync(Guid propertyId, DateOnly startDate, DateOnly endDate)
@@ -26,7 +26,23 @@ public class BookingService(HttpClient httpClient) : IBookingService
     public async Task<IEnumerable<BookedPeriodDto>> GetPropertyBookedPeriodsAsync(Guid propertyId)
     {
         return await _httpClient.GetFromJsonAsync<IEnumerable<BookedPeriodDto>>($"api/bookings/properties/{propertyId}/booked-periods") 
-               ?? Enumerable.Empty<BookedPeriodDto>();
+               ?? [];
+    }
+
+    public async Task CreateBookablePropertyAsync(Guid propertyId, string title, string imageUrl, decimal pricePerNight, string currency = "GHS")
+    {
+        var request = new { PropertyId = propertyId, Title = title, ImageUrl = imageUrl, PricePerNight = pricePerNight, Currency = currency };
+        // We catch errors because if it already exists, the API will return BadRequest which throws on EnsureSuccessStatusCode.
+        // It's acceptable if the BookableProperty is already created.
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/bookings/properties", request);
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException)
+        {
+            // Ignore HTTP errors for now (e.g. 400 Bad Request if already exists)
+        }
     }
 }
 

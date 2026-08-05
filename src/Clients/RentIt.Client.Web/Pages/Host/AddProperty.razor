@@ -2,6 +2,7 @@
 @using RentIt.Shared.DTOs.Properties
 @using RentIt.Client.Web.Services
 @inject IPropertyService PropertyService
+@inject IBookingService BookingService
 @inject NavigationManager Navigation
 @attribute [Authorize]
 
@@ -24,7 +25,9 @@
             </div>
         }
 
-        <form @onsubmit="HandleSubmitAsync">
+        <EditForm Model="_request" OnValidSubmit="HandleSubmitAsync">
+            <FluentValidationValidator />
+            <ValidationSummary class="alert alert-danger mb-4" />
             
             <div class="card mb-6" style="margin-bottom: 10px;">
                 <div class="card-body">
@@ -180,7 +183,7 @@
                     }
                 </button>
             </div>
-        </form>
+        </EditForm>
     </div>
 </div>
 
@@ -221,8 +224,8 @@
     };
 
     // Using a simple model to back the form before mapping to CreatePropertyRequest
-    private FormModel _request = new();
-    private List<Microsoft.AspNetCore.Components.Forms.IBrowserFile> _selectedFiles = new();
+    private PropertyFormModel _request = new();
+    private List<IBrowserFile> _selectedFiles = new();
 
     private void OnRegionChanged()
     {
@@ -271,23 +274,7 @@
         }
     }
 
-    private class FormModel
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string Street { get; set; } = string.Empty;
-        public string City { get; set; } = string.Empty;
-        public string Region { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
-        public string PostalCode { get; set; } = string.Empty;
-        public int Type { get; set; } = 1;
-        public int Status { get; set; }
-        public int RentalPeriod { get; set; } = 2;
-        public int Bedrooms { get; set; } = 1;
-        public int Bathrooms { get; set; } = 1;
-        public decimal PricePerPeriod { get; set; } = 50.00m;
-        public decimal SecurityDeposit { get; set; } = 0.00m;
-    }
+    // FormModel is now imported from RentIt.Client.Web.Models
 
     private async Task HandleSubmitAsync()
     {
@@ -320,7 +307,18 @@
                 _request.Status
             );
 
-            await PropertyService.CreatePropertyAsync(request, _selectedFiles);
+            var propertyId = await PropertyService.CreatePropertyAsync(request, _selectedFiles);
+            
+            if (_request.Status == 2)
+            {
+                await BookingService.CreateBookablePropertyAsync(
+                    propertyId,
+                    _request.Name,
+                    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800",
+                    _request.PricePerPeriod,
+                    "GHS"
+                );
+            }
             
             Navigation.NavigateTo("/host/dashboard");
         }

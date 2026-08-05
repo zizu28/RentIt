@@ -2,7 +2,6 @@ using MediatR;
 using RentIt.Modules.Bookings.Application.Services;
 using RentIt.Modules.Bookings.Domain.Entities;
 using RentIt.Modules.Bookings.Domain.Repositories;
-using RentIt.Shared.Abstractions.Messaging;
 using RentIt.Shared.Abstractions.Persistence;
 using RentIt.Shared.Contracts.Properties.IntegrationEvents;
 

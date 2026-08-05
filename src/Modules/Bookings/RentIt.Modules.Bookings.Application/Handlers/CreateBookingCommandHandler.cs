@@ -11,18 +11,23 @@ namespace RentIt.Modules.Bookings.Application.Handlers;
 public class CreateBookingCommandHandler(
     IBookingRepository bookingRepository, 
     IBookablePropertyRepository propertyRepository,
-    IUnitOfWork unitOfWork) : IRequestHandler<CreateBookingCommand, BookingDto>
+    IUnitOfWork unitOfWork,
+    Serilog.ILogger logger) : IRequestHandler<CreateBookingCommand, BookingDto>
 {
     private readonly IBookingRepository _bookingRepository = bookingRepository;
     private readonly IBookablePropertyRepository _propertyRepository = propertyRepository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly Serilog.ILogger _logger = logger;
 
     public async Task<BookingDto> Handle(CreateBookingCommand request, CancellationToken cancellationToken)
     {
+        _logger.Information("Attempting to create booking for Property {PropertyId} by Guest {GuestId}", request.PropertyId, request.GuestId);
+        
         var property = await _propertyRepository.GetByIdAsync(request.PropertyId, cancellationToken) ?? throw new BookingDomainException($"Property with ID {request.PropertyId} not found.");
         var hasOverlapping = await _bookingRepository.HasOverlappingBookingsAsync(request.PropertyId, request.StartDate, request.EndDate, cancellationToken);
         if (hasOverlapping)
         {
+            _logger.Warning("Overlapping booking found for Property {PropertyId} between {StartDate} and {EndDate}", request.PropertyId, request.StartDate, request.EndDate);
             throw new BookingDomainException("The property is already booked for the selected dates.");
         }
 
@@ -37,6 +42,8 @@ public class CreateBookingCommandHandler(
         _bookingRepository.Add(booking);
         
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        _logger.Information("Successfully created booking {BookingId}", booking.Id);
 
         return new BookingDto
         {

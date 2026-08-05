@@ -2,6 +2,7 @@
 @using RentIt.Shared.DTOs.Properties
 @using RentIt.Client.Web.Services
 @inject IPropertyService PropertyService
+@inject IBookingService BookingService
 @inject NavigationManager Navigation
 @attribute [Authorize]
 
@@ -97,7 +98,7 @@
                             <div class="property-price">
                                 <strong class="text-primary" style="font-size: 1.25rem;">GHS @property.PricePerPeriod</strong> <span class="text-muted">/ @GetRentalPeriodText(property.RentalPeriod)</span>
                             </div>
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center flex-column">
                                 <div class="form-check form-switch mr-3" style="cursor: pointer;" @onclick:stopPropagation="true">
                                     <input class="form-check-input" type="checkbox" id="bookableSwitch-@property.Id" 
                                            checked="@(property.Status == 2)" 
@@ -230,6 +231,21 @@
             );
 
             await PropertyService.UpdatePropertyAsync(property.Id, updateRequest);
+            
+            // Wire to BookableProperties if it is made available
+            if (isBookable)
+            {
+                var imageUrl = property.ImageUrls.FirstOrDefault() ?? "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800";
+                
+                await BookingService.CreateBookablePropertyAsync(
+                    property.Id, 
+                    property.Title, 
+                    imageUrl,
+                    property.PricePerPeriod, 
+                    "GHS"
+                );
+            }
+
             _properties = await PropertyService.GetHostPropertiesAsync();
         }
         catch (Exception)

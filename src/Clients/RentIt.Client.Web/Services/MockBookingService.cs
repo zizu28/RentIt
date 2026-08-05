@@ -52,4 +52,10 @@ public class MockBookingService : IBookingService
             .Select(b => new BookedPeriodDto(b.StartDate, b.EndDate))
             .ToList();
     }
+
+    public Task CreateBookablePropertyAsync(Guid propertyId, string title, string imageUrl, decimal pricePerNight, string currency = "GHS")
+    {
+        // Mock implementation - do nothing
+        return Task.CompletedTask;
+    }
 }

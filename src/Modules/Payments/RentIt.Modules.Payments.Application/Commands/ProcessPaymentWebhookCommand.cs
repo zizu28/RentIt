@@ -22,6 +22,9 @@ public class PaystackWebhookData
 
     [JsonPropertyName("amount")]
     public decimal Amount { get; set; }
+
+    [JsonPropertyName("authorization_code")]
+    public string? AuthorizationCode { get; set; }
 }
 
 public record ProcessPaymentWebhookCommand(PaystackWebhookPayload Payload) : IRequest;

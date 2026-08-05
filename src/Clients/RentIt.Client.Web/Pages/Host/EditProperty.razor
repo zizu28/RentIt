@@ -2,6 +2,7 @@
 @using RentIt.Shared.DTOs.Properties
 @using RentIt.Client.Web.Services
 @inject IPropertyService PropertyService
+@inject IBookingService BookingService
 @inject NavigationManager Navigation
 @attribute [Authorize]
 
@@ -38,7 +39,9 @@
         }
         else
         {
-            <form @onsubmit="HandleSubmitAsync">
+            <EditForm Model="_request" OnValidSubmit="HandleSubmitAsync">
+                <FluentValidationValidator />
+                <ValidationSummary class="alert alert-danger mb-4" />
                 
                 <div class="card mb-6" style="margin-bottom: 10px;">
                     <div class="card-body">
@@ -46,12 +49,12 @@
                         
                         <div class="form-group mb-4">
                             <label>Property Name</label>
-                            <input type="text" class="form-control" @bind="_request.Name" placeholder="e.g. Cozy Downtown Loft" required />
+                            <InputText class="form-control" @bind-Value="_request.Name" placeholder="e.g. Cozy Downtown Loft" />
                         </div>
 
                         <div class="form-group mb-4">
                             <label>Description</label>
-                            <textarea class="form-control" rows="4" @bind="_request.Description" placeholder="Describe your property..." required></textarea>
+                            <InputTextArea class="form-control" rows="4" @bind-Value="_request.Description" placeholder="Describe your property..." />
                         </div>
                     </div>
                 </div>
@@ -62,13 +65,13 @@
                         
                         <div class="form-group mb-4">
                             <label>Street Address</label>
-                            <input type="text" class="form-control" @bind="_request.Street" required />
+                            <InputText class="form-control" @bind-Value="_request.Street" />
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 form-group mb-4">
                                 <label>Region/State</label>
-                                <select class="form-select form-control" @bind="_request.Region" @bind:after="OnRegionChanged" required>
+                                <select class="form-select form-control" @bind="_request.Region" @bind:after="OnRegionChanged">
                                     <option value="" disabled selected>Select Region...</option>
                                     @foreach (var region in _ghanaRegions.Keys)
                                     {
@@ -78,7 +81,7 @@
                             </div>
                             <div class="col-md-6 form-group mb-4">
                                 <label>City</label>
-                                <select class="form-select form-control" @bind="_request.City" disabled="@string.IsNullOrEmpty(_request.Region)" required>
+                                <select class="form-select form-control" @bind="_request.City" disabled="@string.IsNullOrEmpty(_request.Region)">
                                     <option value="" disabled selected>Select City...</option>
                                     @if (!string.IsNullOrEmpty(_request.Region) && _ghanaRegions.ContainsKey(_request.Region))
                                     {
@@ -94,11 +97,11 @@
                         <div class="row">
                             <div class="col-md-6 form-group mb-4">
                                 <label>Country</label>
-                                <input type="text" class="form-control" @bind="_request.Country" required />
+                                <InputText class="form-control" @bind-Value="_request.Country" />
                             </div>
                             <div class="col-md-6 form-group mb-4">
                                 <label>Postal Code</label>
-                                <input type="text" class="form-control" @bind="_request.PostalCode" />
+                                <InputText class="form-control" @bind-Value="_request.PostalCode" />
                             </div>
                         </div>
                     </div>
@@ -111,30 +114,30 @@
                         <div class="row">
                             <div class="col-md-4 form-group mb-4">
                                 <label>Status</label>
-                                <select class="form-select form-control" @bind="_request.Status" required>
+                                <InputSelect class="form-select form-control" @bind-Value="_request.Status">
                                     <option value="1">Draft</option>
                                     <option value="2">Available</option>
                                     <option value="4">Maintenance</option>
                                     <option value="5">Unlisted</option>
-                                </select>
+                                </InputSelect>
                             </div>
                             <div class="col-md-4 form-group mb-4">
                                 <label>Bedrooms</label>
-                                <input type="number" class="form-control" min="1" @bind="_request.Bedrooms" required />
+                                <InputNumber class="form-control" min="1" @bind-Value="_request.Bedrooms" />
                             </div>
                             <div class="col-md-4 form-group mb-4">
                                 <label>Bathrooms</label>
-                                <input type="number" class="form-control" min="1" @bind="_request.Bathrooms" required />
+                                <InputNumber class="form-control" min="1" @bind-Value="_request.Bathrooms" />
                             </div>
                             <div class="col-md-4 form-group mb-4">
                                 <label>Price per night (GHS)</label>
-                                <input type="number" step="0.01" min="1" class="form-control" @bind="_request.PricePerPeriod" required />
+                                <InputNumber step="0.01" min="1" class="form-control" @bind-Value="_request.PricePerPeriod" />
                             </div>
                         </div>
                         
                         <div class="form-group mb-4">
                             <label>Amenities (comma separated)</label>
-                            <input type="text" class="form-control" @bind="_amenitiesInput" placeholder="Wifi, Pool, Kitchen..." />
+                            <InputText class="form-control" @bind-Value="_amenitiesInput" placeholder="Wifi, Pool, Kitchen..." />
                         </div>
                         
                         <div class="alert alert-info mt-4">
@@ -156,7 +159,7 @@
                         }
                     </button>
                 </div>
-            </form>
+            </EditForm>
         }
     </div>
 </div>
@@ -191,8 +194,8 @@
         { "Western North", new List<string> { "Sefwi Wiawso", "Bibiani", "Enchi", "Bodi" } }
     };
 
-    // Using a simple model to back the form before mapping to UpdatePropertyRequest
-    private FormModel _request = new();
+    // FormModel is now imported from RentIt.Client.Web.Models
+    private PropertyFormModel _request = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -209,13 +212,10 @@
                 _request.Name = _property.Name;
                 _request.Description = _property.Description;
                 
-                // Extremely basic parsing of location - it's better to return the full address object in the DTO
-                // but working with what we have
                 _request.City = addressParts.Length > 0 ? addressParts[0] : "";
                 _request.Region = addressParts.Length > 1 ? addressParts[1] : "";
                 _request.Country = addressParts.Length > 2 ? addressParts[2] : "Ghana";
                 
-                // Assuming we default these or they would come from a proper address DTO
                 _request.Street = "Main Street";
                 _request.PostalCode = _property.PostalCode;
                 _request.Type = _property.Type;
@@ -244,24 +244,6 @@
     private void OnRegionChanged()
     {
         _request.City = string.Empty;
-    }
-
-    private class FormModel
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string Street { get; set; } = string.Empty;
-        public string City { get; set; } = string.Empty;
-        public string Region { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
-        public string PostalCode { get; set; } = string.Empty;
-        public int Type { get; set; } = 1;
-        public int Status { get; set; } = 1;
-        public int RentalPeriod { get; set; } = 2;
-        public int Bedrooms { get; set; } = 1;
-        public int Bathrooms { get; set; } = 1;
-        public decimal PricePerPeriod { get; set; } = 50.00m;
-        public decimal SecurityDeposit { get; set; } = 0.00m;
     }
 
     private async Task HandleSubmitAsync()
@@ -295,6 +277,19 @@
             );
 
             await PropertyService.UpdatePropertyAsync(Id, request);
+            
+            if (_request.Status == 2)
+            {
+                var imageUrl = _property?.ImageUrls?.FirstOrDefault() ?? "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800";
+                
+                await BookingService.CreateBookablePropertyAsync(
+                    Id,
+                    _request.Name,
+                    imageUrl,
+                    _request.PricePerPeriod,
+                    "GHS"
+                );
+            }
             
             Navigation.NavigateTo("/host/dashboard");
         }

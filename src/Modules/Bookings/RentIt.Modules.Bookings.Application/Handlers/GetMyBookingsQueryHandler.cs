@@ -7,13 +7,17 @@ namespace RentIt.Modules.Bookings.Application.Handlers;
 
 public class GetMyBookingsQueryHandler(
     IBookingRepository bookingRepository,
-    IBookablePropertyRepository propertyRepository) : IRequestHandler<GetMyBookingsQuery, IEnumerable<BookingDto>>
+    IBookablePropertyRepository propertyRepository,
+    Serilog.ILogger logger) : IRequestHandler<GetMyBookingsQuery, IEnumerable<BookingDto>>
 {
     private readonly IBookingRepository _bookingRepository = bookingRepository;
     private readonly IBookablePropertyRepository _propertyRepository = propertyRepository;
+    private readonly Serilog.ILogger _logger = logger;
 
     public async Task<IEnumerable<BookingDto>> Handle(GetMyBookingsQuery request, CancellationToken cancellationToken)
     {
+        _logger.Information("Fetching bookings for Guest {GuestId}", request.GuestId);
+        
         var bookings = await _bookingRepository.GetByGuestIdAsync(request.GuestId, cancellationToken);
         var dtos = new List<BookingDto>();
 

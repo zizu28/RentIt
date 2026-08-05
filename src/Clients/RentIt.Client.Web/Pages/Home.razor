@@ -86,7 +86,7 @@
         var allProperties = await PropertyService.GetAllPropertiesAsync();
         if (allProperties != null)
         {
-            _properties = allProperties.ToList();
+            _properties = allProperties.Where(p => p.Status == 2).ToList();
         }
     }
 

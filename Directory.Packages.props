@@ -8,6 +8,7 @@
     <PackageVersion Include="CloudinaryDotNet" Version="1.29.2" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageVersion Include="Blazored.FluentValidation" Version="2.2.0" />
     <PackageVersion Include="Fluid.Core" Version="2.31.0" />
     <PackageVersion Include="Google.Apis.Auth.AspNetCore3" Version="1.75.0" />
     <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.24" />

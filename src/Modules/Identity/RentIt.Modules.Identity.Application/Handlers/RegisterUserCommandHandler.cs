@@ -20,16 +20,20 @@ public sealed class RegisterUserCommandHandler(
     IPasswordHasher passwordHasher,
     IUnitOfWork unitOfWork,
     IBackgroundJob backgroundJob,
-    IConfiguration configuration) : IRequestHandler<RegisterUserCommand, Result<UserDto>>
+    IConfiguration configuration,
+    Serilog.ILogger logger) : IRequestHandler<RegisterUserCommand, Result<UserDto>>
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IPasswordHasher _passwordHasher = passwordHasher;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IBackgroundJob _backgroundJob = backgroundJob;
     private readonly IConfiguration _configuration = configuration;
+    private readonly Serilog.ILogger _logger = logger;
 
     public async Task<Result<UserDto>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
+        _logger.Information("Attempting to register user with email {Email}", request.Email);
+        
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
         try
         {
@@ -123,10 +127,12 @@ public sealed class RegisterUserCommandHandler(
                 LastLoginAt = user.LastLoginAt
             };
 
+            _logger.Information("Successfully registered user {UserId} with email {Email}", user.Id, user.Email.Value);
             return Result.Success(userDto);
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.Error(ex, "An error occurred while registering user {Email}", request.Email);
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
