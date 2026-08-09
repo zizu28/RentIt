@@ -1,4 +1,4 @@
-﻿namespace RentIt.Modules.Messaging.Infrastructure;
+namespace RentIt.Modules.Messaging.Infrastructure;
 
 public class Class1
 {

@@ -13,6 +13,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="RentIt.Client.Web.styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
     <script>
         // Initialize theme before rendering to avoid flash
         const savedTheme = localStorage.getItem('theme');
@@ -53,6 +55,34 @@
         <span class="dismiss">🗙</span>
     </div>
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
+    <script>
+        window.initializeFlatpickr = (elementId, options, isMonthly, isYearly) => {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+
+            // Trigger blazor binding on change
+            options.onChange = function(selectedDates, dateStr, instance) {
+                el.value = dateStr;
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            };
+
+            // Apply plugin if monthly or yearly
+            if (isMonthly || isYearly) {
+                options.plugins = [
+                    new monthSelectPlugin({
+                        shorthand: true, 
+                        dateFormat: "Y-m-d", // Ensure it still spits out a valid first-of-month date
+                        altFormat: "F Y",
+                        theme: "light"
+                    })
+                ];
+            }
+
+            flatpickr(el, options);
+        };
+    </script>
 </body>
 
 </html>

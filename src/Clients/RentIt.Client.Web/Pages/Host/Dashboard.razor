@@ -4,7 +4,7 @@
 @inject IPropertyService PropertyService
 @inject IBookingService BookingService
 @inject NavigationManager Navigation
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Host")]
 
 <PageTitle>Host Dashboard - RentIt</PageTitle>
 
@@ -22,9 +22,14 @@
         </div>
         @if (_properties != null && _properties.Any())
         {
-            <button class="btn-cc-primary" @onclick='() => Navigation.NavigateTo("/host/properties/add")'>
-                <i class="bi bi-plus-lg"></i> Add New Listing
-            </button>
+            <div class="d-flex" style="gap: 1rem;">
+                <button class="btn-cc-secondary" @onclick='() => Navigation.NavigateTo("/host/pending-payments")'>
+                    <i class="bi bi-hourglass-split"></i> Pending Payments
+                </button>
+                <button class="btn-cc-primary" @onclick='() => Navigation.NavigateTo("/host/properties/add")'>
+                    <i class="bi bi-plus-lg"></i> Add New Listing
+                </button>
+            </div>
         }
     </div>
 
@@ -75,14 +80,39 @@
             </div>
         </div>
 
+        <div class="earnings-breakdown mb-8 animate-fade-in-up card-glass p-4">
+            <h3 class="section-title mb-4" style="font-size: 1.25rem;">Estimated Monthly Earnings by Property Type</h3>
+            <div class="d-flex flex-wrap" style="gap: 1rem;">
+                @foreach (var group in CalculateEarningsByPropertyType(_properties))
+                {
+                    <div class="earnings-pill bg-light p-3 rounded shadow-sm flex-fill text-center" style="min-width: 150px;">
+                        <div class="text-secondary mb-1">@group.Key</div>
+                        <div class="font-weight-bold text-primary">GHS @group.Value.ToString("N2")</div>
+                    </div>
+                }
+            </div>
+        </div>
+
         <h2 class="section-title mb-4">Your Properties</h2>
         <div class="properties-grid stagger-children">
             @foreach (var property in _properties)
             {
                 <div class="card-glass property-card animate-fade-in-up" @onclick="@(() => Navigation.NavigateTo($"/properties/{property.Id}"))">
                     <div class="property-img-wrapper">
+                        @if (property.Status == 4)
+                        {
+                            <div class="property-banner bg-warning text-dark text-center py-1 fw-bold w-100" style="position: absolute; top: 0; z-index: 10;">
+                                <i class="bi bi-tools mr-1"></i> UNDER MAINTENANCE
+                            </div>
+                        }
+                        else if (property.Status == 5)
+                        {
+                            <div class="property-banner bg-dark text-white text-center py-1 fw-bold w-100" style="position: absolute; top: 0; z-index: 10;">
+                                <i class="bi bi-eye-slash mr-1"></i> UNLISTED
+                            </div>
+                        }
                         <img src="@(property.ImageUrls.FirstOrDefault() ?? "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800")" alt="@property.Title" class="property-img" />
-                        <div class="badge-cc @GetStatusBadgeClass(property.Status) property-badge">@GetStatusText(property.Status)</div>
+                        <div class="badge-cc @GetStatusBadgeClass(property.Status) property-badge" style="top: @(property.Status == 4 || property.Status == 5 ? "40px" : "10px");">@GetStatusText(property.Status)</div>
                     </div>
                     <div class="property-content p-4">
                         <div class="property-header d-flex justify-content-between align-items-start mb-2">
@@ -99,13 +129,18 @@
                                 <strong class="text-primary" style="font-size: 1.25rem;">GHS @property.PricePerPeriod</strong> <span class="text-muted">/ @GetRentalPeriodText(property.RentalPeriod)</span>
                             </div>
                             <div class="d-flex align-items-center flex-column">
-                                <div class="form-check form-switch mr-3" style="cursor: pointer;" @onclick:stopPropagation="true">
-                                    <input class="form-check-input" type="checkbox" id="bookableSwitch-@property.Id" 
-                                           checked="@(property.Status == 2)" 
-                                           @onchange="@(async (e) => await ToggleBookableStatus(property, (bool)e.Value!))">
-                                    <label class="form-check-label" for="bookableSwitch-@property.Id">Bookable</label>
+                                <div class="form-group mb-2 w-100" @onclick:stopPropagation="true">
+                                    <select class="form-select form-select-sm" 
+                                            value="@property.Status" 
+                                            @onchange="@(async (e) => await UpdatePropertyStatus(property, int.Parse(e.Value!.ToString()!)))">
+                                        <option value="1">Draft</option>
+                                        <option value="2">Available</option>
+                                        <option value="3">Rented</option>
+                                        <option value="4">Maintenance</option>
+                                        <option value="5">Unlisted</option>
+                                    </select>
                                 </div>
-                                <button class="btn-cc-secondary btn-sm" @onclick:stopPropagation="true" @onclick="@(() => Navigation.NavigateTo($"/host/properties/edit/{property.Id}"))">
+                                <button class="btn-cc-secondary btn-sm w-100" @onclick:stopPropagation="true" @onclick="@(() => Navigation.NavigateTo($"/host/properties/edit/{property.Id}"))">
                                     Edit <i class="bi bi-pencil ml-1"></i>
                                 </button>
                             </div>
@@ -196,22 +231,46 @@
         _ => "period"
     };
 
-    private decimal CalculateMonthlyEarnings(IEnumerable<PropertyDto> properties)
+    private decimal CalculatePropertyEarnings(PropertyDto p)
     {
-        return properties.Sum(p => 
-        {
-            if (p.RentalPeriod == 1) return p.PricePerPeriod * 15; // Assume 15 nights rented per month
-            if (p.RentalPeriod == 2) return p.PricePerPeriod;      // 1 month rented per month
-            if (p.RentalPeriod == 3) return p.PricePerPeriod / 12; // Yearly divided by 12
-            return p.PricePerPeriod * 15;
-        });
+        if (p.RentalPeriod == 1) return p.PricePerPeriod * 15; // Assume 15 nights rented per month
+        if (p.RentalPeriod == 2) return p.PricePerPeriod;      // 1 month rented per month
+        if (p.RentalPeriod == 3) return p.PricePerPeriod / 12; // Yearly divided by 12
+        return p.PricePerPeriod * 15;
     }
 
-    private async Task ToggleBookableStatus(PropertyDto property, bool isBookable)
+    private decimal CalculateMonthlyEarnings(IEnumerable<PropertyDto> properties)
+    {
+        return properties.Sum(CalculatePropertyEarnings);
+    }
+
+    private Dictionary<string, decimal> CalculateEarningsByPropertyType(IEnumerable<PropertyDto> properties)
+    {
+        var types = new Dictionary<int, string>
+        {
+            { 1, "Apartment" },
+            { 2, "House" },
+            { 3, "Villa" },
+            { 4, "Guesthouse" },
+            { 5, "Commercial" },
+            { 6, "Single Room" },
+            { 7, "Compound House" }
+        };
+
+        return properties
+            .GroupBy(p => p.Type)
+            .ToDictionary(
+                g => types.ContainsKey(g.Key) ? types[g.Key] : "Other",
+                g => g.Sum(CalculatePropertyEarnings)
+            )
+            .Where(x => x.Value > 0)
+            .ToDictionary(x => x.Key, x => x.Value);
+    }
+
+    private async Task UpdatePropertyStatus(PropertyDto property, int newStatus)
     {
         try
         {
-            var newStatus = isBookable ? 2 : 5; // 2 = Available, 5 = Unlisted
             var updateRequest = new UpdatePropertyRequest(
                 property.Name,
                 property.Description,
@@ -233,7 +292,7 @@
             await PropertyService.UpdatePropertyAsync(property.Id, updateRequest);
             
             // Wire to BookableProperties if it is made available
-            if (isBookable)
+            if (newStatus == 2 && property.Status != 2)
             {
                 var imageUrl = property.ImageUrls.FirstOrDefault() ?? "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800";
                 
@@ -250,7 +309,7 @@
         }
         catch (Exception)
         {
-            // In a real application, you might want to show a toast notification here
+            // Error handling
         }
     }
 }

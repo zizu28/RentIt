@@ -16,6 +16,8 @@ public class BookablePropertyConfiguration : IEntityTypeConfiguration<BookablePr
         builder.Property(p => p.Title).IsRequired().HasMaxLength(200);
         builder.Property(p => p.ImageUrl).HasMaxLength(500);
         builder.Property(p => p.PricePerNight).HasColumnType("decimal(18,2)").IsRequired();
-        builder.Property(p => p.Currency).HasMaxLength(3).IsRequired();
+        builder.Property(bp => bp.Currency)
+            .IsRequired()
+            .HasMaxLength(3);
     }
 }

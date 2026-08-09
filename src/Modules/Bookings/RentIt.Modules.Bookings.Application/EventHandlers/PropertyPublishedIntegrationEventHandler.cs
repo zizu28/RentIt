@@ -31,15 +31,17 @@ public class PropertyPublishedIntegrationEventHandler(
             var property = new BookableProperty(
                 @event.PropertyId,
                 @event.Title,
-                "", // Default image url
+                @event.ImageUrl, // Use image from the event
                 @event.PricePerNight,
-                @event.Currency);
+                @event.Currency,
+                @event.RentalPeriod,
+                @event.HostId);
 
             _propertyRepository.Add(property);
         }
         else
         {
-            existingProperty.Update(@event.Title, @event.PricePerNight, @event.Currency);
+            existingProperty.Update(@event.Title, @event.ImageUrl, @event.PricePerNight, @event.Currency, @event.RentalPeriod, @event.HostId);
             _propertyRepository.Update(existingProperty);
         }
 

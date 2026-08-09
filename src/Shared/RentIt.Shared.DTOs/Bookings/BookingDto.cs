@@ -9,5 +9,6 @@ public sealed record BookingDto
     public DateOnly StartDate { get; init; }
     public DateOnly EndDate { get; init; }
     public decimal TotalPrice { get; init; }
+    public string Currency { get; init; } = "GHS";
     public string Status { get; init; } = "Confirmed";
 }

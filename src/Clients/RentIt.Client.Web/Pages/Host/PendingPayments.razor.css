@@ -1,0 +1,47 @@
+/* Inheriting from global styles */
+.table-cc {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-cc th, .table-cc td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-default);
+    text-align: left;
+}
+
+.table-cc th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.table-cc tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.table-cc tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.badge-cc {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.badge-warning {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+}

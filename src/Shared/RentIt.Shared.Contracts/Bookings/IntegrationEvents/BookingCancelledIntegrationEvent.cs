@@ -3,14 +3,14 @@ using RentIt.Shared.Abstractions.Messaging;
 namespace RentIt.Shared.Contracts.Bookings.IntegrationEvents;
 
 /// <summary>
-/// Published when a booking is cancelled by the renter or landlord.
+/// Published when a booking is cancelled by the renter or Host.
 /// Consumed by: Messaging (notify both parties), Analytics (cancellation metrics)
 /// </summary>
 public sealed record BookingCancelledIntegrationEvent(
     Guid BookingId,
     Guid PropertyId,
     Guid RenterId,
-    Guid LandlordId,
+    Guid HostId,
     string CancelledBy,
     string Reason,
     decimal RefundAmount,

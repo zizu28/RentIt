@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RentIt.Modules.Bookings.Application.Commands;
 using RentIt.Modules.Bookings.Application.Queries;
 
 namespace RentIt.Modules.Bookings.Api.Controllers;
@@ -35,12 +36,14 @@ public class BookablePropertiesController(IMediator mediator) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateBookableProperty([FromBody] CreateBookablePropertyRequest request)
     {
-        var command = new RentIt.Modules.Bookings.Application.Commands.CreateBookablePropertyCommand(
+        var command = new CreateBookablePropertyCommand(
             request.PropertyId,
             request.Title,
             request.ImageUrl,
             request.PricePerNight,
-            request.Currency
+            request.Currency,
+            request.RentalPeriod,
+            request.HostId
         );
 
         var result = await _mediator.Send(command);
@@ -61,4 +64,6 @@ public class CreateBookablePropertyRequest
     public string ImageUrl { get; set; } = string.Empty;
     public decimal PricePerNight { get; set; }
     public string Currency { get; set; } = "GHS";
+    public int RentalPeriod { get; set; }
+    public Guid HostId { get; set; }
 }

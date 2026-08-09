@@ -1,4 +1,4 @@
-﻿namespace RentIt.Modules.Bookings.Domain;
+namespace RentIt.Modules.Bookings.Domain;
 
 public class Class1
 {

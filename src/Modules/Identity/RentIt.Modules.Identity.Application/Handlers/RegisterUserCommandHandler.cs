@@ -61,7 +61,8 @@ public sealed class RegisterUserCommandHandler(
             var phoneNumber = PhoneNumber.Create(request.PhoneNumber);
 
             // Parse role
-            if (!Enum.TryParse<UserRole>(request.Role, out var userRole))
+            string roleToParse = string.IsNullOrWhiteSpace(request.Role) ? "Renter" : request.Role;
+            if (!Enum.TryParse<UserRole>(roleToParse, out var userRole))
             {
                 await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 return Result.Failure<UserDto>(

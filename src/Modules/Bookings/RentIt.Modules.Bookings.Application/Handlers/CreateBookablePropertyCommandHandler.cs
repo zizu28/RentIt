@@ -32,7 +32,9 @@ public class CreateBookablePropertyCommandHandler(
             request.Title,
             request.ImageUrl,
             request.PricePerNight,
-            request.Currency
+            request.Currency,
+            request.RentalPeriod,
+            request.HostId
         );
 
         _repository.Add(property);

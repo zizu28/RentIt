@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Components.Authorization;
 using RentIt.Client.Web;
 using RentIt.Client.Web.Auth;
 using RentIt.Client.Web.Services;
+using RentIt.Client.Web.Validators;
+using RentIt.Client.Web.Models;
+using FluentValidation;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -33,4 +36,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPropertyService, PropertyService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+
+// Register Validators
+builder.Services.AddScoped<IValidator<PropertyFormModel>, PropertyFormValidator>();
+
 await builder.Build().RunAsync();

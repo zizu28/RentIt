@@ -3,12 +3,12 @@ using RentIt.Shared.Abstractions.Messaging;
 namespace RentIt.Shared.Contracts.Properties.IntegrationEvents;
 
 /// <summary>
-/// Published when a property listing is created by a landlord (in Draft state).
-/// Consumed by: Verification (validate landlord identity and property details)
+/// Published when a property listing is created by a Host (in Draft state).
+/// Consumed by: Verification (validate Host identity and property details)
 /// </summary>
 public sealed record PropertyCreatedIntegrationEvent(
     Guid PropertyId,
-    Guid LandlordId,
+    Guid HostId,
     string Title,
     string City,
     string Region

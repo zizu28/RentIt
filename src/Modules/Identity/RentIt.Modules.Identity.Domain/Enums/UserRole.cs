@@ -6,7 +6,7 @@ namespace RentIt.Modules.Identity.Domain.Enums;
 public enum UserRole
 {
     Renter = 1,
-    Landlord = 2,
+    Host = 2,
     Agent = 3,
     Admin = 4,
     Support = 5

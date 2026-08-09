@@ -31,6 +31,14 @@ internal sealed class BookingRepository(BookingsDbContext context) : IBookingRep
             .ContinueWith(t => (IReadOnlyList<Booking>)t.Result, cancellationToken);
     }
 
+    public Task<IReadOnlyList<Booking>> GetPendingBookingsByPropertyIdsAsync(IEnumerable<Guid> propertyIds, CancellationToken cancellationToken = default)
+    {
+        return _context.Bookings
+            .Where(b => propertyIds.Contains(b.PropertyId) && b.Status == BookingStatus.Pending)
+            .ToListAsync(cancellationToken)
+            .ContinueWith(t => (IReadOnlyList<Booking>)t.Result, cancellationToken);
+    }
+
     public Task<bool> HasOverlappingBookingsAsync(Guid propertyId, DateOnly startDate, DateOnly endDate, CancellationToken cancellationToken = default)
     {
         return _context.Bookings.AnyAsync(

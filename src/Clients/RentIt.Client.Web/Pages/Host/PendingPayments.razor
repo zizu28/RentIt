@@ -1,0 +1,162 @@
+@page "/host/pending-payments"
+@using RentIt.Client.Web.Services
+@using RentIt.Shared.DTOs.Bookings
+@using global::RentIt.Client.Web.Services
+@inject IBookingService BookingService
+@inject IPaymentService PaymentService
+@inject IPropertyService PropertyService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@attribute [Authorize(Roles = "Host")]
+
+<PageTitle>Pending Payments - RentIt Host</PageTitle>
+
+<div class="page-container animate-fade-in-up">
+    <div class="breadcrumbs mb-4">
+        <a href="/">Home</a> <span>/</span> 
+        <a href="/host/dashboard">Host Dashboard</a> <span>/</span> 
+        <span class="active">Pending Payments</span>
+    </div>
+    
+    <div class="section-header-cc mb-6">
+        <div>
+            <h1 class="page-title mb-2">Pending Payments</h1>
+            <p class="hero-subtitle m-0">Review bookings that have been created but not yet paid.</p>
+        </div>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="loading-spinner-container mt-5 text-center">
+            <div class="loading-progress">
+                <svg><circle cx="64" cy="64" r="56"></circle><circle cx="64" cy="64" r="56"></circle></svg>
+            </div>
+            <p class="mt-3 text-secondary">Loading pending payments...</p>
+        </div>
+    }
+    else if (_pendingBookings != null && _pendingBookings.Any())
+    {
+        <div class="card-glass p-4 table-responsive">
+            <table class="table-cc">
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Dates</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Paystack Ref</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var booking in _pendingBookings)
+                    {
+                        var payment = _paymentDetails.TryGetValue(booking.Id, out var p) ? p : null;
+                        var propertyTitle = _propertyNames.TryGetValue(booking.PropertyId, out var t) ? t : "Unknown Property";
+                        
+                        <tr class="animate-fade-in-up">
+                            <td>
+                                <strong>@propertyTitle</strong>
+                            </td>
+                            <td>
+                                @booking.StartDate.ToString("MMM dd, yyyy") - @booking.EndDate.ToString("MMM dd, yyyy")
+                            </td>
+                            <td>
+                                <strong>@booking.Currency @booking.TotalPrice.ToString("N2")</strong>
+                            </td>
+                            <td>
+                                <span class="badge-cc badge-warning">
+                                    <i class="bi bi-hourglass-split mr-1"></i> Pending
+                                </span>
+                            </td>
+                            <td>
+                                @if (payment != null && !string.IsNullOrEmpty(payment.Reference))
+                                {
+                                    <span class="text-secondary" style="font-family: monospace;">@payment.Reference</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Not Initialized</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn-cc-secondary btn-sm text-danger border-danger" @onclick="() => RescindBookingAsync(booking.Id)">
+                                    <i class="bi bi-trash mr-1"></i> Rescind
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="hero-section text-center py-5 mt-4 mb-4 card-glass animated-fade-in mx-auto" style="max-width: 800px;">
+            <div class="hero-icon-container mb-4">
+                <i class="bi bi-check-circle display-1 text-success"></i>
+            </div>
+            <h2 class="page-title hero-title mb-4">All caught up!</h2>
+            <p class="hero-subtitle mb-6 text-secondary mx-auto" style="max-width: 600px;">
+                You currently have no pending payments. Great job managing your properties!
+            </p>
+            <button class="btn-cc-secondary" @onclick='() => Navigation.NavigateTo("/host/dashboard")'>
+                Back to Dashboard
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private IEnumerable<BookingDto>? _pendingBookings;
+    private Dictionary<Guid, PaymentDetailsDto> _paymentDetails = new();
+    private Dictionary<Guid, string> _propertyNames = new();
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        try
+        {
+            _isLoading = true;
+            _pendingBookings = await BookingService.GetHostPendingBookingsAsync();
+            
+            var properties = await PropertyService.GetHostPropertiesAsync();
+            _propertyNames = properties.ToDictionary(p => p.Id, p => p.Title);
+
+            foreach (var booking in _pendingBookings)
+            {
+                var payment = await PaymentService.GetPaymentByBookingIdAsync(booking.Id);
+                if (payment != null)
+                {
+                    _paymentDetails[booking.Id] = payment;
+                }
+            }
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task RescindBookingAsync(Guid bookingId)
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to rescind this pending booking? This will cancel the booking request.");
+        if (confirmed)
+        {
+            try
+            {
+                await BookingService.RescindBookingAsync(bookingId);
+                await LoadDataAsync(); // Reload the data
+            }
+            catch (Exception ex)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"Failed to rescind booking: {ex.Message}");
+            }
+        }
+    }
+}

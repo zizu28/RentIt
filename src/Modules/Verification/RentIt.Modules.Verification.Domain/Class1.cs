@@ -1,4 +1,4 @@
-﻿namespace RentIt.Modules.Verification.Domain;
+namespace RentIt.Modules.Verification.Domain;
 
 public class Class1
 {

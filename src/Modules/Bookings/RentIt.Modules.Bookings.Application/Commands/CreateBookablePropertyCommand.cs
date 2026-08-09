@@ -1,3 +1,4 @@
+using MediatR;
 using RentIt.Shared.Abstractions.Results;
 
 namespace RentIt.Modules.Bookings.Application.Commands;
@@ -7,5 +8,7 @@ public record CreateBookablePropertyCommand(
     string Title,
     string ImageUrl,
     decimal PricePerNight,
-    string Currency
-) : MediatR.IRequest<Result<Guid>>;
+    string Currency,
+    int RentalPeriod,
+    Guid HostId
+) : IRequest<Result<Guid>>;

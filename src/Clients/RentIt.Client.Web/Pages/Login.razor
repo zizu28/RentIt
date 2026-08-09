@@ -6,6 +6,7 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @inject IHttpClientFactory httpClientFactory
+@inject AuthenticationStateProvider AuthStateProvider
 
 <div class="login-card">
     <header class="login-card-header">
@@ -100,7 +101,15 @@
             var success = await AuthService.LoginAsync(_loginRequest);
             if (success)
             {
-                Navigation.NavigateTo("/");
+                var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+                if (authState.User.IsInRole("Host"))
+                {
+                    Navigation.NavigateTo("/host/dashboard");
+                }
+                else
+                {
+                    Navigation.NavigateTo("/");
+                }
             }
             else
             {

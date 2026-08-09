@@ -3,13 +3,13 @@ using RentIt.Shared.Abstractions.Messaging;
 namespace RentIt.Shared.Contracts.Payments.IntegrationEvents;
 
 /// <summary>
-/// Published when a payout to a landlord is successfully completed.
-/// Consumed by: Bookings (mark booking as fully settled), Messaging (notify landlord)
+/// Published when a payout to a Host is successfully completed.
+/// Consumed by: Bookings (mark booking as fully settled), Messaging (notify Host)
 /// </summary>
 public sealed record PayoutCompletedIntegrationEvent(
     Guid PayoutId,
     Guid BookingId,
-    Guid LandlordId,
+    Guid HostId,
     decimal NetAmount,
     decimal PlatformFee,
     string Currency

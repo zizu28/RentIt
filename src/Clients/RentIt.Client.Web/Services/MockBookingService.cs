@@ -55,7 +55,16 @@ public class MockBookingService : IBookingService
 
     public Task CreateBookablePropertyAsync(Guid propertyId, string title, string imageUrl, decimal pricePerNight, string currency = "GHS")
     {
-        // Mock implementation - do nothing
+        return Task.CompletedTask;
+    }
+
+    public Task<IEnumerable<BookingDto>> GetHostPendingBookingsAsync()
+    {
+        return Task.FromResult<IEnumerable<BookingDto>>([]);
+    }
+
+    public Task RescindBookingAsync(Guid bookingId)
+    {
         return Task.CompletedTask;
     }
 }

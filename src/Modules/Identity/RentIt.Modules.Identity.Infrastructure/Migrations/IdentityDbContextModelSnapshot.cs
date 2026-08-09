@@ -114,8 +114,10 @@ namespace RentIt.Modules.Identity.Infrastructure.Migrations
 
                     b.Property<string>("Role")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("Renter");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -149,10 +151,15 @@ namespace RentIt.Modules.Identity.Infrastructure.Migrations
             modelBuilder.Entity("RentIt.Modules.Identity.Domain.Entities.RefreshToken", b =>
                 {
                     b.HasOne("RentIt.Modules.Identity.Domain.Entities.User", null)
-                        .WithMany()
+                        .WithMany("RefreshTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("RentIt.Modules.Identity.Domain.Entities.User", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }

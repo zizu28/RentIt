@@ -44,6 +44,18 @@ public class BookingService(HttpClient httpClient) : IBookingService
             // Ignore HTTP errors for now (e.g. 400 Bad Request if already exists)
         }
     }
+
+    public async Task<IEnumerable<BookingDto>> GetHostPendingBookingsAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<IEnumerable<BookingDto>>("api/bookings/host/pending-payments") 
+               ?? [];
+    }
+
+    public async Task RescindBookingAsync(Guid bookingId)
+    {
+        var response = await _httpClient.PostAsync($"api/bookings/{bookingId}/rescind", null);
+        response.EnsureSuccessStatusCode();
+    }
 }
 
 public record CreateBookingRequest(Guid PropertyId, DateOnly StartDate, DateOnly EndDate);

@@ -37,7 +37,8 @@ public class CreateBookingCommandHandler(
             request.StartDate,
             request.EndDate,
             property.PricePerNight,
-            property.Currency);
+            property.Currency,
+            property.RentalPeriod);
 
         _bookingRepository.Add(booking);
         

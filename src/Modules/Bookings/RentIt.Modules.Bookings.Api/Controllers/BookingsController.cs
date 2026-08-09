@@ -101,6 +101,41 @@ public class BookingsController(IMediator mediator) : ControllerBase
             return BadRequest(new { Message = ex.Message });
         }
     }
+
+    [HttpGet("host/pending-payments")]
+    public async Task<IActionResult> GetHostPendingBookings()
+    {
+        var hostIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(hostIdString) || !Guid.TryParse(hostIdString, out var hostId))
+        {
+            return Unauthorized("User is not authenticated properly.");
+        }
+
+        var query = new GetHostPendingBookingsQuery(hostId);
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
+    [HttpPost("{id}/rescind")]
+    public async Task<IActionResult> RescindBooking(Guid id)
+    {
+        var hostIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(hostIdString) || !Guid.TryParse(hostIdString, out var hostId))
+        {
+            return Unauthorized("User is not authenticated properly.");
+        }
+
+        var command = new RescindBookingCommand(id, hostId);
+        try
+        {
+            await _mediator.Send(command);
+            return Ok(new { Message = "Booking rescinded successfully." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+    }
 }
 
 public record CreateBookingRequest(Guid PropertyId, DateOnly StartDate, DateOnly EndDate);

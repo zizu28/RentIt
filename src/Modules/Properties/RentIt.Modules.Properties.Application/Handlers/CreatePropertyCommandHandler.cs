@@ -89,7 +89,9 @@ internal sealed class CreatePropertyCommandHandler(
                 property.Address.City,
                 property.Address.Region,
                 property.PricePerPeriod.Amount,
-                property.PricePerPeriod.Currency.ToString());
+                property.PricePerPeriod.Currency.ToString(),
+                property.Images.FirstOrDefault() ?? string.Empty,
+                (int)property.RentalPeriod);
 
                 await _eventBus.PublishAsync(integrationEvent, cancellationToken);
             }

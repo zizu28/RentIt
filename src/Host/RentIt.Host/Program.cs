@@ -166,6 +166,7 @@ app.UseExceptionHandler();
 
 app.UseSerilogRequestLogging();
 app.AddHangfireDashBoard();
+RentIt.Modules.Bookings.Infrastructure.BookingsInfrastructureServiceRegistration.ConfigureBookingsJobs();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

@@ -8,12 +8,14 @@ namespace RentIt.Shared.Contracts.Properties.IntegrationEvents;
 /// </summary>
 public sealed record PropertyPublishedIntegrationEvent(
     Guid PropertyId,
-    Guid LandlordId,
+    Guid HostId,
     string Title,
     string City,
     string Region,
     decimal PricePerNight,
-    string Currency
+    string Currency,
+    string ImageUrl,
+    int RentalPeriod
 ) : IIntegrationEvent
 {
     public Guid EventId { get; init; } = Guid.NewGuid();

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace RentIt.Modules.Payments.Application.Services;
 
 public class InitializeTransactionRequest
@@ -10,15 +12,25 @@ public class InitializeTransactionRequest
 
 public class InitializeTransactionResponse
 {
+    [JsonPropertyName("status")]
     public bool Status { get; set; }
+    
+    [JsonPropertyName("message")]
     public string Message { get; set; } = string.Empty;
+    
+    [JsonPropertyName("data")]
     public InitializeTransactionData Data { get; set; } = new();
 }
 
 public class InitializeTransactionData
 {
+    [JsonPropertyName("authorization_url")]
     public string AuthorizationUrl { get; set; } = string.Empty;
+    
+    [JsonPropertyName("access_code")]
     public string AccessCode { get; set; } = string.Empty;
+    
+    [JsonPropertyName("reference")]
     public string Reference { get; set; } = string.Empty;
 }
 

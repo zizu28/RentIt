@@ -25,7 +25,7 @@ public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUse
 
         RuleFor(x => x.Role)
             .NotEmpty().WithMessage("Role is required")
-            .Must(role => new[] { "Renter", "Landlord", "Agent" }.Contains(role))
-            .WithMessage("Role must be Renter, Landlord, or Agent");
+            .Must(role => new[] { "Renter", "Host", "Agent" }.Contains(role))
+            .WithMessage("Role must be Renter, Host, or Agent");
     }
 }

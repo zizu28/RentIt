@@ -42,8 +42,9 @@ public sealed class Booking : AggregateRoot<Guid>
         Guid guestId,
         DateOnly startDate,
         DateOnly endDate,
-        decimal pricePerNight,
-        string currency)
+        decimal pricePerPeriod,
+        string currency,
+        int rentalPeriod)
     {
         if (startDate >= endDate)
         {
@@ -56,7 +57,23 @@ public sealed class Booking : AggregateRoot<Guid>
         }
 
         var totalDays = endDate.DayNumber - startDate.DayNumber;
-        var totalPriceAmount = pricePerNight * totalDays;
+        decimal totalPriceAmount;
+
+        if (rentalPeriod == 2) // Monthly
+        {
+            var months = Math.Max(1, totalDays / 30.0m);
+            totalPriceAmount = pricePerPeriod * months;
+        }
+        else if (rentalPeriod == 3) // Yearly
+        {
+            var years = Math.Max(1, totalDays / 365.0m);
+            totalPriceAmount = pricePerPeriod * years;
+        }
+        else // Nightly
+        {
+            totalPriceAmount = pricePerPeriod * totalDays;
+        }
+
         if (!Enum.TryParse<Currency>(currency, true, out var parsedCurrency))
         {
             parsedCurrency = Currency.GHS; // Default or throw

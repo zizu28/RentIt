@@ -104,4 +104,35 @@ public sealed class UsersController(ISender sender) : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = "An error occurred while uploading the image.", details = ex.Message });
         }
     }
+
+    [HttpDelete("me")]
+    public async Task<IActionResult> DeleteAccount(CancellationToken cancellationToken)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst(JwtRegisteredClaimNames.Sub);
+        if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
+        {
+            return Unauthorized("Token does not contain a User ID claim.");
+        }
+
+        if (!Guid.TryParse(userIdClaim.Value, out Guid Id))
+        {
+            return Unauthorized($"Token User ID {Id} is not a valid GUID.");
+        }
+
+        var command = new DeleteUserCommand(Id);
+        
+        try 
+        {
+            await _sender.Send(command, cancellationToken);
+            return NoContent();
+        }
+        catch (RentIt.Shared.Abstractions.Exceptions.BadRequestException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (RentIt.Shared.Abstractions.Exceptions.NotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
 }

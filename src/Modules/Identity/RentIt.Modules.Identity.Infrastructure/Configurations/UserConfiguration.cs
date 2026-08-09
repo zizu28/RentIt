@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RentIt.Modules.Identity.Domain.Entities;
+using RentIt.Modules.Identity.Domain.Enums;
 using RentIt.Modules.Identity.Domain.ValueObjects;
 
 namespace RentIt.Modules.Identity.Infrastructure.Configurations;
@@ -49,6 +50,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Role)
             .HasConversion<string>()
             .HasMaxLength(50)
+            .HasDefaultValue(UserRole.Renter)
             .IsRequired();
 
         builder.Property(u => u.Status)
@@ -56,7 +58,10 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.Ignore(u => u.RefreshTokens);
+        builder.HasMany(u => u.RefreshTokens)
+            .WithOne()
+            .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(u => u.Email).IsUnique();
         builder.HasIndex(u => u.PhoneNumber).IsUnique();

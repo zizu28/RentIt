@@ -4,11 +4,11 @@ namespace RentIt.Shared.Contracts.Verification.IntegrationEvents;
 
 /// <summary>
 /// Published when a property listing fails verification checks.
-/// Consumed by: Properties (keep in Draft), Messaging (notify landlord with rejection reason)
+/// Consumed by: Properties (keep in Draft), Messaging (notify Host with rejection reason)
 /// </summary>
 public sealed record PropertyRejectedIntegrationEvent(
     Guid PropertyId,
-    Guid LandlordId,
+    Guid HostId,
     string Reason
 ) : IIntegrationEvent
 {

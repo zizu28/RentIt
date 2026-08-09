@@ -21,7 +21,7 @@ public sealed class User : AggregateRoot<Guid>
     public string? Address { get; private set; }
     public string? ProfileImageUrl { get; private set; }
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public UserRole Role { get; private set; }
+    public UserRole Role { get; private set; } = UserRole.Renter;
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public UserStatus Status { get; private set; }
     public bool IsEmailVerified { get; private set; }
@@ -188,7 +188,21 @@ public sealed class User : AggregateRoot<Guid>
 
     public void Delete()
     {
+        if (Status == UserStatus.Deleted)
+            throw new InvalidOperationException("User is already deleted");
+
+        FirstName = "[Deleted]";
+        LastName = "[Deleted]";
+        Email = Email.Create($"deleted-{Id}@rentit.com");
+        PhoneNumber = PhoneNumber.Create($"+00000000{Id.ToString().Substring(0, 5)}"); // dummy phone
+        Address = null;
+        ProfileImageUrl = null;
+        
+        RevokeAllRefreshTokens();
+
         Status = UserStatus.Deleted;
         UpdatedAt = DateTime.UtcNow;
+
+        AddDomainEvent(new UserDeletedEvent(Id, Role.ToString()));
     }
 }

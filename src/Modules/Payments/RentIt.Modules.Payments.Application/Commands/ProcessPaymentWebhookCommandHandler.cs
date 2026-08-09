@@ -48,9 +48,9 @@ internal sealed class ProcessPaymentWebhookCommandHandler(
                     payment.MarkAsSuccessful();
                 }
                 
-                if (!string.IsNullOrEmpty(request.Payload.Data.AuthorizationCode))
+                if (request.Payload.Data.Authorization != null && !string.IsNullOrEmpty(request.Payload.Data.Authorization.AuthorizationCode))
                 {
-                    var encryptedToken = _encryptionService.Encrypt(request.Payload.Data.AuthorizationCode);
+                    var encryptedToken = _encryptionService.Encrypt(request.Payload.Data.Authorization.AuthorizationCode);
                     payment.SetProviderToken(encryptedToken);
                 }
                 break;

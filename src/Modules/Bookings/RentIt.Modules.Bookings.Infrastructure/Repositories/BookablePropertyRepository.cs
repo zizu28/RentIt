@@ -11,7 +11,14 @@ internal sealed class BookablePropertyRepository(BookingsDbContext context) : IB
 
     public async Task<BookableProperty?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.BookableProperties.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        return await _context.BookableProperties.FindAsync([id], cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<BookableProperty>> GetByHostIdAsync(Guid hostId, CancellationToken cancellationToken = default)
+    {
+        return await _context.BookableProperties
+            .Where(p => p.HostId == hostId)
+            .ToListAsync(cancellationToken);
     }
 
     public void Add(BookableProperty property)

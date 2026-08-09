@@ -43,7 +43,7 @@
             <label for="role">Account Role</label>
             <InputSelect id="role" @bind-Value="_registerRequest.Role" class="form-control">
                 <option value="Renter">Renter</option>
-                <option value="Landlord">Landlord</option>
+                <option value="Host">Host</option>
                 <option value="Agent">Agent</option>
             </InputSelect>
             <ValidationMessage For="() => _registerRequest.Role" />

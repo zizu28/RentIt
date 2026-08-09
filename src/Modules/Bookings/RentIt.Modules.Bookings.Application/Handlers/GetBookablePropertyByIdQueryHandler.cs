@@ -6,23 +6,18 @@ using RentIt.Shared.DTOs.Bookings;
 
 namespace RentIt.Modules.Bookings.Application.Handlers;
 
-public class GetBookablePropertyByIdQueryHandler : IRequestHandler<GetBookablePropertyByIdQuery, Result<BookablePropertyDto>>
+public class GetBookablePropertyByIdQueryHandler(
+    IBookablePropertyRepository repository,
+    Serilog.ILogger logger)
+    : IRequestHandler<GetBookablePropertyByIdQuery, Result<BookablePropertyDto>>
 {
-    private readonly IBookablePropertyRepository _repository;
-    private readonly Serilog.ILogger _logger;
-
-    public GetBookablePropertyByIdQueryHandler(
-        IBookablePropertyRepository repository,
-        Serilog.ILogger logger)
-    {
-        _repository = repository;
-        _logger = logger;
-    }
+    private readonly IBookablePropertyRepository _repository = repository;
+    private readonly Serilog.ILogger _logger = logger;
 
     public async Task<Result<BookablePropertyDto>> Handle(GetBookablePropertyByIdQuery request, CancellationToken cancellationToken)
     {
         _logger.Information("Fetching bookable property details for {PropertyId}", request.Id);
-        
+
         var property = await _repository.GetByIdAsync(request.Id);
 
         if (property == null)

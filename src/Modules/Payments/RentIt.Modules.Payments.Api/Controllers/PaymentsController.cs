@@ -39,6 +39,21 @@ public class PaymentsController(IMediator mediator) : ControllerBase
 
         return Ok(); // Paystack expects a 200 OK
     }
+
+    [HttpGet("booking/{bookingId}")]
+    [Authorize]
+    public async Task<IActionResult> GetPaymentByBookingId(Guid bookingId, CancellationToken cancellationToken)
+    {
+        var query = new RentIt.Modules.Payments.Application.Queries.GetPaymentByBookingIdQuery(bookingId);
+        var result = await _mediator.Send(query, cancellationToken);
+        
+        if (result == null)
+        {
+            return NotFound(new { Message = "Payment not found for this booking." });
+        }
+
+        return Ok(result);
+    }
 }
 
 public record InitializePaymentRequest(Guid BookingId, decimal Amount, string Currency, string Email, string CallbackUrl);

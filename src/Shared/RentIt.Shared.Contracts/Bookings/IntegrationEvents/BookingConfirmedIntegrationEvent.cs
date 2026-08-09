@@ -4,13 +4,13 @@ namespace RentIt.Shared.Contracts.Bookings.IntegrationEvents;
 
 /// <summary>
 /// Published when a booking is confirmed after successful payment.
-/// Consumed by: Messaging (notify renter and landlord), Analytics (booking metrics)
+/// Consumed by: Messaging (notify renter and Host), Analytics (booking metrics)
 /// </summary>
 public sealed record BookingConfirmedIntegrationEvent(
     Guid BookingId,
     Guid PropertyId,
     Guid RenterId,
-    Guid LandlordId,
+    Guid HostId,
     DateOnly StartDate,
     DateOnly EndDate,
     decimal TotalAmount,

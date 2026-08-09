@@ -1,4 +1,4 @@
-﻿namespace RentIt.Modules.Reviews.Infrastructure;
+namespace RentIt.Modules.Reviews.Infrastructure;
 
 public class Class1
 {

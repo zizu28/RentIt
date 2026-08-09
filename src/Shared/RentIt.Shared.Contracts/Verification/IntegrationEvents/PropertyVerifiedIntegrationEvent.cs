@@ -8,7 +8,7 @@ namespace RentIt.Shared.Contracts.Verification.IntegrationEvents;
 /// </summary>
 public sealed record PropertyVerifiedIntegrationEvent(
     Guid PropertyId,
-    Guid LandlordId
+    Guid HostId
 ) : IIntegrationEvent
 {
     public Guid EventId { get; init; } = Guid.NewGuid();
