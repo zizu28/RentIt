@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using RentIt.Modules.Identity.Domain.Repositories;
 using RentIt.Shared.Abstractions.BackgroundJobs;
 using RentIt.Shared.Abstractions.Email;
@@ -10,7 +11,7 @@ namespace RentIt.Modules.Identity.Application.Handlers;
 
 public sealed class RequestPasswordResetCommandHandler(
     IUserRepository userRepository,
-    IUnitOfWork unitOfWork,
+    [FromKeyedServices("Identity")] IUnitOfWork unitOfWork,
     IBackgroundJob backgroundJob,
     IConfiguration configuration) : IRequestHandler<Commands.RequestPasswordResetCommand, Result>
 {

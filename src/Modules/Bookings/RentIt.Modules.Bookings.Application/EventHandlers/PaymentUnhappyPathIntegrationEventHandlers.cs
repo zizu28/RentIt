@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using RentIt.Modules.Bookings.Application.Services;
 using RentIt.Modules.Bookings.Domain.Exceptions;
 using RentIt.Modules.Bookings.Domain.Repositories;
@@ -9,7 +10,7 @@ namespace RentIt.Modules.Bookings.Application.EventHandlers;
 
 internal sealed class PaymentUnhappyPathIntegrationEventHandlers(
     IBookingRepository bookingRepository,
-    IUnitOfWork unitOfWork,
+    [FromKeyedServices("Bookings")] IUnitOfWork unitOfWork,
     IBookingsInboxService inboxService) :
     INotificationHandler<PaymentFailedIntegrationEvent>,
     INotificationHandler<PaymentRefundedIntegrationEvent>,

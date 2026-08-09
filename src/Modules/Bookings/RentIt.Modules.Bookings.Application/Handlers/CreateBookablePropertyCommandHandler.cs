@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using RentIt.Modules.Bookings.Application.Commands;
 using RentIt.Modules.Bookings.Domain.Entities;
 using RentIt.Modules.Bookings.Domain.Repositories;
@@ -9,7 +10,7 @@ namespace RentIt.Modules.Bookings.Application.Handlers;
 
 public class CreateBookablePropertyCommandHandler(
     IBookablePropertyRepository repository,
-    IUnitOfWork unitOfWork,
+    [FromKeyedServices("Bookings")] IUnitOfWork unitOfWork,
     Serilog.ILogger logger) : IRequestHandler<CreateBookablePropertyCommand, Result<Guid>>
 {
     private readonly IBookablePropertyRepository _repository = repository;

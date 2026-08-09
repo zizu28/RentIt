@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using RentIt.Modules.Identity.Application.Abstractions;
 using RentIt.Modules.Identity.Application.Commands;
 using RentIt.Modules.Identity.Domain.Enums;
@@ -13,7 +14,7 @@ public sealed class RefreshTokenCommandHandler(
     IRefreshTokenRepository refreshTokenRepository,
     IUserRepository userRepository,
     IJwtTokenGenerator jwtTokenGenerator,
-    IUnitOfWork unitOfWork) : IRequestHandler<RefreshTokenCommand, Result<LoginResponse>>
+    [FromKeyedServices("Identity")] IUnitOfWork unitOfWork) : IRequestHandler<RefreshTokenCommand, Result<LoginResponse>>
 {
     private readonly IRefreshTokenRepository _refreshTokenRepository = refreshTokenRepository;
     private readonly IUserRepository _userRepository = userRepository;

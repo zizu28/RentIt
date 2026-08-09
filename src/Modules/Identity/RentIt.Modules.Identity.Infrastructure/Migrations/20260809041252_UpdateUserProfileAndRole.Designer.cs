@@ -9,11 +9,11 @@ using RentIt.Modules.Identity.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace RentIt.Modules.Identity.Infrastructure.Persistence.Migrations
+namespace RentIt.Modules.Identity.Infrastructure.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20260809030853_DefaultRoleToRenter")]
-    partial class DefaultRoleToRenter
+    [Migration("20260809041252_UpdateUserProfileAndRole")]
+    partial class UpdateUserProfileAndRole
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

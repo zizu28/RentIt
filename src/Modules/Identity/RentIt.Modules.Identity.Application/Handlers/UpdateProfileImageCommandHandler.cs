@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using RentIt.Modules.Identity.Application.Commands;
 using RentIt.Modules.Identity.Domain.Repositories;
 using RentIt.Shared.Abstractions.Persistence;
@@ -10,7 +11,7 @@ namespace RentIt.Modules.Identity.Application.Handlers;
 
 public sealed class UpdateProfileImageCommandHandler(
     IUserRepository userRepository,
-    IUnitOfWork unitOfWork,
+    [FromKeyedServices("Identity")] IUnitOfWork unitOfWork,
     IStorageService storageService) : IRequestHandler<UpdateProfileImageCommand, Result<UserDto>>
 {
     private readonly IUserRepository _userRepository = userRepository;

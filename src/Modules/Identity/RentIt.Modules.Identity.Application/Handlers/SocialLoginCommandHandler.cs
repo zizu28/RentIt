@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using RentIt.Modules.Identity.Application.Abstractions;
 using RentIt.Modules.Identity.Application.Commands;
 using RentIt.Modules.Identity.Domain.Entities;
@@ -15,7 +16,7 @@ public sealed class SocialLoginCommandHandler(
     IUserRepository userRepository,
     IPasswordHasher passwordHasher,
     IJwtTokenGenerator jwtTokenGenerator,
-    IUnitOfWork unitOfWork,
+    [FromKeyedServices("Identity")] IUnitOfWork unitOfWork,
     ISocialAuthServiceFactory socialAuthServiceFactory) : IRequestHandler<SocialLoginCommand, Result<LoginResponse>>
 {
     private readonly IUserRepository _userRepository = userRepository;
@@ -44,7 +45,9 @@ public sealed class SocialLoginCommandHandler(
             // Get user by email
             var user = await _userRepository.GetByEmailForUpdateAsync(profile.Email, cancellationToken);
             var email = Email.Create(profile.Email);
-            var phoneNumber = PhoneNumber.Create("0000000000");
+            // Generate a unique dummy phone number per social user to avoid unique constraint violations
+            var uniqueDigits = Math.Abs(Guid.NewGuid().GetHashCode()).ToString().PadRight(9, '0').Substring(0, 9);
+            var phoneNumber = PhoneNumber.Create($"+233{uniqueDigits}");
 
             if (user == null)
             {

@@ -1,4 +1,6 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using RentIt.Shared.Abstractions.Persistence;
 using RentIt.Modules.Properties.Application.Commands;
 using RentIt.Modules.Properties.Application.Services;
 using RentIt.Modules.Properties.Domain.Entities;
@@ -16,14 +18,14 @@ namespace RentIt.Modules.Properties.Application.Handlers;
 internal sealed class CreatePropertyCommandHandler(
     IPropertyRepository propertyRepository,
     IEventBus eventBus,
-    IPropertiesUnitOfWork unitOfWork,
+    [FromKeyedServices("Properties")] IUnitOfWork unitOfWork,
     Serilog.ILogger logger,
     IBackgroundJob backgroundJob,
     IStorageService storageService) : IRequestHandler<CreatePropertyCommand, Result<Guid>>
 {
     private readonly IPropertyRepository _propertyRepository = propertyRepository;
     private readonly IEventBus _eventBus = eventBus;
-    private readonly IPropertiesUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly Serilog.ILogger _logger = logger;
     private readonly IBackgroundJob _backgroundJob = backgroundJob;
     private readonly IStorageService _storageService = storageService;

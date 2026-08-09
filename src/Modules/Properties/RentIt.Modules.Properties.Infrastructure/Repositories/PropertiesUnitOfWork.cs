@@ -5,7 +5,7 @@ using RentIt.Shared.Abstractions.Persistence;
 
 namespace RentIt.Modules.Properties.Infrastructure.Repositories;
 
-internal sealed class PropertiesUnitOfWork(PropertiesDbContext dbContext) : IPropertiesUnitOfWork
+internal sealed class PropertiesUnitOfWork(PropertiesDbContext dbContext) : IUnitOfWork
 {
     private readonly PropertiesDbContext _dbContext = dbContext;
     private IDbContextTransaction? _transaction;

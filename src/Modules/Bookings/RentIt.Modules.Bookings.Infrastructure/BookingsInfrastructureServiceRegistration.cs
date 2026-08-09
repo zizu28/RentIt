@@ -23,7 +23,7 @@ public static class BookingsInfrastructureServiceRegistration
         services.AddScoped<IBookablePropertyRepository, BookablePropertyRepository>();
         
         services.AddScoped<DomainEventDispatcher>();
-        services.AddScoped<IUnitOfWork, BookingsUnitOfWork>();
+        services.AddKeyedScoped<IUnitOfWork, BookingsUnitOfWork>("Bookings");
         services.AddScoped<IBookingsOutboxService, BookingsOutboxService>();
         services.AddScoped<IBookingsInboxService, BookingsInboxService>();
 

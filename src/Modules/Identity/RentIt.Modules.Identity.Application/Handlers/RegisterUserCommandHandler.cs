@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using RentIt.Modules.Identity.Domain.Entities;
 using RentIt.Modules.Identity.Domain.Enums;
 using RentIt.Modules.Identity.Domain.Repositories;
@@ -18,7 +19,7 @@ namespace RentIt.Modules.Identity.Application.Handlers;
 public sealed class RegisterUserCommandHandler(
     IUserRepository userRepository,
     IPasswordHasher passwordHasher,
-    IUnitOfWork unitOfWork,
+    [FromKeyedServices("Identity")] IUnitOfWork unitOfWork,
     IBackgroundJob backgroundJob,
     IConfiguration configuration,
     Serilog.ILogger logger) : IRequestHandler<RegisterUserCommand, Result<UserDto>>

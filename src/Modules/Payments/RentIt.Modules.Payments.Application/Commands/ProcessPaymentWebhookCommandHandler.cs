@@ -1,4 +1,6 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using RentIt.Shared.Abstractions.Persistence;
 using RentIt.Modules.Payments.Domain.Enums;
 using RentIt.Modules.Payments.Domain.Repositories;
 using RentIt.Shared.Abstractions.Security;
@@ -7,11 +9,11 @@ namespace RentIt.Modules.Payments.Application.Commands;
 
 internal sealed class ProcessPaymentWebhookCommandHandler(
     IPaymentRepository paymentRepository,
-    IPaymentsUnitOfWork unitOfWork,
+    [FromKeyedServices("Payments")] IUnitOfWork unitOfWork,
     IEncryptionService encryptionService) : IRequestHandler<ProcessPaymentWebhookCommand>
 {
     private readonly IPaymentRepository _paymentRepository = paymentRepository;
-    private readonly IPaymentsUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IEncryptionService _encryptionService = encryptionService;
 
     public async Task Handle(ProcessPaymentWebhookCommand request, CancellationToken cancellationToken)

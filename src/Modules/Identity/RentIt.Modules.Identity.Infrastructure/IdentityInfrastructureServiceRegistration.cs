@@ -29,7 +29,7 @@ public static class IdentityInfrastructureServiceRegistration
         services.AddScoped<DomainEventDispatcher>();
 
         // Unit of work — dispatches domain events after SaveChangesAsync
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddKeyedScoped<IUnitOfWork, UnitOfWork>("Identity");
 
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();

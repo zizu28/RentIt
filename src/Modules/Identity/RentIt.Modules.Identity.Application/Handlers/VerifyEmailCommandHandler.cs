@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using RentIt.Modules.Identity.Domain.Repositories;
 using RentIt.Shared.Abstractions.BackgroundJobs;
 using RentIt.Shared.Abstractions.Email;
@@ -9,7 +10,7 @@ namespace RentIt.Modules.Identity.Application.Handlers;
 
 public sealed class VerifyEmailCommandHandler(
     IUserRepository userRepository,
-    IUnitOfWork unitOfWork,
+    [FromKeyedServices("Identity")] IUnitOfWork unitOfWork,
     IBackgroundJob backgroundJob) : IRequestHandler<Commands.VerifyEmailCommand, Result>
 {
     private readonly IUserRepository _userRepository = userRepository;

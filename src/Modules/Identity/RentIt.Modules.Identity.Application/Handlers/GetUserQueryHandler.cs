@@ -24,7 +24,19 @@ public sealed class GetUserQueryHandler(
                 "User not found"));
         }
 
-        var decryptedAddress = string.IsNullOrEmpty(user.Address) ? user.Address : _encryptionService.Decrypt(user.Address);
+        var decryptedAddress = user.Address;
+        if (!string.IsNullOrEmpty(user.Address))
+        {
+            try
+            {
+                decryptedAddress = _encryptionService.Decrypt(user.Address);
+            }
+            catch
+            {
+                // Fallback to raw string if decryption fails (e.g., social login Locale)
+                decryptedAddress = user.Address;
+            }
+        }
 
         var userDto = new UserDto
         {

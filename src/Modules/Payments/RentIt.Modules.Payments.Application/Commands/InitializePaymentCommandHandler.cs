@@ -1,21 +1,24 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using RentIt.Shared.Abstractions.Persistence;
 using RentIt.Modules.Payments.Application.Services;
 using RentIt.Modules.Payments.Domain.Entities;
 using RentIt.Modules.Payments.Domain.Enums;
 using RentIt.Modules.Payments.Domain.Repositories;
+using RentIt.Shared.Abstractions.Persistence;
 
 namespace RentIt.Modules.Payments.Application.Commands;
 
 internal sealed class InitializePaymentCommandHandler(
     IPaymentRepository paymentRepository,
     IPaystackService paystackService,
-    IPaymentsUnitOfWork unitOfWork,
+    [FromKeyedServices("Payments")] IUnitOfWork unitOfWork,
     Serilog.ILogger logger)
     : IRequestHandler<InitializePaymentCommand, string>
 {
     private readonly IPaymentRepository _paymentRepository = paymentRepository;
     private readonly IPaystackService _paystackService = paystackService;
-    private readonly IPaymentsUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly Serilog.ILogger _logger = logger;
 
     public async Task<string> Handle(InitializePaymentCommand request, CancellationToken cancellationToken)

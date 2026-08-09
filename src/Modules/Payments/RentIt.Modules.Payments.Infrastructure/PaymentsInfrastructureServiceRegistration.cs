@@ -6,6 +6,7 @@ using RentIt.Modules.Payments.Domain.Repositories;
 using RentIt.Modules.Payments.Infrastructure.Database;
 using RentIt.Modules.Payments.Infrastructure.Database.Repositories;
 using RentIt.Modules.Payments.Infrastructure.Services;
+using RentIt.Shared.Abstractions.Persistence;
 
 namespace RentIt.Modules.Payments.Infrastructure;
 
@@ -18,7 +19,7 @@ public static class PaymentsInfrastructureServiceRegistration
 
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<DomainEventDispatcher>();
-        services.AddScoped<IPaymentsUnitOfWork, PaymentsUnitOfWork>();
+        services.AddKeyedScoped<IUnitOfWork, PaymentsUnitOfWork>("Payments");
         services.AddScoped<IPaymentsOutboxService, PaymentsOutboxService>();
         services.AddScoped<IPaymentsInboxService, PaymentsInboxService>();
         

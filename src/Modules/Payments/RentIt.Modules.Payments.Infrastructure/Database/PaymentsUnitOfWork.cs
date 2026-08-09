@@ -1,10 +1,11 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using RentIt.Modules.Payments.Domain.Repositories;
 using RentIt.Shared.Infrastructure.Messaging;
+using RentIt.Shared.Abstractions.Persistence;
 
 namespace RentIt.Modules.Payments.Infrastructure.Database;
 
-internal sealed class PaymentsUnitOfWork(PaymentsDbContext dbContext, DomainEventDispatcher domainEventDispatcher) : IPaymentsUnitOfWork
+internal sealed class PaymentsUnitOfWork(PaymentsDbContext dbContext, DomainEventDispatcher domainEventDispatcher) : IUnitOfWork
 {
     private readonly PaymentsDbContext _dbContext = dbContext;
     private readonly DomainEventDispatcher _domainEventDispatcher = domainEventDispatcher;

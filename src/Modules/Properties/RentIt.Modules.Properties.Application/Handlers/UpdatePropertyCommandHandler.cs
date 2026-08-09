@@ -1,4 +1,6 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using RentIt.Shared.Abstractions.Persistence;
 using RentIt.Modules.Properties.Application.Commands;
 using RentIt.Modules.Properties.Domain.Enums;
 using RentIt.Modules.Properties.Domain.Repositories;
@@ -10,11 +12,11 @@ namespace RentIt.Modules.Properties.Application.Handlers;
 
 internal sealed class UpdatePropertyCommandHandler(
     IPropertyRepository propertyRepository,
-    IPropertiesUnitOfWork unitOfWork,
+    [FromKeyedServices("Properties")] IUnitOfWork unitOfWork,
     Serilog.ILogger logger) : IRequestHandler<UpdatePropertyCommand, Result<Guid>>
 {
     private readonly IPropertyRepository _propertyRepository = propertyRepository;
-    private readonly IPropertiesUnitOfWork _unitOfWork = unitOfWork;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly Serilog.ILogger _logger = logger;
 
     public async Task<Result<Guid>> Handle(UpdatePropertyCommand request, CancellationToken cancellationToken)

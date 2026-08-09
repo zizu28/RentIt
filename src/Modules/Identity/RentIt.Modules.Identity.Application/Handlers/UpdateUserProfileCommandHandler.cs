@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using RentIt.Modules.Identity.Application.Commands;
 using RentIt.Modules.Identity.Domain.Repositories;
 using RentIt.Shared.Abstractions.Persistence;
@@ -9,7 +10,7 @@ namespace RentIt.Modules.Identity.Application.Handlers;
 
 public sealed class UpdateUserProfileCommandHandler(
     IUserRepository userRepository,
-    IUnitOfWork unitOfWork,
+    [FromKeyedServices("Identity")] IUnitOfWork unitOfWork,
     IEncryptionService encryptionService) : IRequestHandler<UpdateUserProfileCommand, Result>
 {
     private readonly IUserRepository _userRepository = userRepository;

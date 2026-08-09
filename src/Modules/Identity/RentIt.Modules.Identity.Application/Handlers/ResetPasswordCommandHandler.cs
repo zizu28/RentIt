@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using RentIt.Modules.Identity.Application.Abstractions;
 using RentIt.Modules.Identity.Domain.Repositories;
 using RentIt.Modules.Identity.Domain.ValueObjects;
@@ -12,7 +13,7 @@ namespace RentIt.Modules.Identity.Application.Handlers;
 public sealed class ResetPasswordCommandHandler(
     IUserRepository userRepository,
     IPasswordHasher passwordHasher,
-    IUnitOfWork unitOfWork,
+    [FromKeyedServices("Identity")] IUnitOfWork unitOfWork,
     IBackgroundJob backgroundJob) : IRequestHandler<Commands.ResetPasswordCommand, Result>
 {
     private readonly IUserRepository _userRepository = userRepository;

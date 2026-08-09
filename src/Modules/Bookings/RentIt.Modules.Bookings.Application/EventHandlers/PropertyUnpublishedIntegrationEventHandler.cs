@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using RentIt.Modules.Bookings.Domain.Repositories;
 using RentIt.Shared.Abstractions.Persistence;
 using RentIt.Shared.Contracts.Properties.IntegrationEvents;
@@ -7,7 +8,7 @@ namespace RentIt.Modules.Bookings.Application.EventHandlers;
 
 public sealed class PropertyUnpublishedIntegrationEventHandler(
     IBookablePropertyRepository propertyRepository,
-    IUnitOfWork unitOfWork,
+    [FromKeyedServices("Bookings")] IUnitOfWork unitOfWork,
     Serilog.ILogger logger
 ) : INotificationHandler<PropertyUnpublishedIntegrationEvent>
 {

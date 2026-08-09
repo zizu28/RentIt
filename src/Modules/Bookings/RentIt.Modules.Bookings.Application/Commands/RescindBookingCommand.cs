@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using RentIt.Modules.Bookings.Domain.Exceptions;
 using RentIt.Modules.Bookings.Domain.Repositories;
 using RentIt.Shared.Abstractions.Persistence;
@@ -10,7 +11,7 @@ public record RescindBookingCommand(Guid BookingId, Guid HostId) : IRequest;
 public class RescindBookingCommandHandler(
     IBookingRepository bookingRepository,
     IBookablePropertyRepository propertyRepository,
-    IUnitOfWork unitOfWork,
+    [FromKeyedServices("Bookings")] IUnitOfWork unitOfWork,
     Serilog.ILogger logger) : IRequestHandler<RescindBookingCommand>
 {
     private readonly IBookingRepository _bookingRepository = bookingRepository;
