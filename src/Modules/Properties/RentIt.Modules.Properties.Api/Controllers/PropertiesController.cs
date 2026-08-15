@@ -11,7 +11,6 @@ namespace RentIt.Modules.Properties.Api.Controllers;
 
 [ApiController]
 [Route("api/properties")]
-[Authorize]
 public class PropertiesController(
     IMediator mediator,
     Serilog.ILogger logger) : ControllerBase
@@ -55,6 +54,7 @@ public class PropertiesController(
     }
 
     [HttpGet("host")]
+    [Authorize(Policy = "RequireHost")]
     public async Task<IActionResult> GetHostProperties()
     {
         var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -76,6 +76,7 @@ public class PropertiesController(
     }
 
     [HttpPost]
+    [Authorize(Policy = "RequireHost")]
     public async Task<IActionResult> CreateProperty([FromForm] CreatePropertyApiRequest request)
     {
         var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -113,6 +114,7 @@ public class PropertiesController(
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = "RequireHost")]
     public async Task<IActionResult> UpdateProperty(Guid id, [FromBody] UpdatePropertyRequest request)
     {
         var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);

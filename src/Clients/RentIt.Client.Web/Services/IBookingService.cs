@@ -9,5 +9,7 @@ public interface IBookingService
     Task<IEnumerable<BookedPeriodDto>> GetPropertyBookedPeriodsAsync(Guid propertyId);
     Task CreateBookablePropertyAsync(Guid propertyId, string title, string imageUrl, decimal pricePerNight, string currency = "GHS");
     Task<IEnumerable<BookingDto>> GetHostPendingBookingsAsync();
+    Task<IEnumerable<BookingDto>> GetHostTransactionsAsync();
     Task RescindBookingAsync(Guid bookingId);
+    Task RemindGuestAsync(Guid bookingId);
 }

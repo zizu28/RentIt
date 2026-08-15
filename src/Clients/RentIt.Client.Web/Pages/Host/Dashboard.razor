@@ -23,8 +23,8 @@
         @if (_properties != null && _properties.Any())
         {
             <div class="d-flex" style="gap: 1rem;">
-                <button class="btn-cc-secondary" @onclick='() => Navigation.NavigateTo("/host/pending-payments")'>
-                    <i class="bi bi-hourglass-split"></i> Pending Payments
+                <button class="btn-cc-secondary" @onclick='() => Navigation.NavigateTo("/host/transactions")'>
+                    <i class="bi bi-card-list"></i> Transactions
                 </button>
                 <button class="btn-cc-primary" @onclick='() => Navigation.NavigateTo("/host/properties/add")'>
                     <i class="bi bi-plus-lg"></i> Add New Listing

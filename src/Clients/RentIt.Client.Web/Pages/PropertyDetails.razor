@@ -1,7 +1,7 @@
 @page "/properties/{Id:guid}"
-@using RentIt.Shared.DTOs.Properties
-@using RentIt.Shared.DTOs.Bookings
-@using RentIt.Client.Web.Services
+@using global::RentIt.Client.Web.Services
+@using global::RentIt.Shared.DTOs.Bookings
+@using global::RentIt.Shared.DTOs.Properties
 @inject IPropertyService PropertyService
 @inject IBookingService BookingService
 @inject NavigationManager Navigation

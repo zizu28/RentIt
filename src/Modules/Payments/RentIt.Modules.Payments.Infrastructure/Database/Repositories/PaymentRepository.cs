@@ -20,7 +20,15 @@ internal sealed class PaymentRepository(PaymentsDbContext dbContext) : IPaymentR
 
     public async Task<Payment?> GetByBookingIdAsync(Guid bookingId, CancellationToken cancellationToken = default)
     {
-        return await _context.Payments.FirstOrDefaultAsync(p => p.BookingId == bookingId, cancellationToken);
+        return await _context.Payments
+            .Where(p => p.BookingId == bookingId)
+            .OrderByDescending(p => p.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<List<Payment>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Payments.Where(p => p.UserId == userId).ToListAsync(cancellationToken);
     }
 
     public Task AddAsync(Payment payment, CancellationToken cancellationToken = default)

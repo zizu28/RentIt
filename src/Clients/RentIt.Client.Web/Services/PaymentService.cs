@@ -26,4 +26,30 @@ public class PaymentService(HttpClient httpClient) : IPaymentService
             return null;
         }
     }
+
+    public async Task<List<PaymentMethodDto>> GetPaymentMethodsAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<List<PaymentMethodDto>>("api/payments/methods") ?? new();
+    }
+
+    public async Task<SetupPaymentMethodResponseDto> SetupPaymentMethodAsync(SetupPaymentMethodRequestDto request)
+    {
+        var response = await _httpClient.PostAsJsonAsync("api/payments/methods/setup", request);
+        response.EnsureSuccessStatusCode();
+
+        var result = await response.Content.ReadFromJsonAsync<SetupPaymentMethodResponseDto>();
+        return result ?? throw new Exception("Failed to deserialize the setup response.");
+    }
+
+    public async Task<bool> VerifyPaymentAsync(string reference)
+    {
+        var response = await _httpClient.PostAsync($"api/payments/verify/{Uri.EscapeDataString(reference)}", null);
+        if (!response.IsSuccessStatusCode)
+        {
+            return false;
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<VerifyPaymentResponseDto>();
+        return result?.Success ?? false;
+    }
 }

@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentIt.Modules.Payments.Application.Commands;
+using System.Security.Claims;
 
 namespace RentIt.Modules.Payments.Api.Controllers;
 
@@ -12,10 +13,14 @@ public class PaymentsController(IMediator mediator) : ControllerBase
     private readonly IMediator _mediator = mediator;
 
     [HttpPost("initialize")]
-    [Authorize]
+    [Authorize(Policy = "RequireGuest")]
     public async Task<IActionResult> InitializePayment([FromBody] InitializePaymentRequest request, CancellationToken cancellationToken)
     {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+        if (userId == Guid.Empty) return Unauthorized();
+
         var command = new InitializePaymentCommand(
+            userId,
             request.BookingId,
             request.Amount,
             request.Currency,
@@ -24,7 +29,7 @@ public class PaymentsController(IMediator mediator) : ControllerBase
         );
 
         var authorizationUrl = await _mediator.Send(command, cancellationToken);
-        return Ok(new { AuthorizationUrl = authorizationUrl });
+        return Ok(new { AuthorizationUrl = authorizationUrl, Status = true });
     }
 
     [HttpPost("webhook")]
@@ -38,6 +43,16 @@ public class PaymentsController(IMediator mediator) : ControllerBase
         await _mediator.Send(command, cancellationToken);
 
         return Ok(); // Paystack expects a 200 OK
+    }
+
+    [HttpPost("verify/{reference}")]
+    [Authorize(Policy = "RequireGuest")]
+    public async Task<IActionResult> VerifyPayment(string reference, CancellationToken cancellationToken)
+    {
+        var command = new VerifyPaymentCommand(reference);
+        var result = await _mediator.Send(command, cancellationToken);
+        
+        return Ok(new { Success = result });
     }
 
     [HttpGet("booking/{bookingId}")]
@@ -54,6 +69,33 @@ public class PaymentsController(IMediator mediator) : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("methods")]
+    [Authorize(Policy = "RequireGuest")]
+    public async Task<IActionResult> GetPaymentMethods(CancellationToken cancellationToken)
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+        if (userId == Guid.Empty) return Unauthorized();
+
+        var query = new RentIt.Modules.Payments.Application.Queries.GetPaymentMethodsQuery(userId);
+        var result = await _mediator.Send(query, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPost("methods/setup")]
+    [Authorize(Policy = "RequireGuest")]
+    public async Task<IActionResult> SetupPaymentMethod([FromBody] SetupPaymentMethodRequest request, CancellationToken cancellationToken)
+    {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? Guid.Empty.ToString());
+        if (userId == Guid.Empty) return Unauthorized();
+
+        var command = new SetupPaymentMethodCommand(userId, request.Currency);
+        var authorizationUrl = await _mediator.Send(command, cancellationToken);
+        
+        return Ok(new { AuthorizationUrl = authorizationUrl });
+    }
 }
+
+public record SetupPaymentMethodRequest(string Currency);
 
 public record InitializePaymentRequest(Guid BookingId, decimal Amount, string Currency, string Email, string CallbackUrl);

@@ -9,12 +9,12 @@ namespace RentIt.Modules.Bookings.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class BookingsController(IMediator mediator) : ControllerBase
 {
     private readonly IMediator _mediator = mediator;
 
     [HttpPost]
+    [Authorize(Policy = "RequireGuest")]
     public async Task<IActionResult> CreateBooking([FromBody] CreateBookingRequest request)
     {
         var guestIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -38,6 +38,7 @@ public class BookingsController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet("my-bookings")]
+    [Authorize(Policy = "RequireGuest")]
     public async Task<IActionResult> GetMyBookings()
     {
         var guestIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -61,6 +62,7 @@ public class BookingsController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize(Policy = "RequireGuest")]
     public async Task<IActionResult> GetBookingById(Guid id)
     {
         var guestIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -82,6 +84,7 @@ public class BookingsController(IMediator mediator) : ControllerBase
     }
 
     [HttpPost("{id}/cancel")]
+    [Authorize(Policy = "RequireGuest")]
     public async Task<IActionResult> CancelBooking(Guid id)
     {
         var guestIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -103,6 +106,7 @@ public class BookingsController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet("host/pending-payments")]
+    [Authorize(Policy = "RequireHost")]
     public async Task<IActionResult> GetHostPendingBookings()
     {
         var hostIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -116,7 +120,23 @@ public class BookingsController(IMediator mediator) : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("host/transactions")]
+    [Authorize(Policy = "RequireHost")]
+    public async Task<IActionResult> GetHostTransactions()
+    {
+        var hostIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(hostIdString) || !Guid.TryParse(hostIdString, out var hostId))
+        {
+            return Unauthorized("User is not authenticated properly.");
+        }
+
+        var query = new GetHostTransactionsQuery(hostId);
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
+
     [HttpPost("{id}/rescind")]
+    [Authorize(Policy = "RequireHost")]
     public async Task<IActionResult> RescindBooking(Guid id)
     {
         var hostIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -135,6 +155,22 @@ public class BookingsController(IMediator mediator) : ControllerBase
         {
             return BadRequest(new { Message = ex.Message });
         }
+    }
+
+    [HttpPost("{id}/remind")]
+    [Authorize(Policy = "RequireHost")]
+    public async Task<IActionResult> RemindGuest(Guid id)
+    {
+        var hostIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (hostIdClaim == null || !Guid.TryParse(hostIdClaim.Value, out var hostId))
+        {
+            return Unauthorized();
+        }
+
+        var command = new RemindGuestPaymentCommand(id, hostId);
+        await _mediator.Send(command);
+
+        return Ok(new { Message = "Reminder sent successfully." });
     }
 }
 

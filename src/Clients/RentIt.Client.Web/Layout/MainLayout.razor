@@ -18,6 +18,10 @@
                     <AuthorizeView>
                         <Authorized>
                             <NavLink href="/bookings" Match="NavLinkMatch.Prefix" class="nav-link">My Bookings</NavLink>
+                            @if (context.User.IsInRole("Renter"))
+                            {
+                                <NavLink href="/guest/pending-payments" Match="NavLinkMatch.Prefix" class="nav-link">Pending Payments</NavLink>
+                            }
                             <NavLink href="/profile" Match="NavLinkMatch.Prefix" class="nav-link">Profile</NavLink>
                         </Authorized>
                     </AuthorizeView>

@@ -1,6 +1,9 @@
 @page "/profile/payments"
 @namespace RentIt.Client.Web.Pages.ProfileSettings
+@using RentIt.Client.Web.Services
 @attribute [Authorize]
+@inject IPaymentService PaymentService
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Payments & Payouts - RentIt</PageTitle>
 
@@ -21,35 +24,54 @@
     <section class="mb-8">
         <div class="section-header">
             <h2>Your payment methods</h2>
-            <button class="btn btn-outline-small">Add payment method</button>
+            <button class="btn btn-outline-small" @onclick="OpenAddModal">Add payment method</button>
         </div>
         
-        <div class="payment-method-card">
-            <div class="payment-icon">
-                <i class="bi bi-credit-card-fill"></i>
+        @if (isLoading)
+        {
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
-            <div class="payment-details">
-                <div class="payment-title">Visa •••• 4242</div>
-                <div class="payment-expiry">Expires 12/28</div>
+        }
+        else if (paymentMethods == null || !paymentMethods.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-icon"><i class="bi bi-credit-card"></i></div>
+                <p>You have no saved payment methods.</p>
             </div>
-            <div class="payment-actions">
-                <span class="badge badge-default">Default</span>
-                <button class="btn btn-icon text-muted" title="More options"><i class="bi bi-three-dots"></i></button>
-            </div>
-        </div>
-
-        <div class="payment-method-card">
-            <div class="payment-icon">
-                <i class="bi bi-phone-fill"></i>
-            </div>
-            <div class="payment-details">
-                <div class="payment-title">MTN Mobile Money</div>
-                <div class="payment-expiry">+233 24 123 4567</div>
-            </div>
-            <div class="payment-actions">
-                <button class="btn btn-icon text-muted" title="More options"><i class="bi bi-three-dots"></i></button>
-            </div>
-        </div>
+        }
+        else
+        {
+            foreach (var method in paymentMethods)
+            {
+                <div class="payment-method-card">
+                    <div class="payment-icon">
+                        @if (method.MethodType == "MobileMoney")
+                        {
+                            <i class="bi bi-phone-fill"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-credit-card-fill"></i>
+                        }
+                    </div>
+                    <div class="payment-details">
+                        <div class="payment-title">@method.Provider •••• @method.Last4</div>
+                        @if (method.ExpiryMonth.HasValue && method.ExpiryYear.HasValue)
+                        {
+                            <div class="payment-expiry">Expires @method.ExpiryMonth/@method.ExpiryYear</div>
+                        }
+                        else
+                        {
+                            <div class="payment-expiry">Mobile Money</div>
+                        }
+                    </div>
+                    <div class="payment-actions">
+                        <button class="btn btn-icon text-muted" title="More options"><i class="bi bi-three-dots"></i></button>
+                    </div>
+                </div>
+            }
+        }
     </section>
 
     <hr class="divider mb-8" />
@@ -62,3 +84,115 @@
         </div>
     </section>
 </div>
+
+@if (isModalOpen)
+{
+    <div class="modal-backdrop fade show" style="display: block;"></div>
+    <div class="modal fade show" tabindex="-1" style="display: block;" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Payment Method</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="CloseAddModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>To securely add a payment method, you will be redirected to Paystack.</p>
+                    <div class="mb-3">
+                        <label for="currencySelect" class="form-label">Currency</label>
+                        <select id="currencySelect" class="form-select" @bind="selectedCurrency">
+                            <option value="GHS">Ghana Cedi (GHS)</option>
+                            <option value="USD">US Dollar (USD)</option>
+                            <option value="NGN">Nigerian Naira (NGN)</option>
+                        </select>
+                    </div>
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger">@errorMessage</div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseAddModal">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="InitializeSetup" disabled="@isSettingUp">
+                        @if (isSettingUp)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span> Please wait...</span>
+                        }
+                        else
+                        {
+                            <span>Continue to Paystack</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<PaymentMethodDto>? paymentMethods;
+    private bool isLoading = true;
+    private bool isModalOpen = false;
+    private bool isSettingUp = false;
+    private string selectedCurrency = "GHS";
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPaymentMethods();
+    }
+
+    private async Task LoadPaymentMethods()
+    {
+        isLoading = true;
+        try
+        {
+            paymentMethods = await PaymentService.GetPaymentMethodsAsync();
+        }
+        catch (Exception)
+        {
+            // Handle error silently for now
+            paymentMethods = new List<PaymentMethodDto>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OpenAddModal()
+    {
+        isModalOpen = true;
+        errorMessage = null;
+    }
+
+    private void CloseAddModal()
+    {
+        isModalOpen = false;
+    }
+
+    private async Task InitializeSetup()
+    {
+        isSettingUp = true;
+        errorMessage = null;
+
+        try
+        {
+            var request = new SetupPaymentMethodRequestDto { Currency = selectedCurrency };
+            var response = await PaymentService.SetupPaymentMethodAsync(request);
+            
+            if (!string.IsNullOrEmpty(response.AuthorizationUrl))
+            {
+                await JSRuntime.InvokeVoidAsync("window.location.assign", response.AuthorizationUrl);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Failed to initialize payment setup. Please try again.";
+        }
+        finally
+        {
+            isSettingUp = false;
+        }
+    }
+}

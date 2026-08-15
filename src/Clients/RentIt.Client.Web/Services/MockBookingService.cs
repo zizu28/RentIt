@@ -5,7 +5,7 @@ namespace RentIt.Client.Web.Services;
 public class MockBookingService : IBookingService
 {
     private readonly IPropertyService _propertyService;
-    private readonly List<BookingDto> _bookings = new();
+    private readonly List<BookingDto> _bookings = [];
 
     public MockBookingService(IPropertyService propertyService)
     {
@@ -66,5 +66,15 @@ public class MockBookingService : IBookingService
     public Task RescindBookingAsync(Guid bookingId)
     {
         return Task.CompletedTask;
+    }
+
+    public Task RemindGuestAsync(Guid bookingId)
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task<IEnumerable<BookingDto>> GetHostTransactionsAsync()
+    {
+        throw new NotImplementedException();
     }
 }

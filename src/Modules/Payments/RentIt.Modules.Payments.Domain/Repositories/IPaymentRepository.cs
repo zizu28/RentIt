@@ -7,6 +7,7 @@ public interface IPaymentRepository
     Task<Payment?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Payment?> GetByReferenceAsync(string reference, CancellationToken cancellationToken = default);
     Task<Payment?> GetByBookingIdAsync(Guid bookingId, CancellationToken cancellationToken = default);
+    Task<List<Payment>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
     Task AddAsync(Payment payment, CancellationToken cancellationToken = default);
     Task UpdateAsync(Payment payment, CancellationToken cancellationToken = default);
 }

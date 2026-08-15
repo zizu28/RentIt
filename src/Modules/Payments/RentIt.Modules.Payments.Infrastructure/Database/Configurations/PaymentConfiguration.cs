@@ -11,6 +11,12 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
     {
         builder.HasKey(x => x.Id);
 
+        builder.Property(x => x.UserId)
+            .IsRequired();
+
+        builder.Property(x => x.BookingId)
+            .IsRequired(false);
+
         builder.Property(x => x.Amount)
             .HasColumnType("decimal(18,2)")
             .IsRequired();
@@ -38,7 +44,16 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 
         builder.Property(x => x.AuthorizationUrl)
             .HasMaxLength(500);
+
+        builder.OwnsOne(x => x.Method, methodBuilder =>
+        {
+            methodBuilder.Property(m => m.Provider).HasMaxLength(50);
+            methodBuilder.Property(m => m.MethodType).HasConversion<string>().HasMaxLength(20);
+            methodBuilder.Property(m => m.Last4).HasMaxLength(4);
+            methodBuilder.Property(m => m.EncryptedProviderToken).HasMaxLength(2000);
+        });
             
         builder.HasIndex(x => x.BookingId);
+        builder.HasIndex(x => x.UserId);
     }
 }

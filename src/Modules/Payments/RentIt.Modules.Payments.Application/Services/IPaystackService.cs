@@ -37,4 +37,5 @@ public class InitializeTransactionData
 public interface IPaystackService
 {
     Task<InitializeTransactionResponse> InitializeTransactionAsync(InitializeTransactionRequest request, CancellationToken cancellationToken = default);
+    Task<VerifyTransactionResponse> VerifyTransactionAsync(string reference, CancellationToken cancellationToken = default);
 }

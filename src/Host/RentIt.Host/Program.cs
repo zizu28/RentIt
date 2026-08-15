@@ -21,6 +21,12 @@ using RentIt.Shared.Infrastructure.Storage;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 10 * 1024 * 1024; // 10MB limit
+});
+
 builder.AddSharedLogging();
 
 var mvcBuilder = builder.Services.AddControllers();
@@ -96,7 +102,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireGuest", policy => policy.RequireRole("Renter"));
+    options.AddPolicy("RequireHost", policy => policy.RequireRole("Host"));
+});
 
 // ─── Rate Limiting (replaces Ocelot Gateway rate limiting) ────────────────────
 builder.Services.AddRateLimiter(options =>
@@ -160,6 +170,17 @@ builder.Services.AddOutputCache(options =>
         .Tag("listings"));
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("StrictCors", policy =>
+    {
+        policy.WithOrigins("https://localhost:7046", "https://localhost:7180")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -167,8 +188,22 @@ app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
 app.AddHangfireDashBoard();
 RentIt.Modules.Bookings.Infrastructure.BookingsInfrastructureServiceRegistration.ConfigureBookingsJobs();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
 app.UseHttpsRedirection();
 
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
+    context.Response.Headers.Append("Content-Security-Policy", "default-src 'self';");
+    await next();
+});
+
+app.UseCors("StrictCors");
 app.UseAuthentication();
 app.UseAuthorization();
 

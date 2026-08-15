@@ -16,7 +16,7 @@ public class GetPaymentByBookingIdQueryHandler(IPaymentRepository paymentReposit
 
         return new PaymentDetailsDto(
             payment.Id,
-            payment.BookingId,
+            payment.BookingId ?? Guid.Empty,
             payment.Reference,
             payment.Status.ToString(),
             payment.Amount

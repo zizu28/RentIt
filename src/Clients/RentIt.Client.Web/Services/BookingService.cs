@@ -51,9 +51,21 @@ public class BookingService(HttpClient httpClient) : IBookingService
                ?? [];
     }
 
+    public async Task<IEnumerable<BookingDto>> GetHostTransactionsAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<IEnumerable<BookingDto>>("api/bookings/host/transactions") 
+               ?? [];
+    }
+
     public async Task RescindBookingAsync(Guid bookingId)
     {
         var response = await _httpClient.PostAsync($"api/bookings/{bookingId}/rescind", null);
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task RemindGuestAsync(Guid bookingId)
+    {
+        var response = await _httpClient.PostAsync($"api/bookings/{bookingId}/remind", null);
         response.EnsureSuccessStatusCode();
     }
 }

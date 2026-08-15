@@ -1,4 +1,41 @@
     .page-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.toast-notification {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    background-color: var(--cc-bg);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+.toast-notification.success {
+    border-left: 4px solid #10b981;
+}
+.toast-notification.error {
+    border-left: 4px solid #ef4444;
+}
+.toast-notification.loading {
+    border-left: 4px solid var(--cc-primary);
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.page-container {
         padding: 2rem 24px;
         max-width: 1200px;
         margin: 0 auto;
