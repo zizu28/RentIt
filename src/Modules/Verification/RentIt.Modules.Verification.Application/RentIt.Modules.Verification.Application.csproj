@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -8,6 +8,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RentIt.Modules.Verification.Domain\RentIt.Modules.Verification.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.DTOs\RentIt.Shared.DTOs.csproj" />
+    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Contracts\RentIt.Shared.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Abstractions\RentIt.Shared.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="Serilog" />
   </ItemGroup>
 
 </Project>

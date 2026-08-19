@@ -14,6 +14,9 @@ public static class MessagingExtensions
         services.AddScoped(typeof(IInboxService<>), typeof(InboxService<>));
         services.AddScoped(typeof(IProcessOutboxMessagesJob<>), typeof(ProcessOutboxMessagesJob<>));
         
+        // Register MediatR Validation Pipeline Behavior
+        services.AddTransient(typeof(MediatR.IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        
         return services;
     }
 }

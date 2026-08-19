@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="CloudinaryDotNet" />
     <PackageReference Include="Fluid.Core" />
+    <PackageReference Include="FluentValidation" />
     <PackageReference Include="Hangfire.SqlServer" />
     <PackageReference Include="MediatR" />
     <PackageReference Include="MailKit" />

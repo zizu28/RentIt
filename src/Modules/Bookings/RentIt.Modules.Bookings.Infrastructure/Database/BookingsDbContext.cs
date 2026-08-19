@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using RentIt.Modules.Bookings.Domain.Entities;
 using RentIt.Shared.Abstractions.Messaging;
 using RentIt.Shared.Infrastructure.Messaging;
+using RentIt.Shared.Infrastructure.Messaging;
 
 namespace RentIt.Modules.Bookings.Infrastructure.Database;
 
@@ -16,7 +17,6 @@ public class BookingsDbContext(DbContextOptions<BookingsDbContext> options) : Db
     {
         modelBuilder.HasDefaultSchema("bookings");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(BookingsDbContext).Assembly);
-        
         modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
         modelBuilder.ApplyConfiguration(new InboxMessageConfiguration());
         

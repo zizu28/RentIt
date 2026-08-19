@@ -39,9 +39,8 @@ public class ProcessOutboxMessagesJob<TDbContext>(
                     continue;
                 }
 
-                var integrationEvent = JsonConvert.DeserializeObject(message.Content, type) as IIntegrationEvent;
 
-                if (integrationEvent == null)
+                if (JsonConvert.DeserializeObject(message.Content, type) is not IIntegrationEvent integrationEvent)
                 {
                     message.MarkAsFailed($"Failed to deserialize to IIntegrationEvent.");
                     continue;

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RentIt.Modules.Analytics.Infrastructure\RentIt.Modules.Analytics.Infrastructure.csproj" />
+    <ProjectReference Include="..\RentIt.Modules.Analytics.Application\RentIt.Modules.Analytics.Application.csproj" />
   </ItemGroup>
 
 </Project>

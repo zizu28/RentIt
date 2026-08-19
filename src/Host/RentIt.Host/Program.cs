@@ -11,6 +11,12 @@ using RentIt.Modules.Properties.Infrastructure;
 using RentIt.Modules.Bookings.Api;
 using RentIt.Modules.Payments.Application;
 using RentIt.Modules.Payments.Infrastructure;
+using RentIt.Modules.Verification.Application;
+using RentIt.Modules.Verification.Infrastructure;
+using RentIt.Modules.Reviews.Application;
+using RentIt.Modules.Reviews.Infrastructure;
+using RentIt.Modules.Analytics.Application;
+using RentIt.Modules.Analytics.Infrastructure;
 using RentIt.Shared.Abstractions.BackgroundJobs;
 using RentIt.Shared.Infrastructure.Email;
 using RentIt.Shared.Infrastructure.Messaging;
@@ -60,6 +66,15 @@ builder.Services.AddBookingsModule(builder.Configuration);
 
 builder.Services.AddPaymentsApplication();
 builder.Services.AddPaymentsInfrastructure(builder.Configuration);
+
+builder.Services.AddVerificationApplication();
+builder.Services.AddVerificationInfrastructure(builder.Configuration);
+
+builder.Services.AddReviewsApplication();
+builder.Services.AddReviewsInfrastructure(builder.Configuration);
+
+builder.Services.AddAnalyticsApplication();
+builder.Services.AddAnalyticsInfrastructure(builder.Configuration);
 // Add Authentication for the monolith to validate JWTs forwarded by the BFF
 var secretKey = builder.Configuration["JWT:Key"] ?? "super_secret_key_that_is_at_least_32_characters_long_for_hmac_sha256!";
 var issuer = builder.Configuration["JWT:Issuer"] ?? "RentIt";
@@ -187,7 +202,25 @@ app.UseExceptionHandler();
 
 app.UseSerilogRequestLogging();
 app.AddHangfireDashBoard();
+
 RentIt.Modules.Bookings.Infrastructure.BookingsInfrastructureServiceRegistration.ConfigureBookingsJobs();
+
+// Schedule Outbox processing for each module's DbContext
+Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Properties.Infrastructure.Database.PropertiesDbContext>>(
+    "outbox-properties", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
+Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Identity.Infrastructure.Persistence.IdentityDbContext>>(
+    "outbox-identity", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
+Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Bookings.Infrastructure.Database.BookingsDbContext>>(
+    "outbox-bookings", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
+Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Payments.Infrastructure.Database.PaymentsDbContext>>(
+    "outbox-payments", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
+Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Verification.Infrastructure.Database.VerificationDbContext>>(
+    "outbox-verification", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
+Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Reviews.Infrastructure.Database.ReviewsDbContext>>(
+    "outbox-reviews", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
+Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Analytics.Infrastructure.Database.AnalyticsDbContext>>(
+    "outbox-analytics", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();

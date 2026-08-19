@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RentIt.Modules.Identity.Domain.Entities;
+using RentIt.Shared.Infrastructure.Messaging;
 
 namespace RentIt.Modules.Identity.Infrastructure.Persistence;
 
@@ -12,5 +13,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     {
         modelBuilder.HasDefaultSchema("identity");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(IdentityDbContext).Assembly);
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
+        modelBuilder.ApplyConfiguration(new InboxMessageConfiguration());
     }
 }

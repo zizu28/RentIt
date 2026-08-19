@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RentIt.Modules.Identity.Application\RentIt.Modules.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Infrastructure\RentIt.Shared.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

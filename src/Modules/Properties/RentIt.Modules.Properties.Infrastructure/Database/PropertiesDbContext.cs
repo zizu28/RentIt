@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RentIt.Modules.Properties.Domain.Entities;
+using RentIt.Shared.Infrastructure.Messaging;
 
 namespace RentIt.Modules.Properties.Infrastructure.Database;
 
@@ -11,7 +12,9 @@ public class PropertiesDbContext(DbContextOptions<PropertiesDbContext> options) 
     {
         modelBuilder.HasDefaultSchema("properties");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PropertiesDbContext).Assembly);
-        
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
+        modelBuilder.ApplyConfiguration(new InboxMessageConfiguration());
+
         base.OnModelCreating(modelBuilder);
     }
 }
