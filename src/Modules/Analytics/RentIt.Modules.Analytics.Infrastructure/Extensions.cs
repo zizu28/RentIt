@@ -16,6 +16,7 @@ public static class Extensions
             options.UseSqlServer(configuration.GetConnectionString("AnalyticsDatabase")));
 
         services.AddScoped<IPropertyMetricsRepository, PropertyMetricsRepository>();
+        services.AddScoped<IHostMetricsRepository, HostMetricsRepository>();
 
         services.AddKeyedScoped<IUnitOfWork, AnalyticsUnitOfWork>("Analytics");
 

@@ -68,4 +68,11 @@
     <Project Path="src/Shared/RentIt.Shared.Infrastructure/RentIt.Shared.Infrastructure.csproj" />
     <Project Path="src/Shared/RentIt.Shared.Kernel/RentIt.Shared.Kernel.csproj" />
   </Folder>
+  <Folder Name="/src/Tests/">
+    <Project Path="src/Tests/RentIt.Modules.Analytics.IntegrationTests/RentIt.Modules.Analytics.IntegrationTests.csproj" />
+    <Project Path="src/Tests/RentIt.Modules.Analytics.Tests/RentIt.Modules.Analytics.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Tests/RentIt.Modules.Bookings.Tests/">
+    <Project Path="src/Tests/RentIt.Modules.Bookings.Tests/RentIt.Modules.Bookings.Tests/RentIt.Modules.Bookings.Tests.csproj" />
+  </Folder>
 </Solution>

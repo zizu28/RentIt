@@ -1,0 +1,440 @@
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+index c536527..b8bd8db 100644
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -47,5 +47,11 @@
+     <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.10" />
+     <PackageVersion Include="MudBlazor" Version="7.8.0" />
+     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.10" />
++    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
++    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
++    <PackageVersion Include="xunit" Version="2.9.3" />
++    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
++    <PackageVersion Include="Moq" Version="4.20.72" />
++    <PackageVersion Include="FluentAssertions" Version="7.2.0" />
+   </ItemGroup>
+-</Project>
+\ No newline at end of file
++</Project>
+diff --git a/src/Modules/Analytics/RentIt.Modules.Analytics.Application/EventHandlers/BookingConfirmedIntegrationEventHandler.cs b/src/Modules/Analytics/RentIt.Modules.Analytics.Application/EventHandlers/BookingConfirmedIntegrationEventHandler.cs
+index a7ae467..e8a80fb 100644
+--- a/src/Modules/Analytics/RentIt.Modules.Analytics.Application/EventHandlers/BookingConfirmedIntegrationEventHandler.cs
++++ b/src/Modules/Analytics/RentIt.Modules.Analytics.Application/EventHandlers/BookingConfirmedIntegrationEventHandler.cs
+@@ -8,25 +8,46 @@ using RentIt.Shared.Contracts.Bookings.IntegrationEvents;
+ namespace RentIt.Modules.Analytics.Application.EventHandlers;
+ 
+ internal sealed class BookingConfirmedIntegrationEventHandler(
+-    IPropertyMetricsRepository repository,
++    IPropertyMetricsRepository propertyMetricsRepository,
++    IHostMetricsRepository hostMetricsRepository,
+     [FromKeyedServices("Analytics")] IUnitOfWork unitOfWork) : INotificationHandler<BookingConfirmedIntegrationEvent>
+ {
+-    private readonly IPropertyMetricsRepository _repository = repository;
++    private readonly IPropertyMetricsRepository _propertyMetricsRepository = propertyMetricsRepository;
++    private readonly IHostMetricsRepository _hostMetricsRepository = hostMetricsRepository;
+     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+ 
+     public async Task Handle(BookingConfirmedIntegrationEvent notification, CancellationToken cancellationToken)
+     {
+-        var metrics = await _repository.GetByPropertyIdAsync(notification.PropertyId, cancellationToken);
+-        if (metrics is null)
++        // Update Property Metrics
++        var propertyMetrics = await _propertyMetricsRepository.GetByPropertyIdAsync(notification.PropertyId, cancellationToken);
++        if (propertyMetrics is null)
+         {
+-            metrics = PropertyMetrics.Create(notification.PropertyId);
+-            metrics.IncrementBookings();
+-            await _repository.AddAsync(metrics, cancellationToken);
++            propertyMetrics = PropertyMetrics.Create(notification.PropertyId, notification.HostId);
++            propertyMetrics.IncrementBookings();
++            propertyMetrics.AddRevenue(notification.TotalAmount);
++            await _propertyMetricsRepository.AddAsync(propertyMetrics, cancellationToken);
+         }
+         else
+         {
+-            metrics.IncrementBookings();
+-            _repository.Update(metrics);
++            propertyMetrics.IncrementBookings();
++            propertyMetrics.AddRevenue(notification.TotalAmount);
++            _propertyMetricsRepository.Update(propertyMetrics);
++        }
++
++        // Update Host Metrics
++        var hostMetrics = await _hostMetricsRepository.GetByHostIdAsync(notification.HostId, cancellationToken);
++        if (hostMetrics is null)
++        {
++            hostMetrics = HostMetrics.Create(notification.HostId);
++            hostMetrics.IncrementBookings();
++            hostMetrics.AddRevenue(notification.TotalAmount);
++            await _hostMetricsRepository.AddAsync(hostMetrics, cancellationToken);
++        }
++        else
++        {
++            hostMetrics.IncrementBookings();
++            hostMetrics.AddRevenue(notification.TotalAmount);
++            _hostMetricsRepository.Update(hostMetrics);
+         }
+ 
+         await _unitOfWork.SaveChangesAsync(cancellationToken);
+diff --git a/src/Modules/Analytics/RentIt.Modules.Analytics.Application/EventHandlers/ReviewPublishedIntegrationEventHandler.cs b/src/Modules/Analytics/RentIt.Modules.Analytics.Application/EventHandlers/ReviewPublishedIntegrationEventHandler.cs
+index b784903..509f2a9 100644
+--- a/src/Modules/Analytics/RentIt.Modules.Analytics.Application/EventHandlers/ReviewPublishedIntegrationEventHandler.cs
++++ b/src/Modules/Analytics/RentIt.Modules.Analytics.Application/EventHandlers/ReviewPublishedIntegrationEventHandler.cs
+@@ -8,27 +8,40 @@ using RentIt.Shared.Contracts.Reviews.IntegrationEvents;
+ namespace RentIt.Modules.Analytics.Application.EventHandlers;
+ 
+ internal sealed class ReviewPublishedIntegrationEventHandler(
+-    IPropertyMetricsRepository repository,
++    IPropertyMetricsRepository propertyMetricsRepository,
++    IHostMetricsRepository hostMetricsRepository,
+     [FromKeyedServices("Analytics")] IUnitOfWork unitOfWork) : INotificationHandler<ReviewPublishedIntegrationEvent>
+ {
+-    private readonly IPropertyMetricsRepository _repository = repository;
++    private readonly IPropertyMetricsRepository _propertyMetricsRepository = propertyMetricsRepository;
++    private readonly IHostMetricsRepository _hostMetricsRepository = hostMetricsRepository;
+     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+ 
+     public async Task Handle(ReviewPublishedIntegrationEvent notification, CancellationToken cancellationToken)
+     {
+-        var metrics = await _repository.GetByPropertyIdAsync(notification.PropertyId, cancellationToken);
+-        if (metrics is null)
++        var propertyMetrics = await _propertyMetricsRepository.GetByPropertyIdAsync(notification.PropertyId, cancellationToken);
++        
++        // If propertyMetrics is null, we can't reliably know the HostId here without querying another module,
++        // but it should exist due to PropertyCreatedIntegrationEvent.
++        if (propertyMetrics is not null)
+         {
+-            metrics = PropertyMetrics.Create(notification.PropertyId);
+-            metrics.AddReview(notification.Rating);
+-            await _repository.AddAsync(metrics, cancellationToken);
+-        }
+-        else
+-        {
+-            metrics.AddReview(notification.Rating);
+-            _repository.Update(metrics);
+-        }
++            propertyMetrics.AddReview(notification.Rating);
++            _propertyMetricsRepository.Update(propertyMetrics);
+ 
+-        await _unitOfWork.SaveChangesAsync(cancellationToken);
++            // Update Host Metrics
++            var hostMetrics = await _hostMetricsRepository.GetByHostIdAsync(propertyMetrics.HostId, cancellationToken);
++            if (hostMetrics is null)
++            {
++                hostMetrics = HostMetrics.Create(propertyMetrics.HostId);
++                hostMetrics.AddReview(notification.Rating);
++                await _hostMetricsRepository.AddAsync(hostMetrics, cancellationToken);
++            }
++            else
++            {
++                hostMetrics.AddReview(notification.Rating);
++                _hostMetricsRepository.Update(hostMetrics);
++            }
++
++            await _unitOfWork.SaveChangesAsync(cancellationToken);
++        }
+     }
+ }
+diff --git a/src/Modules/Analytics/RentIt.Modules.Analytics.Application/RentIt.Modules.Analytics.Application.csproj b/src/Modules/Analytics/RentIt.Modules.Analytics.Application/RentIt.Modules.Analytics.Application.csproj
+index da912a9..06f3ab4 100644
+--- a/src/Modules/Analytics/RentIt.Modules.Analytics.Application/RentIt.Modules.Analytics.Application.csproj
++++ b/src/Modules/Analytics/RentIt.Modules.Analytics.Application/RentIt.Modules.Analytics.Application.csproj
+@@ -14,4 +14,7 @@
+     <ProjectReference Include="..\RentIt.Modules.Analytics.Domain\RentIt.Modules.Analytics.Domain.csproj" />
+   </ItemGroup>
+ 
++  <ItemGroup>
++    <InternalsVisibleTo Include="RentIt.Modules.Analytics.Tests" />
++  </ItemGroup>
+ </Project>
+diff --git a/src/Modules/Analytics/RentIt.Modules.Analytics.Domain/Entities/PropertyMetrics.cs b/src/Modules/Analytics/RentIt.Modules.Analytics.Domain/Entities/PropertyMetrics.cs
+index 6406f44..a9825e7 100644
+--- a/src/Modules/Analytics/RentIt.Modules.Analytics.Domain/Entities/PropertyMetrics.cs
++++ b/src/Modules/Analytics/RentIt.Modules.Analytics.Domain/Entities/PropertyMetrics.cs
+@@ -5,7 +5,10 @@ namespace RentIt.Modules.Analytics.Domain.Entities;
+ public class PropertyMetrics : AggregateRoot<Guid>
+ {
+     public Guid PropertyId { get; private set; }
++    public Guid HostId { get; private set; }
+     public int TotalBookings { get; private set; }
++    public int TotalCancellations { get; private set; }
++    public decimal TotalRevenue { get; private set; }
+     public int TotalReviews { get; private set; }
+     public double AverageRating { get; private set; }
+ 
+@@ -13,17 +16,20 @@ public class PropertyMetrics : AggregateRoot<Guid>
+     private PropertyMetrics() { }
+ #pragma warning restore CS8618
+ 
+-    private PropertyMetrics(Guid id, Guid propertyId) : base(id)
++    private PropertyMetrics(Guid id, Guid propertyId, Guid hostId) : base(id)
+     {
+         PropertyId = propertyId;
++        HostId = hostId;
+         TotalBookings = 0;
++        TotalCancellations = 0;
++        TotalRevenue = 0;
+         TotalReviews = 0;
+         AverageRating = 0;
+     }
+ 
+-    public static PropertyMetrics Create(Guid propertyId)
++    public static PropertyMetrics Create(Guid propertyId, Guid hostId)
+     {
+-        return new PropertyMetrics(Guid.NewGuid(), propertyId);
++        return new PropertyMetrics(Guid.NewGuid(), propertyId, hostId);
+     }
+ 
+     public void IncrementBookings()
+@@ -31,6 +37,16 @@ public class PropertyMetrics : AggregateRoot<Guid>
+         TotalBookings++;
+     }
+ 
++    public void IncrementCancellations()
++    {
++        TotalCancellations++;
++    }
++
++    public void AddRevenue(decimal amount)
++    {
++        TotalRevenue += amount;
++    }
++
+     public void AddReview(int rating)
+     {
+         var totalScore = (AverageRating * TotalReviews) + rating;
+diff --git a/src/Modules/Analytics/RentIt.Modules.Analytics.Infrastructure/Database/AnalyticsDbContext.cs b/src/Modules/Analytics/RentIt.Modules.Analytics.Infrastructure/Database/AnalyticsDbContext.cs
+index cdefe15..504e77c 100644
+--- a/src/Modules/Analytics/RentIt.Modules.Analytics.Infrastructure/Database/AnalyticsDbContext.cs
++++ b/src/Modules/Analytics/RentIt.Modules.Analytics.Infrastructure/Database/AnalyticsDbContext.cs
+@@ -11,6 +11,7 @@ public class AnalyticsDbContext : DbContext
+     }
+ 
+     public DbSet<PropertyMetrics> PropertyMetrics { get; set; } = null!;
++    public DbSet<HostMetrics> HostMetrics { get; set; } = null!;
+ 
+     protected override void OnModelCreating(ModelBuilder modelBuilder)
+     {
+@@ -20,7 +21,24 @@ public class AnalyticsDbContext : DbContext
+         {
+             entity.HasKey(e => e.Id);
+             entity.Property(e => e.PropertyId).IsRequired();
++            entity.HasIndex(e => e.PropertyId).IsUnique();
++            entity.Property(e => e.HostId).IsRequired();
++            entity.HasIndex(e => e.HostId);
+             entity.Property(e => e.TotalBookings).IsRequired();
++            entity.Property(e => e.TotalCancellations).IsRequired();
++            entity.Property(e => e.TotalRevenue).HasPrecision(18, 2).IsRequired();
++            entity.Property(e => e.TotalReviews).IsRequired();
++            entity.Property(e => e.AverageRating).IsRequired();
++        });
++
++        modelBuilder.Entity<HostMetrics>(entity =>
++        {
++            entity.HasKey(e => e.Id);
++            entity.Property(e => e.HostId).IsRequired();
++            entity.HasIndex(e => e.HostId).IsUnique();
++            entity.Property(e => e.TotalProperties).IsRequired();
++            entity.Property(e => e.TotalBookings).IsRequired();
++            entity.Property(e => e.TotalRevenue).HasPrecision(18, 2).IsRequired();
+             entity.Property(e => e.TotalReviews).IsRequired();
+             entity.Property(e => e.AverageRating).IsRequired();
+         });
+diff --git a/src/Modules/Analytics/RentIt.Modules.Analytics.Infrastructure/Extensions.cs b/src/Modules/Analytics/RentIt.Modules.Analytics.Infrastructure/Extensions.cs
+index e1b2dcb..f3841b2 100644
+--- a/src/Modules/Analytics/RentIt.Modules.Analytics.Infrastructure/Extensions.cs
++++ b/src/Modules/Analytics/RentIt.Modules.Analytics.Infrastructure/Extensions.cs
+@@ -16,6 +16,7 @@ public static class Extensions
+             options.UseSqlServer(configuration.GetConnectionString("AnalyticsDatabase")));
+ 
+         services.AddScoped<IPropertyMetricsRepository, PropertyMetricsRepository>();
++        services.AddScoped<IHostMetricsRepository, HostMetricsRepository>();
+ 
+         services.AddKeyedScoped<IUnitOfWork, AnalyticsUnitOfWork>("Analytics");
+ 
+diff --git a/src/Modules/Analytics/RentIt.Modules.Analytics.Infrastructure/Migrations/AnalyticsDbContextModelSnapshot.cs b/src/Modules/Analytics/RentIt.Modules.Analytics.Infrastructure/Migrations/AnalyticsDbContextModelSnapshot.cs
+index bb3d493..f544225 100644
+--- a/src/Modules/Analytics/RentIt.Modules.Analytics.Infrastructure/Migrations/AnalyticsDbContextModelSnapshot.cs
++++ b/src/Modules/Analytics/RentIt.Modules.Analytics.Infrastructure/Migrations/AnalyticsDbContextModelSnapshot.cs
+@@ -23,6 +23,45 @@ namespace RentIt.Modules.Analytics.Infrastructure.Migrations
+ 
+             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+ 
++            modelBuilder.Entity("RentIt.Modules.Analytics.Domain.Entities.HostMetrics", b =>
++                {
++                    b.Property<Guid>("Id")
++                        .ValueGeneratedOnAdd()
++                        .HasColumnType("uniqueidentifier");
++
++                    b.Property<double>("AverageRating")
++                        .HasColumnType("float");
++
++                    b.Property<Guid>("HostId")
++                        .HasColumnType("uniqueidentifier");
++
++                    b.Property<byte[]>("RowVersion")
++                        .IsConcurrencyToken()
++                        .IsRequired()
++                        .ValueGeneratedOnAddOrUpdate()
++                        .HasColumnType("rowversion");
++
++                    b.Property<int>("TotalBookings")
++                        .HasColumnType("int");
++
++                    b.Property<int>("TotalProperties")
++                        .HasColumnType("int");
++
++                    b.Property<decimal>("TotalRevenue")
++                        .HasPrecision(18, 2)
++                        .HasColumnType("decimal(18,2)");
++
++                    b.Property<int>("TotalReviews")
++                        .HasColumnType("int");
++
++                    b.HasKey("Id");
++
++                    b.HasIndex("HostId")
++                        .IsUnique();
++
++                    b.ToTable("HostMetrics", "analytics");
++                });
++
+             modelBuilder.Entity("RentIt.Modules.Analytics.Domain.Entities.PropertyMetrics", b =>
+                 {
+                     b.Property<Guid>("Id")
+@@ -32,6 +71,9 @@ namespace RentIt.Modules.Analytics.Infrastructure.Migrations
+                     b.Property<double>("AverageRating")
+                         .HasColumnType("float");
+ 
++                    b.Property<Guid>("HostId")
++                        .HasColumnType("uniqueidentifier");
++
+                     b.Property<Guid>("PropertyId")
+                         .HasColumnType("uniqueidentifier");
+ 
+@@ -44,11 +86,23 @@ namespace RentIt.Modules.Analytics.Infrastructure.Migrations
+                     b.Property<int>("TotalBookings")
+                         .HasColumnType("int");
+ 
++                    b.Property<int>("TotalCancellations")
++                        .HasColumnType("int");
++
++                    b.Property<decimal>("TotalRevenue")
++                        .HasPrecision(18, 2)
++                        .HasColumnType("decimal(18,2)");
++
+                     b.Property<int>("TotalReviews")
+                         .HasColumnType("int");
+ 
+                     b.HasKey("Id");
+ 
++                    b.HasIndex("HostId");
++
++                    b.HasIndex("PropertyId")
++                        .IsUnique();
++
+                     b.ToTable("PropertyMetrics", "analytics");
+                 });
+ 
+diff --git a/src/Modules/Identity/RentIt.Modules.Identity.Application/Handlers/PhoneNumberVerifiedDomainEventHandler.cs b/src/Modules/Identity/RentIt.Modules.Identity.Application/Handlers/PhoneNumberVerifiedDomainEventHandler.cs
+index 8f9e40a..9d362fb 100644
+--- a/src/Modules/Identity/RentIt.Modules.Identity.Application/Handlers/PhoneNumberVerifiedDomainEventHandler.cs
++++ b/src/Modules/Identity/RentIt.Modules.Identity.Application/Handlers/PhoneNumberVerifiedDomainEventHandler.cs
+@@ -13,18 +13,12 @@ namespace RentIt.Modules.Identity.Application.Handlers;
+ /// Same pattern as EmailVerifiedDomainEventHandler — when both verifications
+ /// are complete, a UserFullyVerifiedIntegrationEvent would be published.
+ /// </summary>
+-public sealed class PhoneNumberVerifiedDomainEventHandler : INotificationHandler<PhoneNumberVerifiedEvent>
++public sealed class PhoneNumberVerifiedDomainEventHandler(
++    IEventBus eventBus,
++    ILogger<PhoneNumberVerifiedDomainEventHandler> logger) : INotificationHandler<PhoneNumberVerifiedEvent>
+ {
+-    private readonly IEventBus _eventBus;
+-    private readonly ILogger<PhoneNumberVerifiedDomainEventHandler> _logger;
+-
+-    public PhoneNumberVerifiedDomainEventHandler(
+-        IEventBus eventBus, 
+-        ILogger<PhoneNumberVerifiedDomainEventHandler> logger)
+-    {
+-        _eventBus = eventBus;
+-        _logger = logger;
+-    }
++    private readonly IEventBus _eventBus = eventBus;
++    private readonly ILogger<PhoneNumberVerifiedDomainEventHandler> _logger = logger;
+ 
+     public async Task Handle(PhoneNumberVerifiedEvent notification, CancellationToken cancellationToken)
+     {
+diff --git a/src/Modules/Identity/RentIt.Modules.Identity.Infrastructure/Configurations/UserConfiguration.cs b/src/Modules/Identity/RentIt.Modules.Identity.Infrastructure/Configurations/UserConfiguration.cs
+index 6dc31fd..8d7821d 100644
+--- a/src/Modules/Identity/RentIt.Modules.Identity.Infrastructure/Configurations/UserConfiguration.cs
++++ b/src/Modules/Identity/RentIt.Modules.Identity.Infrastructure/Configurations/UserConfiguration.cs
+@@ -50,7 +50,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
+         builder.Property(u => u.Role)
+             .HasConversion<string>()
+             .HasMaxLength(50)
+-            .HasDefaultValue(UserRole.Renter)
++            .HasDefaultValue(UserRole.Renter.ToString())
+             .IsRequired();
+ 
+         builder.Property(u => u.Status)
+diff --git a/src/Modules/Messaging/RentIt.Modules.Messaging.Api/RentIt.Modules.Messaging.Api.http b/src/Modules/Messaging/RentIt.Modules.Messaging.Api/RentIt.Modules.Messaging.Api.http
+deleted file mode 100644
+index 99757f0..0000000
+--- a/src/Modules/Messaging/RentIt.Modules.Messaging.Api/RentIt.Modules.Messaging.Api.http
++++ /dev/null
+@@ -1,6 +0,0 @@
+-@RentIt.Modules.Messaging.Api_HostAddress = http://localhost:5064
+-
+-GET {{RentIt.Modules.Messaging.Api_HostAddress}}/weatherforecast/
+-Accept: application/json
+-
+-###
+diff --git a/src/Modules/Messaging/RentIt.Modules.Messaging.Application/Class1.cs b/src/Modules/Messaging/RentIt.Modules.Messaging.Application/Class1.cs
+deleted file mode 100644
+index d0e8054..0000000
+--- a/src/Modules/Messaging/RentIt.Modules.Messaging.Application/Class1.cs
++++ /dev/null
+@@ -1,6 +0,0 @@
+-namespace RentIt.Modules.Messaging.Application;
+-
+-public class Class1
+-{
+-
+-}
+diff --git a/src/Modules/Messaging/RentIt.Modules.Messaging.Domain/Class1.cs b/src/Modules/Messaging/RentIt.Modules.Messaging.Domain/Class1.cs
+deleted file mode 100644
+index 46116cb..0000000
+--- a/src/Modules/Messaging/RentIt.Modules.Messaging.Domain/Class1.cs
++++ /dev/null
+@@ -1,6 +0,0 @@
+-namespace RentIt.Modules.Messaging.Domain;
+-
+-public class Class1
+-{
+-
+-}
+diff --git a/src/Modules/Messaging/RentIt.Modules.Messaging.Infrastructure/Class1.cs b/src/Modules/Messaging/RentIt.Modules.Messaging.Infrastructure/Class1.cs
+deleted file mode 100644
+index 5077dcf..0000000
+--- a/src/Modules/Messaging/RentIt.Modules.Messaging.Infrastructure/Class1.cs
++++ /dev/null
+@@ -1,6 +0,0 @@
+-namespace RentIt.Modules.Messaging.Infrastructure;
+-
+-public class Class1
+-{
+-
+-}
+diff --git a/src/Shared/RentIt.Shared.Infrastructure/Storage/CloudinaryStorageService.cs b/src/Shared/RentIt.Shared.Infrastructure/Storage/CloudinaryStorageService.cs
+index 3d7102a..59be38e 100644
+--- a/src/Shared/RentIt.Shared.Infrastructure/Storage/CloudinaryStorageService.cs
++++ b/src/Shared/RentIt.Shared.Infrastructure/Storage/CloudinaryStorageService.cs
+@@ -7,7 +7,7 @@ namespace RentIt.Shared.Infrastructure.Storage;
+ 
+ public class CloudinaryStorageService : IStorageService
+ {
+-    private readonly Cloudinary _cloudinary;
++    private readonly Cloudinary? _cloudinary;
+ 
+     private readonly CloudinarySettings _settings;
+ 

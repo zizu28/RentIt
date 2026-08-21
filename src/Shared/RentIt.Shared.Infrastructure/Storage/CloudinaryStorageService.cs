@@ -7,7 +7,7 @@ namespace RentIt.Shared.Infrastructure.Storage;
 
 public class CloudinaryStorageService : IStorageService
 {
-    private readonly Cloudinary _cloudinary;
+    private readonly Cloudinary? _cloudinary;
 
     private readonly CloudinarySettings _settings;
 

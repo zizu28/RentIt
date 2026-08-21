@@ -4,13 +4,10 @@ using RentIt.Shared.Infrastructure.Messaging;
 
 namespace RentIt.Modules.Analytics.Infrastructure.Database;
 
-public class AnalyticsDbContext : DbContext
+public class AnalyticsDbContext(DbContextOptions<AnalyticsDbContext> options) : DbContext(options)
 {
-    public AnalyticsDbContext(DbContextOptions<AnalyticsDbContext> options) : base(options)
-    {
-    }
-
     public DbSet<PropertyMetrics> PropertyMetrics { get; set; } = null!;
+    public DbSet<HostMetrics> HostMetrics { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -20,7 +17,24 @@ public class AnalyticsDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.PropertyId).IsRequired();
+            entity.HasIndex(e => e.PropertyId).IsUnique();
+            entity.Property(e => e.HostId).IsRequired();
+            entity.HasIndex(e => e.HostId);
             entity.Property(e => e.TotalBookings).IsRequired();
+            entity.Property(e => e.TotalCancellations).IsRequired();
+            entity.Property(e => e.TotalRevenue).HasPrecision(18, 2).IsRequired();
+            entity.Property(e => e.TotalReviews).IsRequired();
+            entity.Property(e => e.AverageRating).IsRequired();
+        });
+
+        modelBuilder.Entity<HostMetrics>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.HostId).IsRequired();
+            entity.HasIndex(e => e.HostId).IsUnique();
+            entity.Property(e => e.TotalProperties).IsRequired();
+            entity.Property(e => e.TotalBookings).IsRequired();
+            entity.Property(e => e.TotalRevenue).HasPrecision(18, 2).IsRequired();
             entity.Property(e => e.TotalReviews).IsRequired();
             entity.Property(e => e.AverageRating).IsRequired();
         });

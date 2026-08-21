@@ -50,7 +50,7 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Role)
             .HasConversion<string>()
             .HasMaxLength(50)
-            .HasDefaultValue(UserRole.Renter)
+            .HasDefaultValue(UserRole.Renter.ToString())
             .IsRequired();
 
         builder.Property(u => u.Status)

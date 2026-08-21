@@ -13,18 +13,12 @@ namespace RentIt.Modules.Identity.Application.Handlers;
 /// Same pattern as EmailVerifiedDomainEventHandler — when both verifications
 /// are complete, a UserFullyVerifiedIntegrationEvent would be published.
 /// </summary>
-public sealed class PhoneNumberVerifiedDomainEventHandler : INotificationHandler<PhoneNumberVerifiedEvent>
+public sealed class PhoneNumberVerifiedDomainEventHandler(
+    IEventBus eventBus,
+    ILogger<PhoneNumberVerifiedDomainEventHandler> logger) : INotificationHandler<PhoneNumberVerifiedEvent>
 {
-    private readonly IEventBus _eventBus;
-    private readonly ILogger<PhoneNumberVerifiedDomainEventHandler> _logger;
-
-    public PhoneNumberVerifiedDomainEventHandler(
-        IEventBus eventBus, 
-        ILogger<PhoneNumberVerifiedDomainEventHandler> logger)
-    {
-        _eventBus = eventBus;
-        _logger = logger;
-    }
+    private readonly IEventBus _eventBus = eventBus;
+    private readonly ILogger<PhoneNumberVerifiedDomainEventHandler> _logger = logger;
 
     public async Task Handle(PhoneNumberVerifiedEvent notification, CancellationToken cancellationToken)
     {

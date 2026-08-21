@@ -1,0 +1,7 @@
+.\Tests\RentIt.Modules.Analytics.Tests\Application\EventHandlers\BookingCancelledIntegrationEventHandlerTests.cs
+.\Tests\RentIt.Modules.Analytics.Tests\Application\EventHandlers\BookingConfirmedIntegrationEventHandlerTests.cs
+.\Tests\RentIt.Modules.Analytics.Tests\Application\EventHandlers\PropertyCreatedIntegrationEventHandlerTests.cs
+.\Tests\RentIt.Modules.Analytics.Tests\Application\EventHandlers\ReviewPublishedIntegrationEventHandlerTests.cs
+.\Tests\RentIt.Modules.Analytics.Tests\obj\Debug\net10.0\.NETCoreApp,Version=v10.0.AssemblyAttributes.cs
+.\Tests\RentIt.Modules.Analytics.Tests\obj\Debug\net10.0\RentIt.Modules.Analytics.Tests.AssemblyInfo.cs
+.\Tests\RentIt.Modules.Analytics.Tests\obj\Debug\net10.0\RentIt.Modules.Analytics.Tests.GlobalUsings.g.cs

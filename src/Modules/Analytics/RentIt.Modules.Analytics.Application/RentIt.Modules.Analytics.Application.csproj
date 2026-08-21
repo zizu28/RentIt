@@ -14,4 +14,7 @@
     <ProjectReference Include="..\RentIt.Modules.Analytics.Domain\RentIt.Modules.Analytics.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="RentIt.Modules.Analytics.Tests" />
+  </ItemGroup>
 </Project>

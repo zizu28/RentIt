@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Testcontainers.MsSql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Analytics\RentIt.Modules.Analytics.Infrastructure\RentIt.Modules.Analytics.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Analytics\RentIt.Modules.Analytics.Application\RentIt.Modules.Analytics.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Analytics\RentIt.Modules.Analytics.Domain\RentIt.Modules.Analytics.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -2,44 +2,42 @@ using RentIt.Shared.Abstractions.Domain;
 
 namespace RentIt.Modules.Analytics.Domain.Entities;
 
-public class PropertyMetrics : AggregateRoot<Guid>
+public class HostMetrics : AggregateRoot<Guid>
 {
-    public Guid PropertyId { get; private set; }
     public Guid HostId { get; private set; }
+    public int TotalProperties { get; private set; }
     public int TotalBookings { get; private set; }
-    public int TotalCancellations { get; private set; }
     public decimal TotalRevenue { get; private set; }
     public int TotalReviews { get; private set; }
     public double AverageRating { get; private set; }
 
 #pragma warning disable CS8618
-    private PropertyMetrics() { }
+    private HostMetrics() { }
 #pragma warning restore CS8618
 
-    private PropertyMetrics(Guid id, Guid propertyId, Guid hostId) : base(id)
+    private HostMetrics(Guid id, Guid hostId) : base(id)
     {
-        PropertyId = propertyId;
         HostId = hostId;
+        TotalProperties = 0;
         TotalBookings = 0;
-        TotalCancellations = 0;
         TotalRevenue = 0;
         TotalReviews = 0;
         AverageRating = 0;
     }
 
-    public static PropertyMetrics Create(Guid propertyId, Guid hostId)
+    public static HostMetrics Create(Guid hostId)
     {
-        return new PropertyMetrics(Guid.NewGuid(), propertyId, hostId);
+        return new HostMetrics(Guid.NewGuid(), hostId);
+    }
+
+    public void IncrementProperties()
+    {
+        TotalProperties++;
     }
 
     public void IncrementBookings()
     {
         TotalBookings++;
-    }
-
-    public void IncrementCancellations()
-    {
-        TotalCancellations++;
     }
 
     public void AddRevenue(decimal amount)

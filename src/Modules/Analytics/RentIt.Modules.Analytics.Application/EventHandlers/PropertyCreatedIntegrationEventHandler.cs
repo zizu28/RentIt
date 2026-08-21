@@ -3,35 +3,27 @@ using Microsoft.Extensions.DependencyInjection;
 using RentIt.Modules.Analytics.Domain.Entities;
 using RentIt.Modules.Analytics.Domain.Repositories;
 using RentIt.Shared.Abstractions.Persistence;
-using RentIt.Shared.Contracts.Bookings.IntegrationEvents;
+using RentIt.Shared.Contracts.Properties.IntegrationEvents;
 
 namespace RentIt.Modules.Analytics.Application.EventHandlers;
 
-internal sealed class BookingConfirmedIntegrationEventHandler(
+internal sealed class PropertyCreatedIntegrationEventHandler(
     IPropertyMetricsRepository propertyMetricsRepository,
     IHostMetricsRepository hostMetricsRepository,
-    [FromKeyedServices("Analytics")] IUnitOfWork unitOfWork) : INotificationHandler<BookingConfirmedIntegrationEvent>
+    [FromKeyedServices("Analytics")] IUnitOfWork unitOfWork) : INotificationHandler<PropertyCreatedIntegrationEvent>
 {
     private readonly IPropertyMetricsRepository _propertyMetricsRepository = propertyMetricsRepository;
     private readonly IHostMetricsRepository _hostMetricsRepository = hostMetricsRepository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
-    public async Task Handle(BookingConfirmedIntegrationEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(PropertyCreatedIntegrationEvent notification, CancellationToken cancellationToken)
     {
-        // Update Property Metrics
+        // Initialize Property Metrics
         var propertyMetrics = await _propertyMetricsRepository.GetByPropertyIdAsync(notification.PropertyId, cancellationToken);
         if (propertyMetrics is null)
         {
             propertyMetrics = PropertyMetrics.Create(notification.PropertyId, notification.HostId);
-            propertyMetrics.IncrementBookings();
-            propertyMetrics.AddRevenue(notification.TotalAmount);
             await _propertyMetricsRepository.AddAsync(propertyMetrics, cancellationToken);
-        }
-        else
-        {
-            propertyMetrics.IncrementBookings();
-            propertyMetrics.AddRevenue(notification.TotalAmount);
-            _propertyMetricsRepository.Update(propertyMetrics);
         }
 
         // Update Host Metrics
@@ -39,14 +31,12 @@ internal sealed class BookingConfirmedIntegrationEventHandler(
         if (hostMetrics is null)
         {
             hostMetrics = HostMetrics.Create(notification.HostId);
-            hostMetrics.IncrementBookings();
-            hostMetrics.AddRevenue(notification.TotalAmount);
+            hostMetrics.IncrementProperties();
             await _hostMetricsRepository.AddAsync(hostMetrics, cancellationToken);
         }
         else
         {
-            hostMetrics.IncrementBookings();
-            hostMetrics.AddRevenue(notification.TotalAmount);
+            hostMetrics.IncrementProperties();
             _hostMetricsRepository.Update(hostMetrics);
         }
 
