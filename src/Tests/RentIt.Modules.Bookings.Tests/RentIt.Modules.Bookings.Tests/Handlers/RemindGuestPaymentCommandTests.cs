@@ -6,6 +6,8 @@ using RentIt.Modules.Bookings.Domain.Repositories;
 using RentIt.Shared.Abstractions.BackgroundJobs;
 using RentIt.Shared.Contracts.Identity.Queries;
 using RentIt.Shared.Abstractions.Results;
+using RentIt.Shared.Abstractions.Email;
+using System.Linq.Expressions;
 using Serilog;
 using Xunit;
 
@@ -74,9 +76,9 @@ public class RemindGuestPaymentCommandTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _backgroundJobMock.Verify(j => j.Enqueue(
+        _backgroundJobMock.Verify(j => j.Enqueue<IEmailService>(
             It.IsAny<string>(), 
-            It.IsAny<System.Linq.Expressions.Expression<Action<RentIt.Shared.Abstractions.Email.IEmailService>>>()), 
+            It.IsAny<Expression<Func<IEmailService, Task>>>()), 
             Times.Once);
     }
 
@@ -93,9 +95,9 @@ public class RemindGuestPaymentCommandTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _backgroundJobMock.Verify(j => j.Enqueue(
+        _backgroundJobMock.Verify(j => j.Enqueue<IEmailService>(
             It.IsAny<string>(), 
-            It.IsAny<System.Linq.Expressions.Expression<Action<RentIt.Shared.Abstractions.Email.IEmailService>>>()), 
+            It.IsAny<Expression<Func<IEmailService, Task>>>()), 
             Times.Never);
     }
 
@@ -134,9 +136,9 @@ public class RemindGuestPaymentCommandTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _backgroundJobMock.Verify(j => j.Enqueue(
+        _backgroundJobMock.Verify(j => j.Enqueue<IEmailService>(
             It.IsAny<string>(), 
-            It.IsAny<System.Linq.Expressions.Expression<Action<RentIt.Shared.Abstractions.Email.IEmailService>>>()), 
+            It.IsAny<Expression<Func<IEmailService, Task>>>()), 
             Times.Never);
     }
 
@@ -177,9 +179,9 @@ public class RemindGuestPaymentCommandTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _backgroundJobMock.Verify(j => j.Enqueue(
+        _backgroundJobMock.Verify(j => j.Enqueue<IEmailService>(
             It.IsAny<string>(), 
-            It.IsAny<System.Linq.Expressions.Expression<Action<RentIt.Shared.Abstractions.Email.IEmailService>>>()), 
+            It.IsAny<Expression<Func<IEmailService, Task>>>()), 
             Times.Never);
     }
 
@@ -221,9 +223,9 @@ public class RemindGuestPaymentCommandTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _backgroundJobMock.Verify(j => j.Enqueue(
+        _backgroundJobMock.Verify(j => j.Enqueue<IEmailService>(
             It.IsAny<string>(), 
-            It.IsAny<System.Linq.Expressions.Expression<Action<RentIt.Shared.Abstractions.Email.IEmailService>>>()), 
+            It.IsAny<Expression<Func<IEmailService, Task>>>()), 
             Times.Never);
     }
 }
