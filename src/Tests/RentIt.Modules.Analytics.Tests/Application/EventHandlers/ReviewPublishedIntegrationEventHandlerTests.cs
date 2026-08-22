@@ -31,15 +31,17 @@ public class ReviewPublishedIntegrationEventHandlerTests
     public async Task Handle_WhenPropertyMetricsExist_ShouldUpdateMetricsAndHostMetrics()
     {
         // Arrange
+        var hostId = Guid.NewGuid();
         var notification = new ReviewPublishedIntegrationEvent(
             Guid.NewGuid(), // ReviewId
             Guid.NewGuid(), // BookingId
             Guid.NewGuid(), // PropertyId
+            hostId,         // HostId
             Guid.NewGuid(), // ReviewerId
             5,
             "Great stay!");
 
-        var hostId = Guid.NewGuid();
+
         var existingPropertyMetrics = PropertyMetrics.Create(notification.PropertyId, hostId);
         
         var existingHostMetrics = HostMetrics.Create(hostId);
@@ -71,15 +73,17 @@ public class ReviewPublishedIntegrationEventHandlerTests
     public async Task Handle_WhenPropertyMetricsExistButHostMetricsDoNotExist_ShouldCreateHostMetrics()
     {
         // Arrange
+        var hostId = Guid.NewGuid();
+        var propertyId = Guid.NewGuid();
         var notification = new ReviewPublishedIntegrationEvent(
             Guid.NewGuid(),
             Guid.NewGuid(),
-            Guid.NewGuid(), // PropertyId
+            propertyId,
+            hostId,
             Guid.NewGuid(),
             4,
             "Good stay!");
 
-        var hostId = Guid.NewGuid();
         var existingPropertyMetrics = PropertyMetrics.Create(notification.PropertyId, hostId);
 
         _propertyMetricsRepositoryMock
@@ -109,6 +113,7 @@ public class ReviewPublishedIntegrationEventHandlerTests
     {
         // Arrange
         var notification = new ReviewPublishedIntegrationEvent(
+            Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),
             Guid.NewGuid(),

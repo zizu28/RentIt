@@ -9,6 +9,7 @@ namespace RentIt.Shared.Contracts.Bookings.IntegrationEvents;
 public sealed record BookingRequestedIntegrationEvent(
     Guid BookingId,
     Guid PropertyId,
+    Guid HostId,
     Guid RenterId,
     DateOnly StartDate,
     DateOnly EndDate,

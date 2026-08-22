@@ -15,4 +15,8 @@
     <ProjectReference Include="..\RentIt.Modules.Bookings.Domain\RentIt.Modules.Bookings.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="RentIt.Modules.Bookings.IntegrationTests" />
+  </ItemGroup>
+
 </Project>

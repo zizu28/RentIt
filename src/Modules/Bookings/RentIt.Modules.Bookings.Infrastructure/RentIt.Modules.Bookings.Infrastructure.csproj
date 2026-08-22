@@ -9,6 +9,17 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="RentIt.Modules.Bookings.IntegrationTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Infrastructure\RentIt.Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\RentIt.Modules.Bookings.Application\RentIt.Modules.Bookings.Application.csproj" />
   </ItemGroup>

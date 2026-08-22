@@ -17,6 +17,7 @@ using RentIt.Modules.Reviews.Application;
 using RentIt.Modules.Reviews.Infrastructure;
 using RentIt.Modules.Analytics.Application;
 using RentIt.Modules.Analytics.Infrastructure;
+using RentIt.Modules.Messaging.Api;
 using RentIt.Shared.Abstractions.BackgroundJobs;
 using RentIt.Shared.Infrastructure.Email;
 using RentIt.Shared.Infrastructure.Messaging;
@@ -25,6 +26,16 @@ using RentIt.Shared.Infrastructure.Pdf;
 using RentIt.Shared.Infrastructure.Security;
 using RentIt.Shared.Infrastructure.Storage;
 using Serilog;
+using RentIt.Modules.Analytics.Infrastructure.Database;
+using RentIt.Modules.Messaging.Infrastructure.Persistence;
+using RentIt.Modules.Reviews.Infrastructure.Database;
+using RentIt.Modules.Verification.Infrastructure.Database;
+using RentIt.Modules.Payments.Infrastructure.Database;
+using RentIt.Modules.Bookings.Infrastructure.Database;
+using RentIt.Modules.Identity.Infrastructure.Persistence;
+using RentIt.Modules.Properties.Infrastructure.Database;
+using RentIt.Modules.Bookings.Infrastructure;
+using RentIt.Shared.Infrastructure.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +49,7 @@ builder.AddSharedLogging();
 var mvcBuilder = builder.Services.AddControllers();
 
 // Add global exception handling
-builder.Services.AddExceptionHandler<RentIt.Shared.Infrastructure.Middleware.GlobalExceptionHandler>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 var assembliesPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -75,6 +86,8 @@ builder.Services.AddReviewsInfrastructure(builder.Configuration);
 
 builder.Services.AddAnalyticsApplication();
 builder.Services.AddAnalyticsInfrastructure(builder.Configuration);
+
+builder.Services.AddMessagingModule(builder.Configuration);
 // Add Authentication for the monolith to validate JWTs forwarded by the BFF
 var secretKey = builder.Configuration["JWT:Key"] ?? "super_secret_key_that_is_at_least_32_characters_long_for_hmac_sha256!";
 var issuer = builder.Configuration["JWT:Issuer"] ?? "RentIt";
@@ -203,24 +216,26 @@ app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
 app.AddHangfireDashBoard();
 
-RentIt.Modules.Bookings.Infrastructure.BookingsInfrastructureServiceRegistration.ConfigureBookingsJobs();
+BookingsInfrastructureServiceRegistration.ConfigureBookingsJobs();
 
 // Schedule Outbox processing for each module's DbContext
-Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Properties.Infrastructure.Database.PropertiesDbContext>>(
+Hangfire.RecurringJob.AddOrUpdate<IProcessOutboxMessagesJob<PropertiesDbContext>>(
     "outbox-properties", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
-Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Identity.Infrastructure.Persistence.IdentityDbContext>>(
+Hangfire.RecurringJob.AddOrUpdate<IProcessOutboxMessagesJob<IdentityDbContext>>(
     "outbox-identity", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
-Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Bookings.Infrastructure.Database.BookingsDbContext>>(
+Hangfire.RecurringJob.AddOrUpdate<IProcessOutboxMessagesJob<BookingsDbContext>>(
     "outbox-bookings", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
-Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Payments.Infrastructure.Database.PaymentsDbContext>>(
+Hangfire.RecurringJob.AddOrUpdate<IProcessOutboxMessagesJob<PaymentsDbContext>>(
     "outbox-payments", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
-Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Verification.Infrastructure.Database.VerificationDbContext>>(
+Hangfire.RecurringJob.AddOrUpdate<IProcessOutboxMessagesJob<VerificationDbContext>>(
     "outbox-verification", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
-Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Reviews.Infrastructure.Database.ReviewsDbContext>>(
+Hangfire.RecurringJob.AddOrUpdate<IProcessOutboxMessagesJob<ReviewsDbContext>>(
     "outbox-reviews", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
-Hangfire.RecurringJob.AddOrUpdate<RentIt.Shared.Infrastructure.Messaging.IProcessOutboxMessagesJob<RentIt.Modules.Analytics.Infrastructure.Database.AnalyticsDbContext>>(
+Hangfire.RecurringJob.AddOrUpdate<IProcessOutboxMessagesJob<AnalyticsDbContext>>(
     "outbox-analytics", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
 
+Hangfire.RecurringJob.AddOrUpdate<IProcessOutboxMessagesJob<MessagingDbContext>>(
+    "outbox-messaging", j => j.ProcessAsync(CancellationToken.None), Hangfire.Cron.Minutely());
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
@@ -244,6 +259,7 @@ app.UseRateLimiter();
 app.UseOutputCache();
 
 app.MapControllers();
+app.MapMessagingModule();
 
 app.MapGet("/", () => "RentIt Modular Monolith Host is running.");
 

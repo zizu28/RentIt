@@ -10,6 +10,7 @@ public sealed record ReviewPublishedIntegrationEvent(
     Guid ReviewId,
     Guid BookingId,
     Guid PropertyId,
+    Guid HostId,
     Guid ReviewerId,
     int Rating,
     string? Comment

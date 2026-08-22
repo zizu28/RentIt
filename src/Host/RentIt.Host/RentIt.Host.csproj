@@ -19,6 +19,8 @@
     <ProjectReference Include="..\..\Shared\RentIt.Shared.Infrastructure\RentIt.Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Analytics\RentIt.Modules.Analytics.Application\RentIt.Modules.Analytics.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Analytics\RentIt.Modules.Analytics.Infrastructure\RentIt.Modules.Analytics.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Messaging\RentIt.Modules.Messaging.Application\RentIt.Modules.Messaging.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Messaging\RentIt.Modules.Messaging.Infrastructure\RentIt.Modules.Messaging.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

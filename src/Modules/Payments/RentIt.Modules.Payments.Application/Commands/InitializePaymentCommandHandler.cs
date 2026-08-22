@@ -5,7 +5,6 @@ using RentIt.Modules.Payments.Application.Services;
 using RentIt.Modules.Payments.Domain.Entities;
 using RentIt.Modules.Payments.Domain.Enums;
 using RentIt.Modules.Payments.Domain.Repositories;
-using RentIt.Shared.Abstractions.Persistence;
 
 namespace RentIt.Modules.Payments.Application.Commands;
 

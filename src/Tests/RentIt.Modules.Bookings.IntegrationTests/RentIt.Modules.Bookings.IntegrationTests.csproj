@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Testcontainers.MsSql" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Modules\Bookings\RentIt.Modules.Bookings.Api\RentIt.Modules.Bookings.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Bookings\RentIt.Modules.Bookings.Application\RentIt.Modules.Bookings.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Bookings\RentIt.Modules.Bookings.Infrastructure\RentIt.Modules.Bookings.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Bookings\RentIt.Modules.Bookings.Domain\RentIt.Modules.Bookings.Domain.csproj" />
+    <ProjectReference Include="..\..\Host\RentIt.Host\RentIt.Host.csproj" />
+  </ItemGroup>
+
+</Project>

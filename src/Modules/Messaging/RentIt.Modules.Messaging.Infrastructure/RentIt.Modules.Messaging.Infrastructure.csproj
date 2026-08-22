@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <ProjectReference Include="..\RentIt.Modules.Messaging.Application\RentIt.Modules.Messaging.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shared\RentIt.Shared.Infrastructure\RentIt.Shared.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

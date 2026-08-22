@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RentIt.Modules.Messaging.Infrastructure\RentIt.Modules.Messaging.Infrastructure.csproj" />
+    <ProjectReference Include="..\RentIt.Modules.Messaging.Application\RentIt.Modules.Messaging.Application.csproj" />
   </ItemGroup>
 
 </Project>

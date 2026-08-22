@@ -1,4 +1,5 @@
 using RentIt.Modules.Bookings.Domain.Enums;
+using RentIt.Modules.Bookings.Domain.Events;
 using RentIt.Modules.Bookings.Domain.Exceptions;
 using RentIt.Shared.Abstractions.Domain;
 using RentIt.Shared.Kernel.Enums;
@@ -90,6 +91,15 @@ public sealed class Booking : AggregateRoot<Guid>
             endDate,
             totalPrice,
             BookingStatus.Pending);
+
+        booking.AddDomainEvent(new BookingCreatedDomainEvent(
+            booking.Id,
+            propertyId,
+            guestId,
+            startDate,
+            endDate,
+            totalPriceAmount,
+            currency));
 
         return booking;
     }

@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using RentIt.Modules.Bookings.Domain.Entities;
 using RentIt.Shared.Abstractions.Messaging;
 using RentIt.Shared.Infrastructure.Messaging;
-using RentIt.Shared.Infrastructure.Messaging;
 
 namespace RentIt.Modules.Bookings.Infrastructure.Database;
 

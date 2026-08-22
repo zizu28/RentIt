@@ -106,4 +106,32 @@ public class CancelBookingCommandHandlerTests
         _bookingRepositoryMock.Verify(repo => repo.Update(It.IsAny<Booking>()), Times.Never);
         _unitOfWorkMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
+
+    [Fact]
+    public async Task Handle_WhenBookingAlreadyCancelled_ThrowsBookingDomainException()
+    {
+        // Arrange
+        var command = new CancelBookingCommand(Guid.NewGuid(), Guid.NewGuid());
+        
+        var booking = Booking.Create(
+            Guid.NewGuid(),
+            command.GuestId,
+            DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1),
+            DateOnly.FromDateTime(DateTime.UtcNow).AddDays(5),
+            100,
+            "USD",
+            1);
+
+        booking.Cancel(); // Status becomes Cancelled
+
+        _bookingRepositoryMock.Setup(repo => repo.GetByIdAsync(command.BookingId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(booking);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<BookingDomainException>(() => _handler.Handle(command, CancellationToken.None));
+        exception.Message.Should().Contain("cannot be cancelled.");
+
+        _bookingRepositoryMock.Verify(repo => repo.Update(It.IsAny<Booking>()), Times.Never);
+        _unitOfWorkMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
 }
